@@ -49,13 +49,15 @@
     /* Custom tokens */
     --gradient-primary: linear-gradient(135deg, hsl(231, 84%, 66%), hsl(270, 50%, 50%));
     --gradient-primary-hover: linear-gradient(135deg, hsl(231, 84%, 72%), hsl(270, 50%, 56%));
-    --glass-bg: hsla(0, 0%, 100%, 0.06);
+    --gradient-saas: linear-gradient(135deg, #667eea, #764ba2);
+    --gradient-neon: linear-gradient(135deg, #9333ea, #db2777);
+    --glass-bg: hsla(0, 0%, 100%, 0.05);
     --glass-border: hsla(0, 0%, 100%, 0.1);
-    --glass-bg-strong: hsla(0, 0%, 100%, 0.1);
-    --glass-border-strong: hsla(0, 0%, 100%, 0.2);
-    --neon-glow: 0 0 30px hsla(231, 84%, 66%, 0.4);
-    --neon-glow-strong: 0 0 60px hsla(231, 84%, 66%, 0.5), 0 0 120px hsla(270, 50%, 50%, 0.2);
-    --shadow-card: 0 8px 32px hsla(0, 0%, 0%, 0.3);
+    --glass-bg-strong: hsla(0, 0%, 100%, 0.08);
+    --glass-border-strong: hsla(0, 0%, 100%, 0.15);
+    --neon-glow: 0 0 20px hsla(271, 91%, 65%, 0.3);
+    --neon-glow-strong: 0 0 40px hsla(271, 91%, 65%, 0.5);
+    --shadow-card: 0 20px 50px hsla(0, 0%, 0%, 0.5);
   }
 }
 
@@ -189,5 +191,34 @@
 
   .float-animation {
     animation: float 3s ease-in-out infinite;
+  }
+
+  .auth-mesh {
+    background-color: #0c0a09;
+    background-image: 
+      radial-gradient(at 0% 0%, hsla(253, 16%, 7%, 1) 0, transparent 50%), 
+      radial-gradient(at 50% 0%, hsla(225, 39%, 30%, 0.3) 0, transparent 50%), 
+      radial-gradient(at 100% 0%, hsla(339, 49%, 30%, 0.3) 0, transparent 50%);
+  }
+
+  .neon-purple-btn {
+    background: var(--gradient-neon);
+    color: white;
+    border: none;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 0 15px hsla(271, 91%, 65%, 0.4);
+  }
+
+  .neon-purple-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 30px hsla(271, 91%, 65%, 0.6);
+  }
+
+  .glass-saas-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--shadow-card);
   }
 }

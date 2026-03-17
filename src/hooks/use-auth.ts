@@ -10,7 +10,9 @@ import {
   signInWithPopup,
   signOut as firebaseSignOut,
   signInWithEmailAndPassword,
-  createUserWithEmailAndPassword
+  createUserWithEmailAndPassword,
+  sendSignInLinkToEmail,
+  updateProfile,
 } from 'firebase/auth';
 
 export function useAuth() {
@@ -56,12 +58,29 @@ export function useAuth() {
     }
   };
 
-  const registerWithEmail = async (email: string, pass: string) => {
+  const registerWithEmail = async (email: string, pass: string, name?: string) => {
     try {
       const result = await createUserWithEmailAndPassword(auth, email, pass);
+      if (name && result.user) {
+        await updateProfile(result.user, { displayName: name });
+      }
       return result.user;
     } catch (error) {
       console.error('Registration error:', error);
+      throw error;
+    }
+  };
+
+  const sendMagicLink = async (email: string) => {
+    const actionCodeSettings = {
+      url: window.location.origin + '/verify-email',
+      handleCodeInApp: true,
+    };
+    try {
+      await sendSignInLinkToEmail(auth, email, actionCodeSettings);
+      window.localStorage.setItem('emailForSignIn', email);
+    } catch (error) {
+      console.error('Magic link error:', error);
       throw error;
     }
   };
@@ -77,6 +96,7 @@ export function useAuth() {
     signInWithGoogle, 
     loginWithEmail, 
     registerWithEmail, 
+    sendMagicLink,
     signOut 
   };
 }

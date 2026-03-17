@@ -94,13 +94,13 @@ const Landing = () => {
               <>
                 <Button
                   variant="ghost"
-                  onClick={() => navigate('/auth')}
+                  onClick={() => navigate('/login')}
                   className="text-sm font-display px-5 py-2 hover:bg-white/5"
                 >
                   Sign In
                 </Button>
                 <Button
-                  onClick={() => navigate('/auth')}
+                  onClick={() => navigate('/signup')}
                   className="gradient-btn text-sm font-display px-5 py-2"
                 >
                   Start Scanning
@@ -143,7 +143,7 @@ const Landing = () => {
                 className="flex flex-col sm:flex-row items-center gap-3 justify-center lg:justify-start"
               >
                 <Button
-                  onClick={() => navigate(user ? '/scan' : '/auth')}
+                  onClick={() => navigate(user ? '/scan' : '/signup')}
                   className="gradient-btn px-8 py-6 text-base font-display font-bold rounded-xl pulse-neon w-full sm:w-auto"
                 >
                   <Shield className="w-5 h-5 mr-2" />
