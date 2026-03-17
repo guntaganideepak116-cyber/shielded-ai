@@ -77,7 +77,7 @@ const Landing = () => {
               History
             </button>
             
-            {user ? (
+            {(user && !user.isAnonymous) ? (
               <div className="flex items-center gap-3">
                 <Button
                   onClick={() => navigate('/scan')}
@@ -87,7 +87,7 @@ const Landing = () => {
                 </Button>
                 <Avatar className="w-8 h-8 border border-white/10">
                   <AvatarImage src={user.photoURL || ''} />
-                  <AvatarFallback className="bg-primary/20 text-[10px]">{user.email?.charAt(0).toUpperCase()}</AvatarFallback>
+                  <AvatarFallback className="bg-primary/20 text-[10px]">{user.email?.charAt(0).toUpperCase() || '?'}</AvatarFallback>
                 </Avatar>
               </div>
             ) : (
@@ -143,7 +143,7 @@ const Landing = () => {
                 className="flex flex-col sm:flex-row items-center gap-3 justify-center lg:justify-start"
               >
                 <Button
-                  onClick={() => navigate(user ? '/scan' : '/signup')}
+                  onClick={() => navigate((user && !user.isAnonymous) ? '/scan' : '/signup')}
                   className="gradient-btn px-8 py-6 text-base font-display font-bold rounded-xl pulse-neon w-full sm:w-auto"
                 >
                   <Shield className="w-5 h-5 mr-2" />

@@ -46,14 +46,14 @@ const Scanner = () => {
   }, []);
 
   useEffect(() => {
-    if (!authLoading && !user) {
-      navigate('/auth');
+    if (!authLoading && (!user || user.isAnonymous)) {
+      navigate('/login');
     }
   }, [user, authLoading, navigate]);
 
   const startScan = useCallback(async (inputUrl: string) => {
-    if (!user) {
-      navigate('/auth');
+    if (!user || user.isAnonymous) {
+      navigate('/login');
       return;
     }
     const platform = detectPlatform(inputUrl);
