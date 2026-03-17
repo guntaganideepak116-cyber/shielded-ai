@@ -2,14 +2,22 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import {
   Shield, ShieldCheck, Zap, Lock, Eye, Code, ArrowRight,
-  CheckCircle, Users, Star, BarChart3, Globe, Clock, Sparkles,
+  CheckCircle, Users, Star, BarChart3, Globe, Clock, Sparkles, LogOut,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useEffect, useState } from 'react';
 // Counters can be fetched from the new Node.js backend if needed
 import heroShield from '@/assets/hero-shield.png';
 import { useAuth } from '@/hooks/use-auth';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger
+} from "@/components/ui/dropdown-menu";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
@@ -42,7 +50,7 @@ const TESTIMONIALS = [
 
 const Landing = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const [globalCount, setGlobalCount] = useState(10247);
 
   useEffect(() => {
@@ -85,10 +93,29 @@ const Landing = () => {
                 >
                   Dashboard
                 </Button>
-                <Avatar className="w-8 h-8 border border-white/10">
-                  <AvatarImage src={user.photoURL || ''} />
-                  <AvatarFallback className="bg-primary/20 text-[10px]">{user.email?.charAt(0).toUpperCase() || '?'}</AvatarFallback>
-                </Avatar>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Avatar className="w-8 h-8 border border-white/10 cursor-pointer hover:ring-2 hover:ring-primary/50 transition-all">
+                      <AvatarImage src={user.photoURL || ''} />
+                      <AvatarFallback className="bg-primary/20 text-[10px]">{user.email?.charAt(0).toUpperCase() || '?'}</AvatarFallback>
+                    </Avatar>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-56 glass-card-strong border-white/10 text-white" align="end">
+                    <DropdownMenuLabel className="font-display font-bold text-xs uppercase tracking-widest text-white/50">My Terminal</DropdownMenuLabel>
+                    <DropdownMenuSeparator className="bg-white/10" />
+                    <DropdownMenuItem className="focus:bg-white/5 cursor-pointer py-3" onClick={() => navigate('/scan')}>
+                      Dashboard
+                    </DropdownMenuItem>
+                    <DropdownMenuItem className="focus:bg-white/5 cursor-pointer py-3" onClick={() => navigate('/history')}>
+                      Scan History
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator className="bg-white/10" />
+                    <DropdownMenuItem className="focus:bg-red-500/20 text-red-400 cursor-pointer py-3 font-bold" onClick={() => signOut()}>
+                      <LogOut className="w-4 h-4 mr-2" />
+                      De-authorize Terminal
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             ) : (
               <>
