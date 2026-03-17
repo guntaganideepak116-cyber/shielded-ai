@@ -5,7 +5,7 @@ import {
 } from '@/lib/firebase';
 import { 
   User, 
-  onAuthStateChange, 
+  onAuthStateChanged, 
   signInAnonymously as firebaseSignInAnonymously,
   signInWithPopup,
   signOut as firebaseSignOut,
@@ -18,7 +18,7 @@ export function useAuth() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChange(auth, (currentUser) => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
       setLoading(false);
     });
