@@ -4,13 +4,13 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "build:dev": "vite build --mode development",
-    "lint": "eslint .",
-    "preview": "vite preview",
-    "test": "vitest run",
-    "test:watch": "vitest"
+    "dev": "vite frontend",
+    "build": "vite build --root frontend --outDir ../dist",
+    "build:dev": "vite build --root frontend --mode development --outDir ../dist",
+    "lint": "eslint frontend",
+    "preview": "vite preview frontend",
+    "test": "vitest run frontend",
+    "test:watch": "vitest frontend"
   },
   "dependencies": {
     "@fontsource/inter": "^5.2.8",

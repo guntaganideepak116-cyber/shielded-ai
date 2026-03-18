@@ -1,99 +1,52 @@
-# Welcome to your Lovable project
+# SECURESHIELD AI - Enterprise Security SaaS
 
-## Project info
+A high-performance, AI-driven security scanner built with a clean, modular architecture.
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+## 📁 Project Structure
 
-## How can I edit this code?
+This project follows a clean "SaaS-ready" architecture:
 
-There are several ways of editing your application.
+- **`/frontend`**: The core React/Vite application.
+  - `/src`: Components, hooks, and UI logic.
+  - `/public`: Static assets and icons.
+- **`/backend`**: Node.js/Express serverless functions.
+  - `index.js`: Main API entry point (Express).
+- **`/db`**: Database configuration and security.
+  - `firestore.rules`: Security rules for scan data.
+  - `schema.md`: Firestore collection and mapping guide.
+- **`/api`**: Vercel deployment bridge (Standard Serverless).
 
-**Use Lovable**
+## 🚀 Getting Started
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+### 1. Installation
+Install all dependencies from the project root:
+```bash
+npm install
 ```
 
-**Edit a file directly in GitHub**
+### 2. Development
+Run the full-stack development environment:
+```bash
+npm run dev
+```
+*Wait: This will launch the Vite frontend at `localhost:8080`.*
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+### 3. Backend Setup
+Create a `.env` file in the root and add your Firebase credentials:
+```env
+VITE_FIREBASE_API_KEY=...
+VITE_FIREBASE_AUTH_DOMAIN=...
+FIREBASE_SERVICE_ACCOUNT={"type": "service_account", ...}
+```
 
-**Use GitHub Codespaces**
+## 🛠️ Tech Stack
+- **Frontend**: React 18, TypeScript, Tailwind CSS, Framer Motion, Lucide Icons.
+- **Backend**: Node.js, Express, Firebase Admin SDK.
+- **Auth**: Firebase Authentication (Email/Password + Google OAuth).
+- **Deployment**: Vercel Serverless Functions.
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
-
-## 🚀 Production & Startup Readiness
-
-This project is now equipped with production-level features:
-
-### 1. Real Security Scanning
-We've implemented a Supabase Edge Function to perform real-time security header analysis.
-
-**To deploy the scanner:**
-1. Install Supabase CLI: `npm install -g supabase`
-2. Login: `supabase login`
-3. Link project: `supabase link --project-ref your-project-id`
-4. Deploy function: `supabase functions deploy check-security --no-verify-jwt`
-
-### 2. PDF Reporting
-Users can now download professional PDF security reports directly from the results page.
-
-### 3. Analytics & SEO
-- **Robots.txt & Sitemap**: Added for better search engine visibility.
-- **Analytics Infrastructure**: Unified tracking in `src/lib/analytics.ts`.
-- **Semantic HTML**: Improved structure for better accessibility and SEO.
-
-### 4. Next Steps for Startup Scale
-- [ ] Integrate social authentication (Google/GitHub) in Supabase dashboard.
-- [ ] Add persistent database indexing on the `scans` table.
-- [ ] Implement email alerting for score drops.
+## 🛡️ Security
+This project uses **Firestore Security Rules** to ensure that:
+1. Only authenticated users can write data.
+2. Users can only read their own scan history.
+3. Anonymous sessions are blocked from persistent storage (SaaS Guard).

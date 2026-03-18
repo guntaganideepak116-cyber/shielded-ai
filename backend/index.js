@@ -4,29 +4,32 @@ const axios = require('axios');
 const helmet = require('helmet');
 const morgan = require('morgan');
 const admin = require('firebase-admin');
-require('dotenv').config();
+
+const app = express();
 
 // Initialize Firebase Admin
-// You need to place your serviceAccountKey.json in the server folder
-// or set the GOOGLE_APPLICATION_CREDENTIALS env var.
-try {
-  const serviceAccount = require('./serviceAccountKey.json');
-  admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount)
-  });
-} catch (e) {
-  console.warn("Firebase Admin could not initialize (serviceAccountKey.json missing). Database features will be limited.");
+if (!admin.apps.length) {
+  try {
+    // For Vercel, we'll use environment variables instead of a file
+    // but users can still upload the file if they prefer.
+    const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT 
+      ? JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT) 
+      : require('../db/serviceAccountKey.json');
+      
+    admin.initializeApp({
+      credential: admin.credential.cert(serviceAccount)
+    });
+  } catch (e) {
+    console.warn("Firebase Admin could not initialize. Check environment variables or serviceAccountKey.json.");
+  }
 }
 
 const db = admin.apps.length ? admin.firestore() : null;
-const app = express();
 
 app.use(cors());
 app.use(express.json());
 app.use(helmet());
 app.use(morgan('dev'));
-
-const PORT = process.env.PORT || 5000;
 
 // Security Scan Endpoint
 app.post('/api/scan', async (req, res) => {
@@ -40,7 +43,7 @@ app.post('/api/scan', async (req, res) => {
     const response = await axios.head(targetUrl, {
       timeout: 5000,
       headers: { 'User-Agent': 'SECURESHIELD-AI-Scanner/2.0' },
-      validateStatus: () => true // Don't throw on 4xx/5xx
+      validateStatus: () => true
     });
 
     const headers = response.headers;
@@ -113,6 +116,4 @@ app.get('/api/history', async (req, res) => {
   }
 });
 
-app.listen(PORT, () => {
-  console.log(`SECURESHIELD Backend running on port ${PORT}`);
-});
+module.exports = app;
