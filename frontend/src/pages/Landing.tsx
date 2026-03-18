@@ -78,6 +78,9 @@ const Landing = () => {
             <span className="font-display font-bold text-lg gradient-text">SECURESHIELD AI</span>
           </div>
           <div className="flex items-center gap-3">
+            <span className="text-[10px] py-1 px-2 rounded-full bg-white/5 border border-white/10 text-white/20 font-mono tracking-tighter">
+              BETA v1.4 LIVE
+            </span>
             <button
               onClick={() => setLang(lang === 'EN' ? 'TE' : 'EN')}
               className="text-xs font-display font-bold px-2 py-1 rounded bg-white/5 border border-white/10 text-primary hover:bg-white/10 transition-all"
