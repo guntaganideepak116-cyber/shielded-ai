@@ -90,16 +90,17 @@ const FreeChatbot = ({ scanData, domain }: FreeChatbotProps) => {
     <>
       {/* Floating Bubble - ALWAYS VISIBLE AT BOTTOM RIGHT */}
       <motion.button
-        className="fixed bottom-6 right-6 z-[9999] w-16 h-16 rounded-full bg-gradient-to-tr from-[#667eea] to-[#764ba2] shadow-2xl flex items-center justify-center text-white cursor-pointer ring-4 ring-white/10"
-        whileHover={{ scale: 1.1, rotate: 5 }}
+        className="fixed bottom-6 right-6 z-[9999] w-16 h-16 rounded-full bg-gradient-to-tr from-[#667eea] to-[#764ba2] shadow-[0_0_30px_rgba(102,126,234,0.4)] flex items-center justify-center text-white cursor-pointer ring-4 ring-white/10 hover:shadow-[0_0_50px_rgba(102,126,234,0.6)]"
+        whileHover={{ scale: 1.15, rotate: 10 }}
         whileTap={{ scale: 0.9 }}
         onClick={() => setIsOpen(true)}
         initial={{ scale: 0, opacity: 0, y: 100 }}
         animate={{ scale: 1, opacity: 1, y: 0 }}
         transition={{ type: 'spring', damping: 12, stiffness: 200 }}
       >
-        <MessageCircle className="w-8 h-8" />
-        <span className="absolute top-0 right-0 w-5 h-5 bg-green-500 rounded-full border-4 border-slate-900" />
+        <div className="absolute inset-0 rounded-full animate-ping bg-primary/20 pointer-events-none" />
+        <MessageCircle className="w-8 h-8 relative z-10" />
+        <span className="absolute top-0 right-0 w-5 h-5 bg-green-500 rounded-full border-4 border-slate-900 z-20" />
       </motion.button>
 
       <AnimatePresence>
