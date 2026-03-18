@@ -24,9 +24,14 @@ const FreeChatbot = ({ scanData, domain }: FreeChatbotProps) => {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (isOpen && messages.length === 0 && domain) {
-      const greeting = `Hi! I see you scanned ${domain}. Score: ${scanData?.score || 0}/100. How can I help with fixes?`;
-      setMessages([{ role: 'ai', content: greeting }]);
+    if (isOpen && messages.length === 0) {
+      if (domain) {
+        const greeting = `Hi! I see you scanned ${domain}. Score: ${scanData?.score || 0}/100. How can I help with fixes?`;
+        setMessages([{ role: 'ai', content: greeting }]);
+      } else {
+        const genericGreeting = "Hi! I'm SECURESHIELD AI. I can help you secure your website, explain .htaccess fixes, or help with cPanel. How can I help today?";
+        setMessages([{ role: 'ai', content: genericGreeting }]);
+      }
     }
   }, [isOpen, domain, scanData]);
 
@@ -45,26 +50,37 @@ const FreeChatbot = ({ scanData, domain }: FreeChatbotProps) => {
     setIsLoading(true);
 
     try {
-      const apiKey = import.meta.env.VITE_GEMINI_API_KEY || 'YOUR_FREE_GEMINI_KEY';
+      const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+      if (!apiKey || apiKey === 'YOUR_FREE_GEMINI_KEY') {
+        setTimeout(() => {
+          setMessages(prev => [...prev, { 
+            role: 'ai', 
+            content: "⚠️ Gemini API Key not found! Please add 'VITE_GEMINI_API_KEY' to your .env file to enable responses." 
+          }]);
+          setIsLoading(false);
+        }, 1000);
+        return;
+      }
+
       const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           contents: [{
             parts: [{
-              text: `CONTEXT: User scanned ${domain} score ${scanData?.score || 0}. Issues: ${JSON.stringify(scanData?.issues || [])}. Question: ${userMsg}. Answer about .htaccess fixes, cPanel pasting, WordPress plugins, security headers. Keep short, actionable. Answer in Telugu if detected or requested.`
+              text: `CONTEXT: User is asking about website security. ${domain ? `They scanned ${domain} with score ${scanData?.score || 0}. Issues: ${JSON.stringify(scanData?.issues || [])}.` : ''} Question: ${userMsg}. Guide them about security headers, SSL, WordPress plugins, or server configuration. Keep answers short, actionable, and professional. Answer in Telugu if detected or requested.`
             }]
           }]
         })
       });
 
       const data = await response.json();
-      const aiResponse = data.candidates?.[0]?.content?.parts?.[0]?.text || "Try: 'Where do I paste .htaccess?' or 'My site broke!'";
+      const aiResponse = data.candidates?.[0]?.content?.parts?.[0]?.text || "I'm having trouble connecting to AI right now. Please try again or check your API key.";
       
       setMessages(prev => [...prev, { role: 'ai', content: aiResponse }]);
     } catch (error) {
       console.error('Gemini API Error:', error);
-      setMessages(prev => [...prev, { role: 'ai', content: "Try: 'Where do I paste .htaccess?' or 'My site broke!'" }]);
+      setMessages(prev => [...prev, { role: 'ai', content: "An error occurred while connecting to the AI. Please verify your internet connection or API key." }]);
     } finally {
       setIsLoading(false);
     }
@@ -72,26 +88,26 @@ const FreeChatbot = ({ scanData, domain }: FreeChatbotProps) => {
 
   return (
     <>
-      {/* Floating Bubble */}
+      {/* Floating Bubble - ALWAYS VISIBLE AT BOTTOM RIGHT */}
       <motion.button
-        className="fixed bottom-24 right-6 z-[100] w-14 h-14 rounded-full bg-gradient-to-tr from-[#667eea] to-[#764ba2] shadow-lg shadow-primary/20 flex items-center justify-center text-white"
-        whileHover={{ scale: 1.1 }}
+        className="fixed bottom-6 right-6 z-[9999] w-16 h-16 rounded-full bg-gradient-to-tr from-[#667eea] to-[#764ba2] shadow-2xl flex items-center justify-center text-white cursor-pointer ring-4 ring-white/10"
+        whileHover={{ scale: 1.1, rotate: 5 }}
         whileTap={{ scale: 0.9 }}
         onClick={() => setIsOpen(true)}
-        initial={{ scale: 0, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ type: 'spring', damping: 15 }}
+        initial={{ scale: 0, opacity: 0, y: 100 }}
+        animate={{ scale: 1, opacity: 1, y: 0 }}
+        transition={{ type: 'spring', damping: 12, stiffness: 200 }}
       >
-        <MessageCircle className="w-6 h-6" />
-        <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full border-2 border-[#1a1a1a] animate-pulse" />
+        <MessageCircle className="w-8 h-8" />
+        <span className="absolute top-0 right-0 w-5 h-5 bg-green-500 rounded-full border-4 border-slate-900" />
       </motion.button>
 
       <AnimatePresence>
         {isOpen && (
-          <div className="fixed inset-0 z-[110] pointer-events-none overflow-hidden">
+          <div className="fixed inset-0 z-[10000] pointer-events-none overflow-hidden">
             {/* Backdrop */}
             <motion.div 
-              className="absolute inset-0 bg-black/40 backdrop-blur-sm pointer-events-auto"
+              className="absolute inset-0 bg-black/60 backdrop-blur-md pointer-events-auto"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -99,42 +115,50 @@ const FreeChatbot = ({ scanData, domain }: FreeChatbotProps) => {
             />
             
             <motion.div
-              className="absolute bottom-0 right-0 w-full max-w-md h-[70vh] p-4 md:p-6 flex flex-col pointer-events-none"
-              initial={{ y: 400, opacity: 0, scale: 0.95 }}
+              className="absolute bottom-4 right-4 w-full max-w-[92vw] sm:max-w-md h-[80vh] flex flex-col pointer-events-none"
+              initial={{ y: 500, opacity: 0, scale: 0.9 }}
               animate={{ y: 0, opacity: 1, scale: 1 }}
-              exit={{ y: 400, opacity: 0, scale: 0.95 }}
-              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              exit={{ y: 500, opacity: 0, scale: 0.9 }}
+              transition={{ type: 'spring', damping: 20, stiffness: 150 }}
             >
-              <div className="flex-1 glass-card-strong border-white/20 shadow-2xl flex flex-col pointer-events-auto overflow-hidden rounded-3xl bg-slate-900/90">
+              <div className="flex-1 glass-card-strong border-white/20 shadow-[0_0_50px_rgba(0,0,0,0.5)] flex flex-col pointer-events-auto overflow-hidden rounded-[2rem] bg-slate-900/95">
                 {/* Header */}
-                <div className="p-4 border-b border-white/10 flex items-center justify-between bg-white/5">
+                <div className="p-5 border-b border-white/10 flex items-center justify-between bg-white/5">
                   <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-xl bg-primary/20">
-                      <Shield className="w-5 h-5 text-primary" />
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center shadow-lg shadow-primary/30">
+                      <Shield className="w-6 h-6 text-white" />
                     </div>
                     <div>
-                      <h3 className="font-display font-bold text-sm text-white">SECURESHIELD AI</h3>
-                      <p className="text-[10px] text-white/50 uppercase tracking-widest">{domain} • {scanData?.score}/100</p>
+                      <h3 className="font-display font-bold text-base text-white tracking-tight">SECURESHIELD AI</h3>
+                      <div className="flex items-center gap-2">
+                        <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                        <p className="text-[10px] text-white/50 uppercase font-bold tracking-widest leading-none">
+                          {domain ? `${domain} • Protected` : 'Always Active'}
+                        </p>
+                      </div>
                     </div>
                   </div>
-                  <button onClick={() => setIsOpen(false)} className="p-2 hover:bg-white/10 rounded-full transition-colors">
-                    <X className="w-5 h-5 text-white/70" />
+                  <button 
+                    onClick={() => setIsOpen(false)} 
+                    className="p-2 hover:bg-white/10 rounded-full transition-all text-white/70 hover:text-white"
+                  >
+                    <X className="w-6 h-6" />
                   </button>
                 </div>
 
                 {/* Messages */}
-                <div className="flex-1 overflow-y-auto p-4 space-y-4 font-body" ref={scrollRef}>
+                <div className="flex-1 overflow-y-auto p-5 space-y-5 font-body" ref={scrollRef}>
                   {messages.map((msg, i) => (
                     <motion.div
                       key={i}
-                      initial={{ opacity: 0, x: msg.role === 'user' ? 20 : -20 }}
-                      animate={{ opacity: 1, x: 0 }}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
                       className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
                     >
-                      <div className={`max-w-[85%] p-3 rounded-2xl text-sm ${
+                      <div className={`max-w-[85%] p-4 rounded-2xl text-sm leading-relaxed ${
                         msg.role === 'user' 
-                          ? 'bg-primary text-white rounded-tr-none shadow-md shadow-primary/20' 
-                          : 'bg-white/10 backdrop-blur-sm text-white/90 border border-white/10 rounded-tl-none'
+                          ? 'bg-gradient-to-br from-primary to-blue-600 text-white rounded-tr-none shadow-lg shadow-primary/20 font-medium' 
+                          : 'bg-white/5 backdrop-blur-sm text-white/90 border border-white/10 rounded-tl-none shadow-sm'
                       }`}>
                         {msg.content}
                       </div>
@@ -142,36 +166,41 @@ const FreeChatbot = ({ scanData, domain }: FreeChatbotProps) => {
                   ))}
                   {isLoading && (
                     <div className="flex justify-start">
-                      <div className="bg-white/10 p-3 rounded-2xl rounded-tl-none border border-white/10">
-                        <Loader2 className="w-4 h-4 text-primary animate-spin" />
+                      <div className="bg-white/5 p-4 rounded-2xl rounded-tl-none border border-white/10">
+                        <Loader2 className="w-5 h-5 text-primary animate-spin" />
                       </div>
                     </div>
                   )}
                 </div>
 
-                {/* Input */}
-                <div className="p-4 border-t border-white/10 bg-white/5">
-                  <div className="relative">
+                {/* Input Area */}
+                <div className="p-5 border-t border-white/10 bg-black/20">
+                  <div className="relative flex gap-2">
                     <input
                       type="text"
                       value={input}
                       onChange={(e) => setInput(e.target.value)}
                       onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-                      placeholder="Ask about fixes or cPanel..."
-                      className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 pr-12 text-sm text-white focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all font-body"
+                      placeholder="Ask me anything..."
+                      className="flex-1 bg-white/5 border border-white/10 rounded-2xl px-5 py-3.5 text-sm text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:bg-white/10 transition-all font-body"
                     />
                     <button
                       onClick={handleSend}
                       disabled={isLoading || !input.trim()}
-                      className="absolute right-2 top-1.5 p-2 bg-primary rounded-lg text-white hover:bg-primary/80 transition-all disabled:opacity-50"
+                      className="p-3.5 bg-primary rounded-xl text-white hover:bg-primary/80 transition-all disabled:opacity-30 disabled:scale-95 active:scale-90 shadow-lg shadow-primary/30"
                     >
-                      <Send className="w-4 h-4" />
+                      <Send className="w-5 h-5 translate-x-0.5 -translate-y-0.5" />
                     </button>
                   </div>
-                  <p className="text-[10px] text-white/40 mt-3 text-center font-body flex items-center justify-center gap-1">
-                    <Sparkles className="w-3 h-3 text-primary" />
-                    Free AI help for .htaccess fixes & cPanel
-                  </p>
+                  <div className="flex items-center justify-between mt-4">
+                    <p className="text-[10px] text-white/30 font-body flex items-center gap-1.5">
+                      <Sparkles className="w-3.5 h-3.5 text-primary/70" />
+                      Powered by Gemini 1.5
+                    </p>
+                    <button className="text-[9px] text-primary/60 hover:text-primary transition-colors font-bold uppercase tracking-wider">
+                      Terms of Service
+                    </button>
+                  </div>
                 </div>
               </div>
             </motion.div>
