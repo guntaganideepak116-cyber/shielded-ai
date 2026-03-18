@@ -13,6 +13,7 @@ interface FortressModalProps {
 
 const FortressModal = ({ isOpen, onClose, onFixed, platform }: FortressModalProps) => {
   const [copied, setCopied] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
   const info = PLATFORMS[platform];
   const code = getPlatformCode(platform);
   const steps = getPlatformSteps(platform);
@@ -103,13 +104,21 @@ const FortressModal = ({ isOpen, onClose, onFixed, platform }: FortressModalProp
 
             {/* Code block */}
             <motion.div
-              className="relative rounded-lg overflow-hidden neon-border"
+              className={`relative rounded-lg overflow-hidden neon-border transition-all duration-300 ${isExpanded ? 'max-h-none' : 'max-h-64'}`}
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.2 }}
             >
               <div className="flex items-center justify-between px-4 py-2 bg-muted/50 border-b border-border">
-                <span className="text-xs text-muted-foreground font-body">{info.fileName}</span>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-muted-foreground font-body">{info.fileName}</span>
+                  <button 
+                    onClick={() => setIsExpanded(!isExpanded)}
+                    className="text-[10px] uppercase font-bold text-primary/60 hover:text-primary transition-colors"
+                  >
+                    [{isExpanded ? 'Collapse' : 'Expand'}]
+                  </button>
+                </div>
                 <button
                   onClick={handleCopy}
                   className="flex items-center gap-1.5 text-xs text-primary hover:text-primary/80 transition-colors"
@@ -127,9 +136,15 @@ const FortressModal = ({ isOpen, onClose, onFixed, platform }: FortressModalProp
                   )}
                 </button>
               </div>
-              <pre className="p-4 text-xs text-foreground/80 overflow-x-auto font-mono leading-relaxed max-h-64">
+              <pre className={`p-4 text-xs text-foreground/80 overflow-x-auto font-mono leading-relaxed ${isExpanded ? '' : 'overflow-hidden'}`}>
                 {code}
               </pre>
+              {!isExpanded && (
+                <div 
+                  className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-background to-transparent pointer-events-none cursor-pointer" 
+                  onClick={() => setIsExpanded(true)}
+                />
+              )}
             </motion.div>
 
             {/* WordPress plugin recommendation */}

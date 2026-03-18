@@ -52,9 +52,9 @@ const Landing = () => {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
   const [globalCount, setGlobalCount] = useState(10247);
+  const [lang, setLang] = useState<'EN' | 'TE'>('EN');
 
   useEffect(() => {
-    // Placeholder for global counter
     setGlobalCount(10247);
   }, []);
 
@@ -78,6 +78,12 @@ const Landing = () => {
             <span className="font-display font-bold text-lg gradient-text">SECURESHIELD AI</span>
           </div>
           <div className="flex items-center gap-3">
+            <button
+              onClick={() => setLang(lang === 'EN' ? 'TE' : 'EN')}
+              className="text-xs font-display font-bold px-2 py-1 rounded bg-white/5 border border-white/10 text-primary hover:bg-white/10 transition-all"
+            >
+              {lang === 'EN' ? 'తెలుగు' : 'ENGLISH'}
+            </button>
             <button
               onClick={() => navigate('/history')}
               className="text-xs text-muted-foreground hover:text-foreground transition-colors font-body hidden sm:block"
@@ -154,10 +160,11 @@ const Landing = () => {
               <motion.h1 variants={fadeUp} custom={1}
                 className="font-display text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground leading-tight mb-6"
               >
-                Your Website Is{' '}
-                <span className="gradient-text">Hackable.</span>
-                <br />
-                We Fix It in <span className="gradient-text">90 Seconds.</span>
+                {lang === 'EN' ? (
+                  <>Your Website Is <span className="gradient-text">Hackable.</span><br />We Fix It in <span className="gradient-text">90 Seconds.</span></>
+                ) : (
+                  <>మీ వెబ్‌సైట్ <span className="gradient-text">హ్యాక్ కావచ్చు.</span><br /><span className="gradient-text">90 సెకన్లలో</span> మేము దాన్ని సరిచేస్తాము.</>
+                )}
               </motion.h1>
 
               <motion.p variants={fadeUp} custom={2}
@@ -368,13 +375,20 @@ const Landing = () => {
 
         {/* FOOTER */}
         <footer className="border-t border-border">
-          <div className="container mx-auto px-4 py-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="container mx-auto px-4 py-8 flex flex-col sm:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-2">
               <Shield className="w-4 h-4 text-primary" />
               <span className="font-display font-semibold text-sm gradient-text">SECURESHIELD AI</span>
             </div>
+            
+            <div className="flex items-center gap-4 text-[10px] text-muted-foreground font-body uppercase tracking-tighter">
+              <span>Powered by Gemini 1.5 Flash</span>
+              <span className="w-1 h-1 rounded-full bg-border" />
+              <span>In partnership with Hackathon Secure</span>
+            </div>
+
             <p className="text-xs text-muted-foreground font-body">
-              © {new Date().getFullYear()} SECURESHIELD AI. Fortifying the web, one site at a time.
+              © {new Date().getFullYear()} SECURESHIELD AI.
             </p>
           </div>
         </footer>

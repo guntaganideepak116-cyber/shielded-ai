@@ -10,6 +10,9 @@ import LoginPage from "./pages/Login.tsx";
 import SignupPage from "./pages/Signup.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import { AuthProvider, useAuth } from "@/hooks/use-auth";
+import { ScanProvider, useScan } from "@/context/ScanContext";
+import FreeChatbot from "@/components/FreeChatbot";
+import { Loader2 } from "lucide-react";
 
 const queryClient = new QueryClient();
 
@@ -22,9 +25,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     </div>
   );
   
-  // LOGIC: Only allow non-anonymous, logged-in users
   if (!user || user.isAnonymous) {
-    console.log('Redirecting to login: User is', user ? 'Anonymous' : 'Missing');
     return <Navigate to="/login" replace />;
   }
   
@@ -69,16 +70,30 @@ const AppRoutes = () => {
   );
 };
 
+const AppContent = () => {
+  const { scanData, domain } = useScan();
+  
+  return (
+    <>
+      <Toaster />
+      <Sonner position="top-center" richColors />
+      <BrowserRouter>
+        <AppRoutes />
+      </BrowserRouter>
+      {/* Floating chatbot with context from latest scan */}
+      <FreeChatbot scanData={scanData} domain={domain} />
+    </>
+  );
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner position="top-center" richColors />
-        <BrowserRouter>
-          <AppRoutes />
-        </BrowserRouter>
-      </TooltipProvider>
+      <ScanProvider>
+        <TooltipProvider>
+          <AppContent />
+        </TooltipProvider>
+      </ScanProvider>
     </AuthProvider>
   </QueryClientProvider>
 );

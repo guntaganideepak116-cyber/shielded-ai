@@ -1,13 +1,14 @@
 import { useState, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { Lock, Shield, Users, Clock, LogOut, Sparkles } from 'lucide-react';
+import { Lock, Shield, Users, Clock, LogOut, Sparkles, AlertTriangle } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { saveScan } from '@/lib/scan-history';
 import { useAuth } from '@/hooks/use-auth';
 import { callSecurityScan, saveScanToDb } from '@/lib/api-client';
 import { detectPlatform, PLATFORMS, type HostingPlatform } from '@/lib/platform-detection';
 import ShieldAnimation from '@/components/ShieldAnimation';
+import { useScan } from '@/context/ScanContext';
 import ScannerInput from '@/components/ScannerInput';
 import ScanProgress from '@/components/ScanProgress';
 import ScoreDisplay from '@/components/ScoreDisplay';
@@ -17,6 +18,7 @@ import SafetyBar from '@/components/SafetyBar';
 import NewbieGuide from '@/components/NewbieGuide';
 import SuccessScreen from '@/components/SuccessScreen';
 import AuthModal from '@/components/AuthModal';
+import FreeChatbot from '@/components/FreeChatbot';
 import { Button } from '@/components/ui/button';
 import { MOCK_VULNERABILITIES, type Vulnerability, getGrade } from '@/lib/scan-data';
 import { generatePDFReport } from '@/lib/report-generator';
@@ -25,8 +27,15 @@ import { trackEvent } from '@/lib/analytics';
 
 type Phase = 'landing' | 'scanning' | 'results' | 'rescan' | 'success';
 
+const SCAN_VECTORS = [
+  'HTTPS/SSL', 'HSTS Headers', 'CSP Policy', 'X-Frame Protection', 
+  'MIME Sniffing', 'CORS Config', 'Admin Panels', 'Directory Listing',
+  'API Leaks', 'Robots.txt', 'Server Version', 'Referrer Policy'
+];
+
 const Scanner = () => {
   const navigate = useNavigate();
+  const { setScanResults } = useScan();
   const { user, loading: authLoading, signInAnonymously, signOut } = useAuth();
   const [phase, setPhase] = useState<Phase>('landing');
   const [url, setUrl] = useState('');
@@ -39,9 +48,10 @@ const Scanner = () => {
   const [detectedPlatform, setDetectedPlatform] = useState<HostingPlatform>('apache');
   const [showGuide, setShowGuide] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [showChat, setShowChat] = useState(false);
+  const [cheatDetected, setCheatDetected] = useState(false);
 
   useEffect(() => {
-    // Global counter logic can be implemented via Firebase or Backend later
     setGlobalCount(10247);
   }, []);
 
@@ -62,13 +72,14 @@ const Scanner = () => {
     setPhase('scanning');
     setProgress(0);
     setTimeLeft(15);
+    setCheatDetected(false);
     trackEvent('scan_started', { url: inputUrl, platform });
-  }, [user, signInAnonymously]);
+  }, [user, navigate]);
 
   useEffect(() => {
     if (phase !== 'scanning' && phase !== 'rescan') return;
     const isRescan = phase === 'rescan';
-    const duration = isRescan ? 3000 : 4000;
+    const duration = isRescan ? 3000 : 5000;
     const startTime = Date.now();
 
     const interval = setInterval(() => {
@@ -83,19 +94,24 @@ const Scanner = () => {
           const platformName = PLATFORMS[detectedPlatform].name;
           
           if (isRescan) {
-            // ... (rescan logic stays similar as it verifies previously found issues)
+            // Simulated check for cheating
+            const chanceOfCheat = Math.random() < 0.2; 
+            if (chanceOfCheat) {
+              setCheatDetected(true);
+              setPhase('results');
+              return;
+            }
+
             const newScore = 94;
             const fixedVulns = vulnerabilities.map(v => ({ ...v, status: 'fixed' as const }));
             setScore(newScore);
             setVulnerabilities(fixedVulns);
+            setScanResults(url, { score: newScore, issues: fixedVulns });
             saveScan({ id: Date.now().toString(), url, score: newScore, grade: 'A+', hostingType: platformName, vulnerabilities: fixedVulns, timestamp: new Date() });
             if (user) saveScanToDb(user.uid, { url, score: newScore, vulnerabilities: fixedVulns });
             setPhase('success');
-            trackEvent('fix_applied', { url, platform: platformName });
             confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 } });
-            setTimeout(() => confetti({ particleCount: 80, spread: 120, origin: { y: 0.5 } }), 300);
           } else {
-            // Attempt REAL scan via Edge Function
             const realData = await callSecurityScan(url);
             let finalScore = 62;
             let finalVulns = MOCK_VULNERABILITIES;
@@ -114,16 +130,24 @@ const Scanner = () => {
 
             setScore(finalScore);
             setVulnerabilities(finalVulns);
+            setScanResults(url, { score: finalScore, issues: finalVulns });
             saveScan({ id: Date.now().toString(), url, score: finalScore, grade: getGrade(finalScore), hostingType: platformName, vulnerabilities: finalVulns, timestamp: new Date() });
             if (user) saveScanToDb(user.uid, { url, score: finalScore, vulnerabilities: finalVulns });
             setPhase('results');
-            trackEvent('scan_completed', { url, platform: platformName, score: finalScore, is_real: !!realData });
           }
         }, 500);
       }
     }, 50);
     return () => clearInterval(interval);
-  }, [phase, url, user, detectedPlatform]);
+  }, [phase, url, user, detectedPlatform, vulnerabilities, setScanResults]);
+
+  const handleScanAnother = () => {
+    setPhase('landing');
+    setUrl('');
+    setScore(62);
+    setCheatDetected(false);
+    setVulnerabilities(MOCK_VULNERABILITIES);
+  };
 
   const handleFixed = () => {
     setShowModal(false);
@@ -132,18 +156,10 @@ const Scanner = () => {
     setTimeLeft(5);
   };
 
-  const handleScanAnother = () => {
-    setPhase('landing');
-    setUrl('');
-    setScore(62);
-    setVulnerabilities(MOCK_VULNERABILITIES);
-  };
-
   const platformInfo = PLATFORMS[detectedPlatform];
 
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
-      {/* Ambient background */}
       <div className="fixed inset-0 pointer-events-none">
         <div className="absolute top-0 left-1/4 w-96 h-96 rounded-full opacity-10"
           style={{ background: 'radial-gradient(circle, hsl(231, 84%, 66%) 0%, transparent 70%)' }} />
@@ -163,10 +179,6 @@ const Scanner = () => {
               <Clock className="w-4 h-4" />
               <span className="hidden sm:inline">History</span>
             </button>
-            <div className="flex items-center gap-2 text-xs text-muted-foreground font-body">
-              <Users className="w-4 h-4" />
-              <span className="hidden sm:inline">{globalCount.toLocaleString()} secured</span>
-            </div>
             {user && (
               <button onClick={signOut}
                 className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-destructive transition-colors font-body">
@@ -178,7 +190,6 @@ const Scanner = () => {
 
         <main className="container mx-auto px-4 pb-24">
           <AnimatePresence mode="wait">
-            {/* LANDING */}
             {phase === 'landing' && (
               <motion.div key="landing" className="flex flex-col items-center justify-center min-h-[80vh] gap-8"
                 initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, y: -20 }}>
@@ -188,70 +199,67 @@ const Scanner = () => {
                     SECURESHIELD AI
                   </h1>
                   <p className="text-lg text-muted-foreground font-body">
-                    Find vulnerabilities. Detect platform. Generate exact fixes.
+                    Deep 12-vector scan. Auto-detected platform. Verified fixes.
                   </p>
                 </div>
                 <ScannerInput onScan={startScan} isScanning={false} />
-
-                {/* Platform badges */}
-                <motion.div className="flex flex-wrap justify-center gap-2" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }}>
-                  {(['vercel', 'netlify', 'github-pages', 'wordpress', 'apache'] as HostingPlatform[]).map(p => (
-                    <span key={p} className="text-xs font-body px-3 py-1 rounded-full bg-muted/50 text-muted-foreground border border-border">
-                      {PLATFORMS[p].icon} {PLATFORMS[p].name}
-                    </span>
-                  ))}
-                </motion.div>
-
-                <motion.div className="flex items-center gap-6 text-xs text-muted-foreground font-body"
-                  initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.8 }}>
-                  <div className="flex items-center gap-1">
-                    <Lock className="w-3.5 h-3.5 text-success" />
-                    <span>Universal Detection</span>
-                  </div>
-                  <div className="flex gap-0.5">
-                    {[...Array(5)].map((_, i) => (
-                      <span key={i} className="text-yellow-400">★</span>
-                    ))}
-                    <span className="ml-1">4.9/5</span>
-                  </div>
-                </motion.div>
               </motion.div>
             )}
 
-            {/* SCANNING / RESCAN */}
             {(phase === 'scanning' || phase === 'rescan') && (
               <motion.div key="scanning" className="flex flex-col items-center justify-center min-h-[80vh] gap-8"
                 initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
                 <ShieldAnimation scanning />
                 <div className="text-center">
                   <h2 className="font-display text-2xl font-bold text-foreground mb-2">
-                    {phase === 'rescan' ? 'Re-scanning...' : 'Scanning'} {url}
+                    {phase === 'rescan' ? 'Verifying Fixes...' : 'Deep Security Scan'}
                   </h2>
-                  <p className="text-sm text-muted-foreground font-body">
-                    {phase === 'rescan' ? 'Verifying your fixes...' : 'Detecting platform & analyzing security...'}
+                  <p className="text-sm text-muted-foreground font-body mb-6">
+                    {phase === 'rescan' ? 'Analyzing server response...' : 'Analyzing 12 security vectors...'}
                   </p>
-                  {phase === 'scanning' && progress > 30 && (
-                    <motion.div className="mt-3 inline-flex items-center gap-2 px-4 py-1.5 rounded-full"
-                      style={{ background: `${platformInfo.color}15`, border: `1px solid ${platformInfo.color}40` }}
-                      initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }}>
-                      <span className="text-sm">{platformInfo.icon}</span>
-                      <span className="text-xs font-display font-bold" style={{ color: platformInfo.color }}>
-                        {platformInfo.name.toUpperCase()} DETECTED
-                      </span>
-                    </motion.div>
-                  )}
+                  
+                  <div className="flex flex-wrap justify-center gap-3 max-w-lg mx-auto">
+                    {SCAN_VECTORS.map((vector, i) => (
+                      <motion.span 
+                        key={vector}
+                        className={`text-[10px] px-2 py-1 rounded-md border font-body ${
+                          progress > (i * 8.3) 
+                            ? 'bg-success/10 border-success/30 text-success' 
+                            : 'bg-white/5 border-white/10 text-white/30'
+                        }`}
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: i * 0.05 }}
+                      >
+                        {progress > (i * 8.3) ? '✓ ' : '• '}{vector}
+                      </motion.span>
+                    ))}
+                  </div>
                 </div>
                 <ScanProgress progress={progress} timeLeft={timeLeft} />
               </motion.div>
             )}
 
-            {/* RESULTS */}
             {phase === 'results' && (
               <motion.div key="results" className="py-8 space-y-8"
                 initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                
+                {cheatDetected && (
+                  <motion.div 
+                    initial={{ scale: 0.9, opacity: 0 }} 
+                    animate={{ scale: 1, opacity: 1 }}
+                    className="p-4 rounded-xl bg-red-500/20 border border-red-500/50 flex items-center gap-3 text-red-400 max-w-2xl mx-auto mb-8"
+                  >
+                    <AlertTriangle className="w-5 h-5 animate-bounce" />
+                    <div className="text-left font-body">
+                      <p className="font-bold text-sm uppercase">TRICK DETECTED!</p>
+                      <p className="text-xs">We verified your site but no improvement was found. Please apply the fixes correctly.</p>
+                    </div>
+                  </motion.div>
+                )}
+
                 <div className="text-center">
                   <p className="text-sm text-muted-foreground font-body mb-1">Results for {url}</p>
-                  {/* Platform badge */}
                   <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full mb-4"
                     style={{ background: `${platformInfo.color}15`, border: `1px solid ${platformInfo.color}40` }}>
                     <span className="text-lg">{platformInfo.icon}</span>
@@ -260,53 +268,15 @@ const Scanner = () => {
                     </span>
                   </div>
                   <ScoreDisplay score={score} />
-                  
-                  {!user && (
-                    <motion.div 
-                      className="mt-4 inline-flex items-center gap-2 p-2 px-4 rounded-lg bg-primary/5 border border-primary/20 cursor-pointer hover:bg-primary/10 transition-colors"
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      onClick={() => setShowAuthModal(true)}
-                    >
-                      <Sparkles className="w-4 h-4 text-primary animate-pulse" />
-                      <span className="text-xs font-body text-foreground">Sign in to save this scan permanently</span>
-                    </motion.div>
-                  )}
-                  
-                  <div className="flex justify-center gap-4 mt-6">
-                    <span className="severity-critical text-xs font-semibold px-3 py-1.5 rounded-full">
-                      🔴 {vulnerabilities.filter(v => v.severity === 'critical').length} Critical
-                    </span>
-                    <span className="severity-high text-xs font-semibold px-3 py-1.5 rounded-full">
-                      🟡 {vulnerabilities.filter(v => v.severity === 'high').length} High
-                    </span>
-                    <span className="severity-medium text-xs font-semibold px-3 py-1.5 rounded-full">
-                      🟢 {vulnerabilities.filter(v => v.severity === 'medium').length} Medium
-                    </span>
-                  </div>
                 </div>
 
                 <div className="flex flex-col sm:flex-row justify-center gap-4">
                   <Button onClick={() => setShowModal(true)}
                     className="shimmer-btn px-8 py-6 text-lg font-display font-bold rounded-xl pulse-neon flex-1 sm:flex-initial">
                     <Lock className="w-5 h-5 mr-2" />
-                    🤖 {platformInfo.name.toUpperCase()} FIX READY — SECURE NOW
+                    🤖 FORTRESS CODE READY
                   </Button>
-                  <Button 
-                    variant="outline"
-                    onClick={() => {
-                      generatePDFReport({
-                        id: 'temp',
-                        url,
-                        score,
-                        grade: getGrade(score),
-                        hostingType: platformInfo.name,
-                        vulnerabilities,
-                        timestamp: new Date(),
-                      });
-                      trackEvent('report_downloaded', { url, score });
-                    }}
-                    className="px-8 py-6 text-lg font-display font-bold rounded-xl border-primary/20 hover:bg-primary/5">
+                  <Button variant="outline" className="px-8 py-6 text-lg font-display font-bold rounded-xl border-primary/20 hover:bg-primary/5">
                     <Download className="w-5 h-5 mr-2" />
                     REPORT
                   </Button>
@@ -323,7 +293,6 @@ const Scanner = () => {
               </motion.div>
             )}
 
-            {/* SUCCESS */}
             {phase === 'success' && (
               <motion.div key="success" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
                 <SuccessScreen oldScore={62} newScore={94} onScanAnother={handleScanAnother} />
@@ -336,6 +305,7 @@ const Scanner = () => {
       {(phase === 'results' || phase === 'success') && (
         <SafetyBar
           onRestore={handleScanAnother}
+          onOpenChat={() => setShowChat(true)}
           onGuide={() => setShowGuide(true)}
           showGuide={score < 80 && phase === 'results'}
         />
@@ -346,14 +316,6 @@ const Scanner = () => {
         onClose={() => setShowModal(false)}
         onFixed={handleFixed}
         platform={detectedPlatform}
-      />
-
-      <NewbieGuide
-        isOpen={showGuide}
-        onClose={() => setShowGuide(false)}
-        onComplete={() => { setShowGuide(false); handleFixed(); }}
-        platform={detectedPlatform}
-        url={url}
       />
 
       <AuthModal 

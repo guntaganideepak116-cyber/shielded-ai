@@ -1,0 +1,21 @@
+{
+  "name": "SECURESHIELD AI",
+  "short_name": "SECURESHIELD",
+  "description": "AI-Powered Website Fortress Generator",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#667eea",
+  "icons": [
+    {
+      "src": "/vite.svg",
+      "sizes": "32x32",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "https://lovable.dev/opengraph-image-p98pqg.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
