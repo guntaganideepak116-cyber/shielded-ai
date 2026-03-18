@@ -50,37 +50,54 @@ const FreeChatbot = ({ scanData, domain }: FreeChatbotProps) => {
     setIsLoading(true);
 
     try {
-      const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+      const apiKey = import.meta.env.VITE_GEMINI_API_KEY?.trim();
       if (!apiKey || apiKey === 'YOUR_FREE_GEMINI_KEY') {
         setTimeout(() => {
           setMessages(prev => [...prev, { 
             role: 'ai', 
-            content: "⚠️ Gemini API Key not found! Please add 'VITE_GEMINI_API_KEY' to your .env file to enable responses." 
+            content: "⚠️ Gemini API Key not found! Please add 'VITE_GEMINI_API_KEY' to your .env file." 
           }]);
           setIsLoading(false);
-        }, 1000);
+        }, 500);
         return;
       }
 
-      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+      
+      const response = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           contents: [{
             parts: [{
-              text: `CONTEXT: User is asking about website security. ${domain ? `They scanned ${domain} with score ${scanData?.score || 0}. Issues: ${JSON.stringify(scanData?.issues || [])}.` : ''} Question: ${userMsg}. Guide them about security headers, SSL, WordPress plugins, or server configuration. Keep answers short, actionable, and professional. Answer in Telugu if detected or requested.`
+              text: `CONTEXT: Website security expert. ${domain ? `Current site: ${domain}. Score: ${scanData?.score}/100.` : ''} Question: ${userMsg}. Provide actionable security advice for WordPress, cPanel, or .htaccess. Keep it concise.`
             }]
-          }]
+          }],
+          generationConfig: {
+            temperature: 0.7,
+            maxOutputTokens: 800,
+          }
         })
       });
 
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Gemini API Details:', errorData);
+        throw new Error(`API Error ${response.status}: ${errorData?.error?.message || 'Unknown'}`);
+      }
+
       const data = await response.json();
-      const aiResponse = data.candidates?.[0]?.content?.parts?.[0]?.text || "I'm having trouble connecting to AI right now. Please try again or check your API key.";
+      const aiResponse = data.candidates?.[0]?.content?.parts?.[0]?.text;
       
+      if (!aiResponse) throw new Error('No response from AI');
+
       setMessages(prev => [...prev, { role: 'ai', content: aiResponse }]);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Gemini API Error:', error);
-      setMessages(prev => [...prev, { role: 'ai', content: "An error occurred while connecting to the AI. Please verify your internet connection or API key." }]);
+      setMessages(prev => [...prev, { 
+        role: 'ai', 
+        content: `❌ ${error.message || "Connection failed. Please check your API key."}` 
+      }]);
     } finally {
       setIsLoading(false);
     }
@@ -88,9 +105,8 @@ const FreeChatbot = ({ scanData, domain }: FreeChatbotProps) => {
 
   return (
     <>
-      {/* Floating Bubble - ALWAYS VISIBLE AT BOTTOM RIGHT */}
       <motion.button
-        className="fixed bottom-6 right-6 z-[9999] w-16 h-16 rounded-full bg-gradient-to-tr from-[#667eea] to-[#764ba2] shadow-[0_0_30px_rgba(102,126,234,0.4)] flex items-center justify-center text-white cursor-pointer ring-4 ring-white/10 hover:shadow-[0_0_50px_rgba(102,126,234,0.6)]"
+        className="fixed bottom-6 right-6 z-[9999] w-16 h-16 rounded-full bg-gradient-to-tr from-[#667eea] to-[#764ba2] shadow-[0_0_30px_rgba(102,126,234,0.4)] flex items-center justify-center text-white cursor-pointer ring-4 ring-white/10"
         whileHover={{ scale: 1.15, rotate: 10 }}
         whileTap={{ scale: 0.9 }}
         onClick={() => setIsOpen(true)}
@@ -106,7 +122,6 @@ const FreeChatbot = ({ scanData, domain }: FreeChatbotProps) => {
       <AnimatePresence>
         {isOpen && (
           <div className="fixed inset-0 z-[10000] pointer-events-none overflow-hidden">
-            {/* Backdrop */}
             <motion.div 
               className="absolute inset-0 bg-black/60 backdrop-blur-md pointer-events-auto"
               initial={{ opacity: 0 }}
@@ -123,7 +138,6 @@ const FreeChatbot = ({ scanData, domain }: FreeChatbotProps) => {
               transition={{ type: 'spring', damping: 20, stiffness: 150 }}
             >
               <div className="flex-1 glass-card-strong border-white/20 shadow-[0_0_50px_rgba(0,0,0,0.5)] flex flex-col pointer-events-auto overflow-hidden rounded-[2rem] bg-slate-900/95">
-                {/* Header */}
                 <div className="p-5 border-b border-white/10 flex items-center justify-between bg-white/5">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center shadow-lg shadow-primary/30">
@@ -147,7 +161,6 @@ const FreeChatbot = ({ scanData, domain }: FreeChatbotProps) => {
                   </button>
                 </div>
 
-                {/* Messages */}
                 <div className="flex-1 overflow-y-auto p-5 space-y-5 font-body" ref={scrollRef}>
                   {messages.map((msg, i) => (
                     <motion.div
@@ -174,7 +187,6 @@ const FreeChatbot = ({ scanData, domain }: FreeChatbotProps) => {
                   )}
                 </div>
 
-                {/* Input Area */}
                 <div className="p-5 border-t border-white/10 bg-black/20">
                   <div className="relative flex gap-2">
                     <input
