@@ -86,14 +86,15 @@ const FreeChatbot = () => {
         setMessages(prev => [...prev, { role: 'ai', content: aiResponse }]);
       }
 
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Gemini Error:', error);
-      const isKeyError = error.message.includes('API Key');
+      const isKeyError = error instanceof Error && error.message.includes('API Key');
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       setMessages(prev => [...prev, { 
         role: 'ai', 
         content: isKeyError 
           ? "⚠️ SECUREWEB Terminal: API Key authorization failed. Please verify the key in your .env file."
-          : `🛑 Terminal Alert: ${error.message}. I'm having trouble connecting to the cloud nodes. Try again in a moment.`
+          : `🛑 Terminal Alert: ${errorMessage}. I'm having trouble connecting to the cloud nodes. Try again in a moment.`
       }]);
     } finally {
       setIsLoading(false);

@@ -1,3 +1,5 @@
+import { Timestamp } from 'firebase/firestore';
+
 export interface Vulnerability {
   id: string;
   issue: string;
@@ -6,6 +8,7 @@ export interface Vulnerability {
   fixTime: string;
   description: string;
   title?: string; // Some API returns title instead of issue
+  header?: string; // Used in CompareResults
 }
 
 export interface SSLInfo {
@@ -15,6 +18,7 @@ export interface SSLInfo {
   grade: string;
   serialNumber?: string;
   thumbprint?: string;
+  daysUntilExpiry?: number;
 }
 
 export interface VirusTotalInfo {
@@ -22,6 +26,9 @@ export interface VirusTotalInfo {
   total: number;
   scan_id: string;
   permalink: string;
+  malicious?: number;
+  suspicious?: number;
+  harmless?: number;
 }
 
 export interface SecurityHeaders {
@@ -30,6 +37,11 @@ export interface SecurityHeaders {
     value: string;
     desc: string;
   };
+}
+
+export interface OWASPData {
+  name: string;
+  status: 'pass' | 'warn' | 'fail';
 }
 
 export interface ScanResult {
@@ -44,9 +56,16 @@ export interface ScanResult {
   headers?: SecurityHeaders;
   ssl?: SSLInfo;
   virusTotal?: VirusTotalInfo;
-  timestamp?: Date;
+  timestamp?: Date | string;
   created_at?: string;
+  createdAt?: string | Timestamp | any; // allow any for now but try to use Timestamp
   issues?: Vulnerability[]; // sometimes returned as issues
+  enabled?: boolean;
+  lastScore?: number;
+  lastChecked?: string | Date;
+  previousScore?: number;
+  uptime?: string;
+  owasp?: Record<string, OWASPData>;
 }
 
 export interface AiFix {

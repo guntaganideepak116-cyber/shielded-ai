@@ -8,7 +8,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { toast } from 'react-hot-toast';
 import { LogoRenderer } from '@/components/LogoRenderer';
-import { getGrade, getGradeColor, type ScanResult } from '@/lib/scan-data';
+import { getGrade, getGradeColor, type ScanResult, type Vulnerability } from '@/lib/scan-data';
 import ScoreDisplay from '@/components/ScoreDisplay';
 import VulnerabilityCard from '@/components/VulnerabilityCard';
 import HeadersGrid from '@/components/HeadersGrid';
@@ -131,7 +131,7 @@ const Report = () => {
                    <Lock className="w-5 h-5 text-destructive" /> Active Vulnerability Vectors
                  </h3>
                  <div className="space-y-4">
-                    {report.vulnerabilities.map((v: any, i: number) => (
+                    {report.vulnerabilities.map((v: Vulnerability, i: number) => (
                        <VulnerabilityCard key={v.id || i} vuln={v} index={i} />
                     ))}
                     {report.vulnerabilities.length === 0 && (

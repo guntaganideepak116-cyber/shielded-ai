@@ -2,16 +2,16 @@ import React from 'react';
 import { ShieldCheck, ShieldAlert, Clock, Building2, Lock } from 'lucide-react';
 
 interface SSLCardProps {
-  ssl: {
+  ssl?: {
     valid: boolean;
-    daysUntilExpiry: number;
+    daysUntilExpiry?: number;
     issuer: string;
   };
 }
 
 const SSLCard: React.FC<SSLCardProps> = ({ ssl }) => {
-  const isHealthy = ssl?.valid && ssl?.daysUntilExpiry > 30;
-  const isWarning = ssl?.valid && ssl?.daysUntilExpiry <= 30;
+  const isHealthy = ssl?.valid && (ssl?.daysUntilExpiry || 0) > 30;
+  const isWarning = ssl?.valid && (ssl?.daysUntilExpiry || 0) <= 30;
 
   return (
     <div className="glass-card !p-5 !bg-[#0d1424] !border-[#1a2234] space-y-4">

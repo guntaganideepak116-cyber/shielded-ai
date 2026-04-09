@@ -1,9 +1,11 @@
 import React from 'react';
 import { CheckCircle2, XCircle, Shield } from 'lucide-react';
 
+import { type SecurityHeaders } from '@/lib/scan-data';
+
 interface HeadersGridProps {
-  headers: {
-    [key: string]: 'present' | 'missing';
+  headers?: {
+    [key: string]: 'present' | 'missing' | { status: string; value: string; desc: string };
   };
 }
 
@@ -28,7 +30,8 @@ const HeadersGrid: React.FC<HeadersGridProps> = ({ headers }) => {
       
       <div className="grid grid-cols-1 gap-2">
         {Object.entries(headerLabels).map(([key, label]) => {
-          const isPresent = headers?.[key] === 'present';
+          const val = headers?.[key];
+          const isPresent = val === 'present' || (typeof val === 'object' && val !== null && 'status' in val && val.status === 'secure');
           return (
             <div key={key} className="flex items-center justify-between py-2 border-bottom border-[#1a2234]/50">
               <span className="text-[10px] font-medium text-slate-300">{label}</span>

@@ -1,4 +1,4 @@
-frontend/src/pages/Scanner.tsx(9,8): error TS1259: Module '"C:/Users/DELL/OneDrive/Desktop/SecureWeb/node_modules/@types/canvas-confetti/index"' can only be default-imported using the 'esModuleInterop' flag
+﻿frontend/src/pages/Scanner.tsx(9,8): error TS1259: Module '"C:/Users/DELL/OneDrive/Desktop/SecureWeb/node_modules/@types/canvas-confetti/index"' can only be default-imported using the 'esModuleInterop' flag
 frontend/src/pages/Scanner.tsx(10,25): error TS2307: Cannot find module '@/hooks/use-auth' or its corresponding type declarations.
 frontend/src/pages/Scanner.tsx(11,46): error TS2307: Cannot find module '@/lib/api-client' or its corresponding type declarations.
 frontend/src/pages/Scanner.tsx(12,65): error TS2307: Cannot find module '@/lib/platform-detection' or its corresponding type declarations.

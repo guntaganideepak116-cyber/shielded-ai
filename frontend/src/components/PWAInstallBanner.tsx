@@ -15,7 +15,7 @@ const PWAInstallBanner = () => {
     if (localStorage.getItem('pwa-banner-dismissed')) return;
 
     // Check if prompt already fired
-    if ((window as any).deferredInstallPrompt) {
+    if (window.deferredInstallPrompt) {
       setShowBanner(true);
     }
 
@@ -35,7 +35,7 @@ const PWAInstallBanner = () => {
   }, []);
 
   const handleInstall = async () => {
-    const prompt = (window as any).deferredInstallPrompt;
+    const prompt = window.deferredInstallPrompt;
     if (!prompt) {
       // Fallback: show instructions
       alert(
@@ -47,7 +47,7 @@ const PWAInstallBanner = () => {
     }
     prompt.prompt();
     const { outcome } = await prompt.userChoice;
-    (window as any).deferredInstallPrompt = null;
+    window.deferredInstallPrompt = undefined;
     setShowBanner(false);
     if (outcome === 'accepted') setIsInstalled(true);
   };

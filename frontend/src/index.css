@@ -862,6 +862,7 @@ body.is-loading {
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
+    line-clamp: 2;
   }
 
   /* Severity badge — don't push off screen */

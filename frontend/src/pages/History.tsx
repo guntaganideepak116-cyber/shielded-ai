@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, ChangeEvent } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, Link } from 'react-router-dom';
 import { 
@@ -34,16 +34,16 @@ const History = () => {
   const [isPurging, setIsPurging] = useState(false);
   const [showPurgeConfirm, setShowPurgeConfirm] = useState(false);
   const [canInstall, setCanInstall] = useState(false);
-  const [installPrompt, setInstallPrompt] = useState<any>(null);
+  const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
 
   useEffect(() => {
-    const handler = (e: any) => {
+    const handler = (e: Event) => {
       e.preventDefault();
-      setInstallPrompt(e);
+      setInstallPrompt(e as BeforeInstallPromptEvent);
       setCanInstall(true);
     };
-    window.addEventListener('beforeinstallprompt', handler);
-    return () => window.removeEventListener('beforeinstallprompt', handler);
+    window.addEventListener('beforeinstallprompt', handler as EventListener);
+    return () => window.removeEventListener('beforeinstallprompt', handler as EventListener);
   }, []);
 
   const handleInstallClick = async () => {
@@ -194,7 +194,7 @@ const History = () => {
               <div className="relative group">
                  <Filter className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 group-focus-within:text-primary" />
                  <select 
-                    value={filter} onChange={e => setFilter(e.target.value as any)}
+                    value={filter} onChange={(e: ChangeEvent<HTMLSelectElement>) => setFilter(e.target.value as 'all' | 'secure' | 'vulnerable' | 'moderate')}
                     className="w-full h-14 bg-slate-950 border-white/5 pl-12 pr-6 rounded-2xl text-[10px] font-black uppercase tracking-widest appearance-none outline-none focus:border-primary/50 transition-all cursor-pointer"
                  >
                     <option value="all">Level: All</option>
@@ -207,7 +207,7 @@ const History = () => {
               <div className="relative group">
                  <Activity className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 group-focus-within:text-primary" />
                  <select 
-                    value={sort} onChange={e => setSort(e.target.value as any)}
+                    value={sort} onChange={(e: ChangeEvent<HTMLSelectElement>) => setSort(e.target.value as 'latest' | 'oldest' | 'score-high' | 'score-low')}
                     className="w-full h-14 bg-slate-950 border-white/5 pl-12 pr-6 rounded-2xl text-[10px] font-black uppercase tracking-widest appearance-none outline-none focus:border-primary/50 transition-all cursor-pointer"
                  >
                     <option value="latest">Sort: Latest</option>

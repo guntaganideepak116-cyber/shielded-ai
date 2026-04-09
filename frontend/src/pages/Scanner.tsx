@@ -60,32 +60,31 @@ const Scanner = () => {
   const [isRescanning, setIsRescanning] = useState(false);
   const [previousScore, setPreviousScore] = useState<number | null>(null);
   const [canInstall, setCanInstall] = useState(false);
-  const [installPrompt, setInstallPrompt] = useState<any>(null);
+  const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
 
   useEffect(() => {
     // Check if prompt already caught in index.html
-    const win = window as any;
-    if (win.deferredInstallPrompt) {
-      setInstallPrompt(win.deferredInstallPrompt);
+    if (window.deferredInstallPrompt) {
+      setInstallPrompt(window.deferredInstallPrompt);
       setCanInstall(true);
     }
     
-    const handler = (e: any) => {
+    const handler = (e: Event) => {
       e.preventDefault();
-      setInstallPrompt(e);
+      setInstallPrompt(e as BeforeInstallPromptEvent);
       setCanInstall(true);
     };
 
-    window.addEventListener('beforeinstallprompt', handler);
+    window.addEventListener('beforeinstallprompt', handler as any);
     window.addEventListener('pwaInstallReady', () => {
-      if (win.deferredInstallPrompt) {
-        setInstallPrompt(win.deferredInstallPrompt);
+      if (window.deferredInstallPrompt) {
+        setInstallPrompt(window.deferredInstallPrompt);
         setCanInstall(true);
       }
     });
 
     return () => {
-      window.removeEventListener('beforeinstallprompt', handler);
+      window.removeEventListener('beforeinstallprompt', handler as any);
     };
   }, []);
 
@@ -166,7 +165,7 @@ const Scanner = () => {
         setScanResult(realData);
         const finalScore = realData.score;
 
-        const mappedVulns: Vulnerability[] = (realData.vulnerabilities || []).map((issue: any) => ({
+        const mappedVulns: Vulnerability[] = (realData.vulnerabilities || []).map((issue) => ({
             id: issue.id || Math.random().toString(),
             issue: issue.title || issue.issue,
             severity: (issue.severity?.toLowerCase() || 'medium') as 'critical' | 'high' | 'medium' | 'low',
@@ -655,7 +654,7 @@ const Scanner = () => {
                        <div className="space-y-4">
                         {vulnerabilities && vulnerabilities.length > 0 ? (
                           vulnerabilities.map((vuln, i) => {
-                            const currentFix = (aiFixes as any)?.fixes?.find((f: any) => f.vulnerabilityId === vuln.id);
+                            const currentFix = aiFixes?.fixes?.find((f) => f.vulnerabilityId === vuln.id);
                             return <VulnerabilityCard key={vuln.id} vuln={vuln} index={i} fix={currentFix} />;
                           })
                         ) : (

@@ -39,16 +39,16 @@ const Monitoring = () => {
   const [newUrl, setNewUrl] = useState('');
   const [newEmail, setNewEmail] = useState(user?.email || '');
   const [canInstall, setCanInstall] = useState(false);
-  const [installPrompt, setInstallPrompt] = useState<any>(null);
+  const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
 
   useEffect(() => {
-    const handler = (e: any) => {
+    const handler = (e: Event) => {
       e.preventDefault();
-      setInstallPrompt(e);
+      setInstallPrompt(e as BeforeInstallPromptEvent);
       setCanInstall(true);
     };
-    window.addEventListener('beforeinstallprompt', handler);
-    return () => window.removeEventListener('beforeinstallprompt', handler);
+    window.addEventListener('beforeinstallprompt', handler as any);
+    return () => window.removeEventListener('beforeinstallprompt', handler as any);
   }, []);
 
   const handleInstallClick = async () => {
@@ -63,7 +63,7 @@ const Monitoring = () => {
 
     const q = query(collection(db, 'monitors', user.uid, 'sites'), orderBy('createdAt', 'desc'));
     const unsubscribe = onSnapshot(q, (snapshot) => {
-        const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as ScanResult[];
         setMonitors(data);
         setLoading(false);
     }, (err) => {

@@ -54,31 +54,30 @@ const Landing = () => {
   const [globalCount, setGlobalCount] = useState(10247);
   const [lang, setLang] = useState<'EN' | 'TE'>('EN');
   const [canInstall, setCanInstall] = useState(false);
-  const [installPrompt, setInstallPrompt] = useState<any>(null);
+  const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
 
   useEffect(() => {
-    const win = window as any;
-    if (win.deferredInstallPrompt) {
-      setInstallPrompt(win.deferredInstallPrompt);
+    if (window.deferredInstallPrompt) {
+      setInstallPrompt(window.deferredInstallPrompt);
       setCanInstall(true);
     }
 
-    const handler = (e: any) => {
+    const handler = (e: Event) => {
       e.preventDefault();
-      setInstallPrompt(e);
+      setInstallPrompt(e as BeforeInstallPromptEvent);
       setCanInstall(true);
     };
 
-    window.addEventListener('beforeinstallprompt', handler);
+    window.addEventListener('beforeinstallprompt', handler as any);
     window.addEventListener('pwaInstallReady', () => {
-      if (win.deferredInstallPrompt) {
-        setInstallPrompt(win.deferredInstallPrompt);
+      if (window.deferredInstallPrompt) {
+        setInstallPrompt(window.deferredInstallPrompt);
         setCanInstall(true);
       }
     });
 
     return () => {
-      window.removeEventListener('beforeinstallprompt', handler);
+      window.removeEventListener('beforeinstallprompt', handler as any);
     };
   }, []);
 

@@ -14,6 +14,7 @@ import { type ScanResult, getGrade, getGradeColor } from '@/lib/scan-data';
 import ScoreDisplay from '@/components/ScoreDisplay';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { LogoRenderer } from '@/components/LogoRenderer';
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -29,12 +30,12 @@ const Dashboard = () => {
     recentActivity: [] as ScanResult[]
   });
   const [canInstall, setCanInstall] = useState(false);
-  const [installPrompt, setInstallPrompt] = useState<any>(null);
+  const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
 
   useEffect(() => {
     window.addEventListener('beforeinstallprompt', (e) => {
       e.preventDefault();
-      setInstallPrompt(e);
+      setInstallPrompt(e as BeforeInstallPromptEvent);
       setCanInstall(true);
     });
   }, []);
@@ -52,7 +53,7 @@ const Dashboard = () => {
         const scansRef = collection(db, 'scans');
         const q = query(scansRef, orderBy('createdAt', 'desc'), limit(50));
         const snapshot = await getDocs(q);
-        const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as ScanResult[];
 
         if (data.length === 0) {
            setLoading(false);
@@ -74,7 +75,7 @@ const Dashboard = () => {
 
         // Trend (Simulated trend based on fetched data chunks)
         const trend = data.slice(0, 7).reverse().map((s: ScanResult) => ({
-          date: s.createdAt?.toDate ? s.createdAt.toDate().toLocaleDateString() : 'N/A',
+          date: s.createdAt && typeof s.createdAt === 'object' && 'toDate' in s.createdAt ? (s.createdAt as any).toDate().toLocaleDateString() : 'N/A',
           score: s.score
         }));
 
@@ -247,18 +248,15 @@ const Dashboard = () => {
              <Button variant="link" onClick={() => navigate('/history')} className="text-[10px] uppercase font-black tracking-widest">View History</Button>
           </div>
           <div className="space-y-4">
-            {stats.recentActivity.map((scan: any, i) => (
+            {stats.recentActivity.map((scan: ScanResult) => (
               <div key={scan.id} className="flex items-center justify-between p-3 rounded-xl hover:bg-white/5 transition-colors border border-transparent hover:border-white/5">
                 <div className="flex items-center gap-4 overflow-hidden">
                    <div className={`p-2 rounded-lg ${scan.score >= 90 ? 'bg-success/10 text-success' : 'bg-destructive/10 text-destructive'}`}>
-                      <Shield className="w-4 h-4" />
+                      <Globe className="w-5 h-5" />
                    </div>
-                   <div className="overflow-hidden">
-                      <p className="text-sm font-bold truncate max-w-[200px]">{scan.url}</p>
-                      <p className="text-[10px] text-slate-500 font-medium flex items-center gap-1.5 line-clamp-1">
-                         <Clock className="w-3 h-3" />
-                         {scan.createdAt?.toDate ? scan.createdAt.toDate().toLocaleString() : 'Just now'}
-                      </p>
+                   <div className="flex flex-col min-w-0">
+                      <span className="text-xs font-bold text-slate-200 truncate">{scan.url}</span>
+                      <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">{scan.createdAt && typeof scan.createdAt === 'object' && 'toDate' in scan.createdAt ? (scan.createdAt as { toDate: () => Date }).toDate().toLocaleDateString() : 'Just now'}</span>
                    </div>
                 </div>
                 <div className="text-right">

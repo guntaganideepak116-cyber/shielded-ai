@@ -2,16 +2,16 @@ import React from 'react';
 import { Shield, AlertTriangle, CheckCircle2, ShieldOff, Activity } from 'lucide-react';
 
 interface VirusTotalCardProps {
-  virusTotal: {
-    malicious: number;
-    suspicious: number;
-    harmless: number;
+  virusTotal?: {
+    malicious?: number;
+    suspicious?: number;
+    harmless?: number;
   };
 }
 
 const VirusTotalCard: React.FC<VirusTotalCardProps> = ({ virusTotal }) => {
-  const isMalicious = virusTotal?.malicious > 0;
-  const isSuspicious = virusTotal?.suspicious > 0;
+  const isMalicious = (virusTotal?.malicious || 0) > 0;
+  const isSuspicious = (virusTotal?.suspicious || 0) > 0;
 
   return (
     <div className="glass-card !p-5 !bg-[#0d1424] !border-[#1a2234] space-y-4">

@@ -30,12 +30,12 @@ const ApiDocs = () => {
   // Usage Stats
   const [usage, setUsage] = useState(0);
   const [canInstall, setCanInstall] = useState(false);
-  const [installPrompt, setInstallPrompt] = useState<any>(null);
+  const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
 
   useEffect(() => {
     window.addEventListener('beforeinstallprompt', (e) => {
       e.preventDefault();
-      setInstallPrompt(e);
+      setInstallPrompt(e as BeforeInstallPromptEvent);
       setCanInstall(true);
     });
   }, []);
@@ -251,7 +251,7 @@ print(response.json())`;
                     {['JS', 'PY', 'CURL'].map(tab => (
                        <button 
                         key={tab} 
-                        onClick={() => setActiveTab(tab as any)}
+                        onClick={() => setActiveTab(tab as 'JS' | 'PY' | 'CURL')}
                         className={`text-[9px] font-black px-3 py-1 rounded-md transition-all ${activeTab === tab ? 'bg-primary text-black' : 'text-slate-500 hover:text-white'}`}
                        >
                           {tab}
