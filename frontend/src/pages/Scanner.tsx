@@ -757,7 +757,7 @@ const Scanner = () => {
                     <OWASPCard owasp={scanResult.owasp} />
 
                     {/* 4. Severity Distribution Chart (MOVED FROM BOTTOM) */}
-                    <div className="glass-card p-8 space-y-8 !bg-[#0d1424] !border-[#1a2234] !p-6 shadow-none">
+                    <div className="glass-card space-y-8 !bg-[#0d1424] !border-[#1a2234] !p-6 shadow-none">
                        <div className="flex items-center justify-between">
                          <h4 className="text-[9px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">
                            <PieIcon className="w-4 h-4 text-primary" /> Severity Distribution
