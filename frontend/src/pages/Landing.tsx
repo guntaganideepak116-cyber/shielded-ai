@@ -262,6 +262,7 @@ const Landing = () => {
                 >
                   <Shield className="w-5 h-5 mr-2" />
                   Scan Your Website Free
+                  <ArrowRight className="w-4 h-4 ml-2" />
                 </Button>
               </motion.div>
 
