@@ -3,35 +3,35 @@
   "rewrites": [
     {
       "source": "/api/chat",
-      "destination": "/backend/api/chat.js"
+      "destination": "/api/chat.js"
     },
     {
       "source": "/api/scan",
-      "destination": "/backend/api/scan.js"
+      "destination": "/api/scan.js"
     },
     {
       "source": "/api/ai-fix",
-      "destination": "/backend/api/ai-fix.js"
+      "destination": "/api/ai-fix.js"
     },
     {
       "source": "/api/history",
-      "destination": "/backend/api/history.js"
+      "destination": "/api/history.js"
     },
     {
       "source": "/api/send-email",
-      "destination": "/backend/api/send-email.js"
+      "destination": "/api/send-email.js"
     },
     {
       "source": "/api/send-alert",
-      "destination": "/backend/api/send-alert.js"
+      "destination": "/api/send-alert.js"
     },
     {
       "source": "/api/monitor",
-      "destination": "/backend/api/monitor.js"
+      "destination": "/api/monitor.js"
     },
     {
       "source": "/api/stats",
-      "destination": "/backend/api/stats.js"
+      "destination": "/api/stats.js"
     },
     {
       "source": "/((?!api/|assets/|favicon.ico|manifest.json|sw.js|robots.txt).*)",
