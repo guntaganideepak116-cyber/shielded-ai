@@ -1,0 +1,181 @@
+frontend/src/pages/Scanner.tsx(9,8): error TS1259: Module '"C:/Users/DELL/OneDrive/Desktop/SecureWeb/node_modules/@types/canvas-confetti/index"' can only be default-imported using the 'esModuleInterop' flag
+frontend/src/pages/Scanner.tsx(10,25): error TS2307: Cannot find module '@/hooks/use-auth' or its corresponding type declarations.
+frontend/src/pages/Scanner.tsx(11,46): error TS2307: Cannot find module '@/lib/api-client' or its corresponding type declarations.
+frontend/src/pages/Scanner.tsx(12,65): error TS2307: Cannot find module '@/lib/platform-detection' or its corresponding type declarations.
+frontend/src/pages/Scanner.tsx(13,29): error TS2307: Cannot find module '@/components/ShieldAnimation' or its corresponding type declarations.
+frontend/src/pages/Scanner.tsx(14,30): error TS2307: Cannot find module '@/components/LogoRenderer' or its corresponding type declarations.
+frontend/src/pages/Scanner.tsx(15,25): error TS2307: Cannot find module '@/context/ScanContext' or its corresponding type declarations.
+frontend/src/pages/Scanner.tsx(16,26): error TS2307: Cannot find module '@/components/ScannerInput' or its corresponding type declarations.
+frontend/src/pages/Scanner.tsx(17,26): error TS2307: Cannot find module '@/components/ScanProgress' or its corresponding type declarations.
+frontend/src/pages/Scanner.tsx(18,26): error TS2307: Cannot find module '@/components/ScoreDisplay' or its corresponding type declarations.
+frontend/src/pages/Scanner.tsx(19,31): error TS2307: Cannot find module '@/components/VulnerabilityCard' or its corresponding type declarations.
+frontend/src/pages/Scanner.tsx(20,27): error TS2307: Cannot find module '@/components/FortressModal' or its corresponding type declarations.
+frontend/src/pages/Scanner.tsx(21,27): error TS2307: Cannot find module '@/components/SuccessScreen' or its corresponding type declarations.
+frontend/src/pages/Scanner.tsx(22,23): error TS2307: Cannot find module '@/components/AuthModal' or its corresponding type declarations.
+frontend/src/pages/Scanner.tsx(23,28): error TS2307: Cannot find module '@/components/FutureRiskScan' or its corresponding type declarations.
+frontend/src/pages/Scanner.tsx(24,25): error TS2307: Cannot find module '@/components/Leaderboard' or its corresponding type declarations.
+frontend/src/pages/Scanner.tsx(25,28): error TS2307: Cannot find module '@/components/CompareResults' or its corresponding type declarations.
+frontend/src/pages/Scanner.tsx(26,33): error TS2307: Cannot find module '@/components/ThemeBadgeGenerator' or its corresponding type declarations.
+frontend/src/pages/Scanner.tsx(27,25): error TS2307: Cannot find module '@/components/HeadersGrid' or its corresponding type declarations.
+frontend/src/pages/Scanner.tsx(28,21): error TS2307: Cannot find module '@/components/SSLCard' or its corresponding type declarations.
+frontend/src/pages/Scanner.tsx(29,28): error TS2307: Cannot find module '@/components/VirusTotalCard' or its corresponding type declarations.
+frontend/src/pages/Scanner.tsx(30,24): error TS2307: Cannot find module '@/components/ui/button' or its corresponding type declarations.
+frontend/src/pages/Scanner.tsx(31,36): error TS2307: Cannot find module '@/lib/scan-data' or its corresponding type declarations.
+frontend/src/pages/Scanner.tsx(33,28): error TS2307: Cannot find module '@/lib/analytics' or its corresponding type declarations.
+frontend/src/pages/Scanner.tsx(34,45): error TS2307: Cannot find module '@/lib/translations' or its corresponding type declarations.
+frontend/src/pages/Scanner.tsx(174,5): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(176,7): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(177,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(179,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(183,7): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(184,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(185,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(186,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(187,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(189,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(190,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(191,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(192,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(193,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(196,16): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(197,18): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(200,18): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(201,21): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(205,16): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(212,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(213,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(215,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(216,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(217,19): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(218,21): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(220,19): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(221,35): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(222,21): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(224,19): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(230,19): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(231,21): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(235,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(236,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(237,19): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(238,21): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(239,23): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(241,21): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(242,21): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(244,19): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(245,21): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(246,23): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(248,21): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(249,21): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(251,19): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(252,21): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(253,23): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(255,21): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(256,21): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(263,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(264,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(265,19): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(266,21): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(267,21): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(268,24): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(271,19): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(272,21): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(273,21): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(274,21): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(278,19): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(280,23): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(293,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(294,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(295,19): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(296,21): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(297,23): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(298,23): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(302,25): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(303,27): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(307,21): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(308,21): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(309,23): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(309,76): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(310,23): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(310,76): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(313,19): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(314,21): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(315,23): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(317,21): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(318,23): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(320,21): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(321,23): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(326,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(327,19): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(328,21): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(329,23): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(330,23): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(331,26): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(332,29): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(333,29): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(335,26): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(336,26): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(337,28): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(338,28): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(343,21): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(347,34): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(350,25): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(351,28): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(352,28): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(358,19): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(360,23): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(361,25): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(362,25): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(363,25): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(367,21): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(368,24): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(369,26): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(371,24): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(372,26): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(373,28): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(374,30): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(378,61): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(380,30): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(393,7): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(394,7): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(395,7): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+frontend/src/pages/Scanner.tsx(396,7): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+node_modules/recharts/types/cartesian/Area.d.ts(4,8): error TS1259: Module '"C:/Users/DELL/OneDrive/Desktop/SecureWeb/node_modules/@types/react/index"' can only be default-imported using the 'esModuleInterop' flag
+node_modules/recharts/types/cartesian/Bar.d.ts(4,8): error TS1259: Module '"C:/Users/DELL/OneDrive/Desktop/SecureWeb/node_modules/@types/react/index"' can only be default-imported using the 'esModuleInterop' flag
+node_modules/recharts/types/cartesian/Brush.d.ts(4,8): error TS1259: Module '"C:/Users/DELL/OneDrive/Desktop/SecureWeb/node_modules/@types/react/index"' can only be default-imported using the 'esModuleInterop' flag
+node_modules/recharts/types/cartesian/CartesianAxis.d.ts(4,8): error TS1259: Module '"C:/Users/DELL/OneDrive/Desktop/SecureWeb/node_modules/@types/react/index"' can only be default-imported using the 'esModuleInterop' flag
+node_modules/recharts/types/cartesian/CartesianGrid.d.ts(4,8): error TS1259: Module '"C:/Users/DELL/OneDrive/Desktop/SecureWeb/node_modules/@types/react/index"' can only be default-imported using the 'esModuleInterop' flag
+node_modules/recharts/types/cartesian/ErrorBar.d.ts(4,8): error TS1259: Module '"C:/Users/DELL/OneDrive/Desktop/SecureWeb/node_modules/@types/react/index"' can only be default-imported using the 'esModuleInterop' flag
+node_modules/recharts/types/cartesian/Line.d.ts(4,8): error TS1259: Module '"C:/Users/DELL/OneDrive/Desktop/SecureWeb/node_modules/@types/react/index"' can only be default-imported using the 'esModuleInterop' flag
+node_modules/recharts/types/cartesian/ReferenceArea.d.ts(4,8): error TS1259: Module '"C:/Users/DELL/OneDrive/Desktop/SecureWeb/node_modules/@types/react/index"' can only be default-imported using the 'esModuleInterop' flag
+node_modules/recharts/types/cartesian/ReferenceDot.d.ts(4,8): error TS1259: Module '"C:/Users/DELL/OneDrive/Desktop/SecureWeb/node_modules/@types/react/index"' can only be default-imported using the 'esModuleInterop' flag
+node_modules/recharts/types/cartesian/ReferenceLine.d.ts(4,8): error TS1259: Module '"C:/Users/DELL/OneDrive/Desktop/SecureWeb/node_modules/@types/react/index"' can only be default-imported using the 'esModuleInterop' flag
+node_modules/recharts/types/cartesian/Scatter.d.ts(4,8): error TS1259: Module '"C:/Users/DELL/OneDrive/Desktop/SecureWeb/node_modules/@types/react/index"' can only be default-imported using the 'esModuleInterop' flag
+node_modules/recharts/types/chart/generateCategoricalChart.d.ts(1,8): error TS1259: Module '"C:/Users/DELL/OneDrive/Desktop/SecureWeb/node_modules/@types/react/index"' can only be default-imported using the 'esModuleInterop' flag
+node_modules/recharts/types/chart/Sankey.d.ts(4,8): error TS1259: Module '"C:/Users/DELL/OneDrive/Desktop/SecureWeb/node_modules/@types/react/index"' can only be default-imported using the 'esModuleInterop' flag
+node_modules/recharts/types/chart/SunburstChart.d.ts(1,8): error TS1259: Module '"C:/Users/DELL/OneDrive/Desktop/SecureWeb/node_modules/@types/react/index"' can only be default-imported using the 'esModuleInterop' flag
+node_modules/recharts/types/chart/Treemap.d.ts(4,8): error TS1259: Module '"C:/Users/DELL/OneDrive/Desktop/SecureWeb/node_modules/@types/react/index"' can only be default-imported using the 'esModuleInterop' flag
+node_modules/recharts/types/component/Customized.d.ts(4,8): error TS1259: Module '"C:/Users/DELL/OneDrive/Desktop/SecureWeb/node_modules/@types/react/index"' can only be default-imported using the 'esModuleInterop' flag
+node_modules/recharts/types/component/DefaultLegendContent.d.ts(4,8): error TS1259: Module '"C:/Users/DELL/OneDrive/Desktop/SecureWeb/node_modules/@types/react/index"' can only be default-imported using the 'esModuleInterop' flag
+node_modules/recharts/types/component/DefaultTooltipContent.d.ts(4,8): error TS1259: Module '"C:/Users/DELL/OneDrive/Desktop/SecureWeb/node_modules/@types/react/index"' can only be default-imported using the 'esModuleInterop' flag
+node_modules/recharts/types/component/Label.d.ts(1,8): error TS1259: Module '"C:/Users/DELL/OneDrive/Desktop/SecureWeb/node_modules/@types/react/index"' can only be default-imported using the 'esModuleInterop' flag
+node_modules/recharts/types/component/LabelList.d.ts(1,8): error TS1259: Module '"C:/Users/DELL/OneDrive/Desktop/SecureWeb/node_modules/@types/react/index"' can only be default-imported using the 'esModuleInterop' flag
+node_modules/recharts/types/component/Legend.d.ts(4,8): error TS1259: Module '"C:/Users/DELL/OneDrive/Desktop/SecureWeb/node_modules/@types/react/index"' can only be default-imported using the 'esModuleInterop' flag
+node_modules/recharts/types/component/ResponsiveContainer.d.ts(1,8): error TS1259: Module '"C:/Users/DELL/OneDrive/Desktop/SecureWeb/node_modules/@types/react/index"' can only be default-imported using the 'esModuleInterop' flag
+node_modules/recharts/types/component/Text.d.ts(1,8): error TS1259: Module '"C:/Users/DELL/OneDrive/Desktop/SecureWeb/node_modules/@types/react/index"' can only be default-imported using the 'esModuleInterop' flag
+node_modules/recharts/types/component/Tooltip.d.ts(4,8): error TS1259: Module '"C:/Users/DELL/OneDrive/Desktop/SecureWeb/node_modules/@types/react/index"' can only be default-imported using the 'esModuleInterop' flag
+node_modules/recharts/types/container/Layer.d.ts(1,8): error TS1259: Module '"C:/Users/DELL/OneDrive/Desktop/SecureWeb/node_modules/@types/react/index"' can only be default-imported using the 'esModuleInterop' flag
+node_modules/recharts/types/container/Surface.d.ts(4,8): error TS1259: Module '"C:/Users/DELL/OneDrive/Desktop/SecureWeb/node_modules/@types/react/index"' can only be default-imported using the 'esModuleInterop' flag
+node_modules/recharts/types/numberAxis/Funnel.d.ts(4,8): error TS1259: Module '"C:/Users/DELL/OneDrive/Desktop/SecureWeb/node_modules/@types/react/index"' can only be default-imported using the 'esModuleInterop' flag
+node_modules/recharts/types/polar/Pie.d.ts(4,8): error TS1259: Module '"C:/Users/DELL/OneDrive/Desktop/SecureWeb/node_modules/@types/react/index"' can only be default-imported using the 'esModuleInterop' flag
+node_modules/recharts/types/polar/PolarAngleAxis.d.ts(4,8): error TS1259: Module '"C:/Users/DELL/OneDrive/Desktop/SecureWeb/node_modules/@types/react/index"' can only be default-imported using the 'esModuleInterop' flag
+node_modules/recharts/types/polar/PolarGrid.d.ts(4,8): error TS1259: Module '"C:/Users/DELL/OneDrive/Desktop/SecureWeb/node_modules/@types/react/index"' can only be default-imported using the 'esModuleInterop' flag
+node_modules/recharts/types/polar/PolarRadiusAxis.d.ts(4,8): error TS1259: Module '"C:/Users/DELL/OneDrive/Desktop/SecureWeb/node_modules/@types/react/index"' can only be default-imported using the 'esModuleInterop' flag
+node_modules/recharts/types/polar/Radar.d.ts(4,8): error TS1259: Module '"C:/Users/DELL/OneDrive/Desktop/SecureWeb/node_modules/@types/react/index"' can only be default-imported using the 'esModuleInterop' flag
+node_modules/recharts/types/polar/RadialBar.d.ts(4,8): error TS1259: Module '"C:/Users/DELL/OneDrive/Desktop/SecureWeb/node_modules/@types/react/index"' can only be default-imported using the 'esModuleInterop' flag
+node_modules/recharts/types/shape/Cross.d.ts(4,8): error TS1259: Module '"C:/Users/DELL/OneDrive/Desktop/SecureWeb/node_modules/@types/react/index"' can only be default-imported using the 'esModuleInterop' flag
+node_modules/recharts/types/shape/Polygon.d.ts(4,8): error TS1259: Module '"C:/Users/DELL/OneDrive/Desktop/SecureWeb/node_modules/@types/react/index"' can only be default-imported using the 'esModuleInterop' flag
+node_modules/recharts/types/shape/Rectangle.d.ts(4,8): error TS1259: Module '"C:/Users/DELL/OneDrive/Desktop/SecureWeb/node_modules/@types/react/index"' can only be default-imported using the 'esModuleInterop' flag
+node_modules/recharts/types/shape/Sector.d.ts(4,8): error TS1259: Module '"C:/Users/DELL/OneDrive/Desktop/SecureWeb/node_modules/@types/react/index"' can only be default-imported using the 'esModuleInterop' flag
+node_modules/recharts/types/shape/Symbols.d.ts(4,8): error TS1259: Module '"C:/Users/DELL/OneDrive/Desktop/SecureWeb/node_modules/@types/react/index"' can only be default-imported using the 'esModuleInterop' flag
+node_modules/recharts/types/shape/Trapezoid.d.ts(4,8): error TS1259: Module '"C:/Users/DELL/OneDrive/Desktop/SecureWeb/node_modules/@types/react/index"' can only be default-imported using the 'esModuleInterop' flag
+node_modules/recharts/types/util/BarUtils.d.ts(1,8): error TS1259: Module '"C:/Users/DELL/OneDrive/Desktop/SecureWeb/node_modules/@types/react/index"' can only be default-imported using the 'esModuleInterop' flag

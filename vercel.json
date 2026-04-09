@@ -1,0 +1,52 @@
+{
+  "version": 2,
+  "rewrites": [
+    {
+      "source": "/api/chat",
+      "destination": "/api/chat.js"
+    },
+    {
+      "source": "/api/scan",
+      "destination": "/api/scan.js"
+    },
+    {
+      "source": "/api/ai-fix",
+      "destination": "/api/ai-fix.js"
+    },
+    {
+      "source": "/api/history",
+      "destination": "/api/history.js"
+    },
+    {
+      "source": "/api/send-email",
+      "destination": "/api/send-email.js"
+    },
+    {
+      "source": "/api/send-alert",
+      "destination": "/api/send-alert.js"
+    },
+    {
+      "source": "/api/monitor",
+      "destination": "/api/monitor.js"
+    },
+    {
+      "source": "/((?!api/|assets/|favicon.ico|manifest.json|sw.js|robots.txt).*)",
+      "destination": "/index.html"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options", 
+          "value": "DENY"
+        }
+      ]
+    }
+  ]
+}
