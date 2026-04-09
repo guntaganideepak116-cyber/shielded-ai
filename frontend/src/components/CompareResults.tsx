@@ -2,12 +2,13 @@ import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ArrowRight, CheckCircle2, AlertCircle, Share2, Download, ShieldCheck, Zap } from 'lucide-react';
 import confetti from 'canvas-confetti';
+import { type Vulnerability } from '../lib/scan-data';
 
 interface CompareResultsProps {
   isOpen: boolean;
   onClose: () => void;
-  baseline: { score: number; issues: any[] } | null;
-  current: { score: number; issues: any[] } | null;
+  baseline: { score: number; issues: Vulnerability[] } | null;
+  current: { score: number; issues: Vulnerability[] } | null;
   domain: string;
 }
 

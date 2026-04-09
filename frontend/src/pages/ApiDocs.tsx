@@ -24,7 +24,7 @@ const ApiDocs = () => {
   
   // API Tester
   const [testUrl, setTestUrl] = useState('');
-  const [testResult, setTestResult] = useState<any>(null);
+  const [testResult, setTestResult] = useState<Record<string, unknown> | null>(null);
   const [testing, setTesting] = useState(false);
 
   // Usage Stats
@@ -33,7 +33,7 @@ const ApiDocs = () => {
   const [installPrompt, setInstallPrompt] = useState<any>(null);
 
   useEffect(() => {
-    window.addEventListener('beforeinstallprompt', (e: any) => {
+    window.addEventListener('beforeinstallprompt', (e) => {
       e.preventDefault();
       setInstallPrompt(e);
       setCanInstall(true);

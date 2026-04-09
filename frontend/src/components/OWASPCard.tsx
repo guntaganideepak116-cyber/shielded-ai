@@ -1,7 +1,12 @@
 import { motion } from 'framer-motion';
 import { ShieldCheck, AlertTriangle, AlertCircle, CheckCircle2 } from 'lucide-react';
 
-const OWASPCard = ({ owasp }: { owasp: any }) => {
+interface OWASPData {
+  name: string;
+  status: 'pass' | 'warn' | 'fail';
+}
+
+const OWASPCard = ({ owasp }: { owasp: Record<string, OWASPData> }) => {
   if (!owasp) return null;
 
   return (
@@ -14,7 +19,7 @@ const OWASPCard = ({ owasp }: { owasp: any }) => {
       </div>
 
       <div className="owasp-compact-list space-y-0.5">
-        {Object.entries(owasp).map(([id, data]: [string, any]) => (
+        {Object.entries(owasp).map(([id, data]) => (
           <div key={id} className="owasp-compact-item">
               <div className="flex items-center gap-2 flex-1 min-w-0 mr-2">
                 <span className="text-[9px] font-black text-slate-600 uppercase w-6 shrink-0">

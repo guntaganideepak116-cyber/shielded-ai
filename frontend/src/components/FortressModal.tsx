@@ -4,16 +4,17 @@ import { Copy, CheckCircle, X, Download, Shield, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { type HostingPlatform, PLATFORMS, getPlatformCode, getPlatformSteps } from '@/lib/platform-detection';
 import { toast } from 'react-hot-toast';
+import { type Vulnerability, type AiFixResponse, type ScanResult } from '@/lib/scan-data';
 
 interface FortressModalProps {
   isOpen: boolean;
   onClose: () => void;
   onFixed: () => void;
   platform: HostingPlatform;
-  vulnerabilities?: any[];
-  aiFixes?: any;
-  scanResult?: any;
-  setScanResult?: (result: any) => void;
+  vulnerabilities?: Vulnerability[];
+  aiFixes?: AiFixResponse;
+  scanResult?: ScanResult;
+  setScanResult?: (result: ScanResult) => void;
   setIsRescanning?: (val: boolean) => void;
   setPreviousScore?: (score: number | null) => void;
 }

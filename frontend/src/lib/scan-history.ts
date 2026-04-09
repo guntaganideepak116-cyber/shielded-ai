@@ -4,7 +4,7 @@ import { ScanResult } from './scan-data';
 
 const STORAGE_KEY = 'secureweb_scan_history';
 
-export function saveScan(scan: any): void {
+export function saveScan(scan: ScanResult): void {
   const history = getHistory();
   // Ensure we don't save duplicates
   if (history.some(h => h.url === scan.url && Math.abs(new Date(h.timestamp).getTime() - new Date().getTime()) < 60000)) return;
@@ -14,7 +14,7 @@ export function saveScan(scan: any): void {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(history));
 }
 
-export function getHistory(): any[] {
+export function getHistory(): ScanResult[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return [];

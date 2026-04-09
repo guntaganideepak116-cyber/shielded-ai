@@ -10,11 +10,12 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'react-hot-toast';
+import { type ScanResult } from '@/lib/scan-data';
 
 const MonitorDashboard = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [monitors, setMonitors] = useState<any[]>([]);
+  const [monitors, setMonitors] = useState<ScanResult[]>([]);
   const [loading, setLoading] = useState(true);
   const [newUrl, setNewUrl] = useState('');
 
@@ -33,6 +34,7 @@ const MonitorDashboard = () => {
 
   useEffect(() => {
     fetchMonitors();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   const handleAddMonitor = async () => {

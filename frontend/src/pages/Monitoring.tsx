@@ -23,16 +23,17 @@ import {
   Tooltip, ResponsiveContainer, AreaChart, Area
 } from 'recharts';
 import { callSecurityScan } from '@/lib/api-client';
+import { type ScanResult } from '@/lib/scan-data';
 
 const Monitoring = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [monitors, setMonitors] = useState<any[]>([]);
+  const [monitors, setMonitors] = useState<ScanResult[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
   const [scanningId, setScanningId] = useState<string | null>(null);
   const [expandedSite, setExpandedSite] = useState<string | null>(null);
-  const [siteHistory, setSiteHistory] = useState<any[]>([]);
+  const [siteHistory, setSiteHistory] = useState<{ date: string; displayDate: string; score: number; timestamp: number }[]>([]);
   
   // New monitor form
   const [newUrl, setNewUrl] = useState('');
@@ -41,11 +42,13 @@ const Monitoring = () => {
   const [installPrompt, setInstallPrompt] = useState<any>(null);
 
   useEffect(() => {
-    window.addEventListener('beforeinstallprompt', (e: any) => {
+    const handler = (e: any) => {
       e.preventDefault();
       setInstallPrompt(e);
       setCanInstall(true);
-    });
+    };
+    window.addEventListener('beforeinstallprompt', handler);
+    return () => window.removeEventListener('beforeinstallprompt', handler);
   }, []);
 
   const handleInstallClick = async () => {
@@ -142,7 +145,7 @@ const Monitoring = () => {
     }
   };
 
-  const toggleEnable = async (site: any) => {
+  const toggleEnable = async (site: ScanResult) => {
     if (!user) return;
     try {
       const siteRef = doc(db, 'monitors', user.uid, 'sites', site.id);

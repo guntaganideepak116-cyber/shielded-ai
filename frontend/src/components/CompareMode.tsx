@@ -6,11 +6,12 @@ import { Input } from '@/components/ui/input';
 import { callSecurityScan } from '@/lib/api-client';
 import ScoreDisplay from '@/components/ScoreDisplay';
 import { toast } from 'react-hot-toast';
+import { type ScanResult } from '@/lib/scan-data';
 
 const CompareMode = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
   const [url1, setUrl1] = useState('');
   const [url2, setUrl2] = useState('');
-  const [results, setResults] = useState<{ res1: any; res2: any } | null>(null);
+  const [results, setResults] = useState<{ res1: ScanResult; res2: ScanResult } | null>(null);
   const [loading, setLoading] = useState(false);
 
   const handleCompare = async () => {

@@ -57,12 +57,13 @@ const Landing = () => {
   const [installPrompt, setInstallPrompt] = useState<any>(null);
 
   useEffect(() => {
-    if ((window as any).deferredInstallPrompt) {
-      setInstallPrompt((window as any).deferredInstallPrompt);
+    const win = window as any;
+    if (win.deferredInstallPrompt) {
+      setInstallPrompt(win.deferredInstallPrompt);
       setCanInstall(true);
     }
 
-    const handler = (e: Event) => {
+    const handler = (e: any) => {
       e.preventDefault();
       setInstallPrompt(e);
       setCanInstall(true);
@@ -70,8 +71,8 @@ const Landing = () => {
 
     window.addEventListener('beforeinstallprompt', handler);
     window.addEventListener('pwaInstallReady', () => {
-      if ((window as any).deferredInstallPrompt) {
-        setInstallPrompt((window as any).deferredInstallPrompt);
+      if (win.deferredInstallPrompt) {
+        setInstallPrompt(win.deferredInstallPrompt);
         setCanInstall(true);
       }
     });

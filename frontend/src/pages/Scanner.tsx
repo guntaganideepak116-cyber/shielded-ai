@@ -64,8 +64,9 @@ const Scanner = () => {
 
   useEffect(() => {
     // Check if prompt already caught in index.html
-    if ((window as any).deferredInstallPrompt) {
-      setInstallPrompt((window as any).deferredInstallPrompt);
+    const win = window as any;
+    if (win.deferredInstallPrompt) {
+      setInstallPrompt(win.deferredInstallPrompt);
       setCanInstall(true);
     }
     
@@ -77,8 +78,8 @@ const Scanner = () => {
 
     window.addEventListener('beforeinstallprompt', handler);
     window.addEventListener('pwaInstallReady', () => {
-      if ((window as any).deferredInstallPrompt) {
-        setInstallPrompt((window as any).deferredInstallPrompt);
+      if (win.deferredInstallPrompt) {
+        setInstallPrompt(win.deferredInstallPrompt);
         setCanInstall(true);
       }
     });
@@ -165,10 +166,10 @@ const Scanner = () => {
         setScanResult(realData);
         const finalScore = realData.score;
 
-        const mappedVulns: Vulnerability[] = (realData.vulnerabilities || []).map((issue: Vulnerability) => ({
+        const mappedVulns: Vulnerability[] = (realData.vulnerabilities || []).map((issue: any) => ({
             id: issue.id || Math.random().toString(),
-            issue: issue.title,
-            severity: (issue.severity?.toLowerCase() || 'medium') as any,
+            issue: issue.title || issue.issue,
+            severity: (issue.severity?.toLowerCase() || 'medium') as 'critical' | 'high' | 'medium' | 'low',
             status: 'failed',
             fixTime: '1m',
             description: issue.description

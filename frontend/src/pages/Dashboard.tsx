@@ -10,7 +10,8 @@ import {
 } from 'lucide-react';
 import { db } from '@/lib/firebase';
 import { collection, query, orderBy, limit, getDocs } from 'firebase/firestore';
-import { LogoRenderer } from '@/components/LogoRenderer';
+import { type ScanResult, getGrade, getGradeColor } from '@/lib/scan-data';
+import ScoreDisplay from '@/components/ScoreDisplay';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 
@@ -22,16 +23,16 @@ const Dashboard = () => {
     avgScore: 0,
     secureCount: 0,
     vulnerableCount: 0,
-    scoreTrend: [] as any[],
-    vulnBreakdown: [] as any[],
-    commonVulns: [] as any[],
-    recentActivity: [] as any[]
+    scoreTrend: [] as { date: string; score: number }[],
+    vulnBreakdown: [] as { name: string; value: number; color: string }[],
+    commonVulns: [] as { name: string; count: number }[],
+    recentActivity: [] as ScanResult[]
   });
   const [canInstall, setCanInstall] = useState(false);
   const [installPrompt, setInstallPrompt] = useState<any>(null);
 
   useEffect(() => {
-    window.addEventListener('beforeinstallprompt', (e: any) => {
+    window.addEventListener('beforeinstallprompt', (e) => {
       e.preventDefault();
       setInstallPrompt(e);
       setCanInstall(true);
@@ -60,9 +61,9 @@ const Dashboard = () => {
 
         // Calculate Stats
         const total = data.length;
-        const totalScore = data.reduce((acc, curr: any) => acc + (curr.score || 0), 0);
+        const totalScore = data.reduce((acc, curr: ScanResult) => acc + (curr.score || 0), 0);
         const avg = Math.round(totalScore / total);
-        const secure = data.filter((s: any) => s.score >= 90).length;
+        const secure = data.filter((s: ScanResult) => s.score >= 90).length;
         const vulnerable = total - secure;
 
         // Breakdown
@@ -72,15 +73,15 @@ const Dashboard = () => {
         ];
 
         // Trend (Simulated trend based on fetched data chunks)
-        const trend = data.slice(0, 7).reverse().map((s: any) => ({
+        const trend = data.slice(0, 7).reverse().map((s: ScanResult) => ({
           date: s.createdAt?.toDate ? s.createdAt.toDate().toLocaleDateString() : 'N/A',
           score: s.score
         }));
 
         // Common Vulns count
         const vulnCounts: Record<string, number> = {};
-        data.forEach((s: any) => {
-           (s.vulnerabilities || []).forEach((v: any) => {
+        data.forEach((s: ScanResult) => {
+           (s.vulnerabilities || []).forEach((v) => {
               const name = v.title || v.issue;
               vulnCounts[name] = (vulnCounts[name] || 0) + 1;
            });

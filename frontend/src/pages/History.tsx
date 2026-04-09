@@ -37,11 +37,13 @@ const History = () => {
   const [installPrompt, setInstallPrompt] = useState<any>(null);
 
   useEffect(() => {
-    window.addEventListener('beforeinstallprompt', (e: any) => {
+    const handler = (e: any) => {
       e.preventDefault();
       setInstallPrompt(e);
       setCanInstall(true);
-    });
+    };
+    window.addEventListener('beforeinstallprompt', handler);
+    return () => window.removeEventListener('beforeinstallprompt', handler);
   }, []);
 
   const handleInstallClick = async () => {
@@ -117,7 +119,7 @@ const History = () => {
     }
   };
 
-  const formatDate = (ts: any) => {
+  const formatDate = (ts: string | number | Date | null | undefined) => {
     if (!ts) return 'Unknown Date';
     return new Date(ts).toLocaleDateString('en-US', {
       month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit'
