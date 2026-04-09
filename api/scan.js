@@ -72,22 +72,89 @@ export default async function handler(req, res) {
   }
 
   // 2. URL Validation & Reachability
-  let validatedUrl;
-  try {
-    validatedUrl = new URL(targetUrlInput);
-    if (validatedUrl.protocol !== 'http:' && validatedUrl.protocol !== 'https:') {
-        throw new Error('Invalid protocol');
-    }
-  } catch (err) {
-    return res.status(200).json({ 
-      url: targetUrlInput, 
-      status: "unreachable", 
-      message: "Invalid URL provided" 
+  // STEP 1: Basic validation
+  if (!targetUrlInput || typeof targetUrlInput !== 'string') {
+    return res.status(400).json({
+      status: 'error',
+      message: 'Please provide a URL to scan'
     });
   }
 
-  const hostname = validatedUrl.hostname;
-  const targetUrl = validatedUrl.toString();
+  // STEP 3: Validate URL format
+  let parsedUrl;
+  try {
+    parsedUrl = new URL(targetUrlInput);
+  } catch (e) {
+    return res.status(400).json({
+      status: 'invalid',
+      message: `"${url}" is not a valid URL format. Example: https://google.com`
+    });
+  }
+
+  // STEP 4: Block dangerous/private URLs
+  const hostname = parsedUrl.hostname;
+  const blockedHosts = ['localhost', '127.0.0.1', '0.0.0.0', '::1'];
+  const isPrivateIP = /^(10\.|172\.(1[6-9]|2[0-9]|3[0-1])\.|192\.168\.)/.test(hostname);
+  
+  if (blockedHosts.includes(hostname) || isPrivateIP) {
+    return res.status(400).json({
+      status: 'blocked',
+      message: 'Local/private URLs cannot be scanned for security reasons'
+    });
+  }
+
+  const targetUrl = parsedUrl.toString();
+
+  // STEP 5: REAL EXISTENCE CHECK
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
+
+    const response = await fetch(targetUrl, {
+      method: 'HEAD',
+      signal: controller.signal,
+      headers: { 'User-Agent': 'SecureWeb-AI-Scanner/1.0' }
+    });
+    clearTimeout(timeoutId);
+  } catch (fetchError) {
+    if (fetchError.name === 'AbortError') {
+      return res.status(400).json({
+        status: 'timeout',
+        message: `Cannot reach "${hostname}". The website is taking too long to respond or doesn't exist.`,
+        url: targetUrl
+      });
+    }
+
+    if (fetchError.code === 'ENOTFOUND' || fetchError.message.includes('ENOTFOUND') || fetchError.message.includes('getaddrinfo')) {
+      return res.status(400).json({
+        status: 'not_found',
+        message: `"${hostname}" does not exist on the internet. Please check the URL and try again.`,
+        url: targetUrl,
+        suggestions: [
+          `Did you mean https://www.${hostname}?`,
+          'Check for typos in the URL',
+          'Make sure the website is publicly accessible'
+        ]
+      });
+    }
+
+    if (fetchError.message.includes('ECONNREFUSED')) {
+      return res.status(400).json({
+        status: 'unreachable',
+        message: `"${hostname}" is currently unreachable. It may be down or blocking scanners.`,
+        url: targetUrl
+      });
+    }
+
+    if (!(fetchError.message.includes('certificate') || fetchError.message.includes('SSL') || fetchError.message.includes('CERT'))) {
+      return res.status(400).json({
+        status: 'unreachable',
+        message: `Cannot connect to "${hostname}". Please verify the URL is correct and publicly accessible.`,
+        url: targetUrl
+      });
+    }
+    // SSL error is ignored here and handled in checkSSL (STEP 7)
+  }
 
   try {
     // 3. Parallel Scanning

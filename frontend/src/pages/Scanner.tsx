@@ -61,6 +61,39 @@ const Scanner = () => {
   const [previousScore, setPreviousScore] = useState<number | null>(null);
   const [canInstall, setCanInstall] = useState(false);
   const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
+  const [scanError, setScanError] = useState<{type: string, message: string, suggestions?: string[]} | null>(null);
+
+  // Problem 6 — Restore scan result if it exists
+  useEffect(() => {
+    const saved = sessionStorage.getItem('lastScanResult');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        const scanTime = new Date(parsed.scannedAt);
+        const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+        if (scanTime > oneHourAgo) {
+          setScanResult(parsed);
+          setPhase('results');
+          setScore(parsed.score);
+          setUrl(parsed.url);
+          if (parsed.vulnerabilities) {
+            setVulnerabilities(parsed.vulnerabilities.map((issue: any) => ({
+                id: issue.id || Math.random().toString(),
+                issue: issue.title || issue.issue,
+                severity: (issue.severity?.toLowerCase() || 'medium') as 'critical' | 'high' | 'medium' | 'low',
+                status: 'failed',
+                fixTime: '1m',
+                description: issue.description
+            })));
+          }
+        } else {
+          sessionStorage.removeItem('lastScanResult');
+        }
+      } catch (e) {
+        sessionStorage.removeItem('lastScanResult');
+      }
+    }
+  }, []);
 
   useEffect(() => {
     // Check if prompt already caught in index.html
@@ -122,6 +155,7 @@ const Scanner = () => {
     setPhase('scanning');
     setProgress(0);
     setErrorMessage('');
+    setScanError(null);
     
     trackEvent('scan_started', { url: cleanUrl });
 
@@ -155,14 +189,18 @@ const Scanner = () => {
     try {
         const realData = await callSecurityScan(cleanUrl);
         
-        if (!realData || realData.status === 'unreachable') {
-            toast.error(realData?.message || "Website unreachable", { id: 'scan-error' });
-            setErrorMessage(realData?.message || "We couldn't reach that website. Please check the URL and try again.");
+        if (!realData || ['error', 'not_found', 'unreachable', 'invalid', 'timeout', 'blocked'].includes(realData.status)) {
+            setScanError({
+                type: realData?.status || 'error',
+                message: realData?.message || "We couldn't reach that website. Please check the URL and try again.",
+                suggestions: realData?.suggestions || []
+            });
             setPhase('landing');
             return;
         }
 
         setScanResult(realData);
+        sessionStorage.setItem('lastScanResult', JSON.stringify(realData));
         const finalScore = realData.score;
 
         const mappedVulns: Vulnerability[] = (realData.vulnerabilities || []).map((issue) => ({
@@ -452,13 +490,83 @@ const Scanner = () => {
 
                 <div className="relative">
                    <ScannerInput onScan={handleScan} isScanning={false} />
-                   {errorMessage && (
-                    <motion.div 
-                      initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
-                      className="absolute -bottom-16 left-1/2 -translate-x-1/2 w-full max-w-lg p-4 bg-red-500/10 border border-red-500/20 rounded-2xl flex items-center justify-center gap-3 text-red-500 text-[10px] font-black uppercase tracking-widest"
-                    >
-                      <ShieldAlert className="w-4 h-4" /> {errorMessage}
-                    </motion.div>
+                   
+                   {scanError && (
+                    <div style={{
+                      background: 'rgba(255,51,102,0.1)',
+                      border: '1px solid rgba(255,51,102,0.3)',
+                      borderRadius: '12px',
+                      padding: '20px 24px',
+                      marginTop: '32px'
+                    }}>
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '10px',
+                        marginBottom: '12px'
+                      }}>
+                        <span style={{ fontSize: '20px' }}>
+                          {scanError.type === 'not_found' ? '🔍' :
+                           scanError.type === 'timeout' ? '⏱️' :
+                           scanError.type === 'invalid' ? '❌' :
+                           scanError.type === 'blocked' ? '🚫' : '⚠️'}
+                        </span>
+                        <span style={{
+                          color: '#ff3366',
+                          fontWeight: '700',
+                          fontSize: '15px',
+                          textTransform: 'uppercase'
+                        }}>
+                          {scanError.type === 'not_found' 
+                            ? 'Website Not Found'
+                            : scanError.type === 'timeout'
+                            ? 'Website Timeout'
+                            : scanError.type === 'invalid'
+                            ? 'Invalid URL'
+                            : scanError.type === 'blocked'
+                            ? 'URL Blocked'
+                            : 'Scan Failed'}
+                        </span>
+                      </div>
+
+                      <p style={{
+                        color: '#f0f4ff',
+                        fontSize: '14px',
+                        margin: '0 0 12px 0',
+                        lineHeight: '1.5'
+                      }}>
+                        {scanError.message}
+                      </p>
+
+                      {scanError.suggestions && scanError.suggestions.length > 0 && (
+                        <div style={{ marginBottom: '16px' }}>
+                          {scanError.suggestions.map((s, i) => (
+                            <div key={i} style={{
+                              color: '#8892a4',
+                              fontSize: '13px',
+                              marginTop: '4px'
+                            }}>
+                              💡 {s}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      <button
+                        onClick={() => setScanError(null)}
+                        style={{
+                          background: 'rgba(255,51,102,0.2)',
+                          border: '1px solid rgba(255,51,102,0.4)',
+                          color: '#ff3366',
+                          padding: '8px 20px',
+                          borderRadius: '8px',
+                          cursor: 'pointer',
+                          fontSize: '13px',
+                          fontWeight: '600'
+                        }}>
+                        Try Another URL
+                      </button>
+                    </div>
                   )}
                 </div>
 
@@ -513,104 +621,161 @@ const Scanner = () => {
 
             {phase === 'results' && scanResult && (
               <motion.div key="results" ref={resultsRef} initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} className="space-y-12 max-w-6xl mx-auto pb-40">
-                {/* Results Header */}
-                <div className="glass-card p-8 md:p-12 border-white/5 relative overflow-hidden group">
-                  <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-[100px] pointer-none" />
-                  
-                  <div className="flex flex-col lg:flex-row gap-12 items-start lg:items-center justify-between">
-                    <div className="space-y-6 flex-1">
-                      {/* Score Comparison Badge */}
-                      {previousScore !== null && !isRescanning && (
-                        <motion.div 
-                          initial={{ opacity: 0, y: -10 }} 
-                          animate={{ opacity: 1, y: 0 }}
-                          className="inline-flex items-center gap-3 px-4 py-2 rounded-2xl bg-white/5 border border-white/10 mb-2"
-                        >
-                          <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Efficiency Delta:</span>
-                          <div className="flex items-center gap-2">
-                            <span className="text-xs font-bold text-slate-400">{previousScore}</span>
-                            <ArrowRight className="w-3 h-3 text-slate-600" />
-                            <span className="text-xs font-bold text-white">{scanResult.score}</span>
-                          </div>
-                          <span className={`text-[10px] font-black px-2 py-0.5 rounded-md ${scanResult.score > (previousScore || 0) ? 'bg-success/20 text-success' : 'bg-red-500/20 text-red-500'}`}>
-                            {scanResult.score > (previousScore || 0) ? `↑ +${scanResult.score - (previousScore || 0)}` : `↓ ${scanResult.score - (previousScore || 0)}`} POINTS
-                          </span>
-                        </motion.div>
-                      )}
-
-                      {/* Rescanning Status */}
-                      {isRescanning && (
-                        <motion.div 
-                          initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-                          className="flex items-center gap-3 text-primary mb-4"
-                        >
-                          <Loader2 className="w-5 h-5 animate-spin" />
-                          <span className="text-sm font-display font-black uppercase tracking-tighter italic animate-pulse">RE-SCANNING PERIMETER...</span>
-                        </motion.div>
-                      )}
-                    <div className="scan-header-card flex-1 min-w-0">
-                      <div className="flex flex-wrap items-center gap-3">
-                        <span className="text-[10px] font-black uppercase tracking-widest text-primary bg-primary/10 px-3 py-1 rounded-full border border-primary/20">Operational Audit</span>
-                        <div className="flex items-center gap-2 text-[10px] font-black text-slate-400 bg-white/5 px-3 py-1 rounded-full border border-white/10 uppercase tracking-widest">
-                          {platformInfo.icon} {platformInfo.name} Detected
-                        </div>
-                        {isSecure && (
-                          <div className="bg-success/20 text-success text-[10px] font-black px-3 py-1 rounded-full border border-success/30 flex items-center gap-1.5 animate-pulse uppercase tracking-widest">
-                            <ShieldCheck className="w-3.5 h-3.5" /> PERIMETER FORTIFIED
-                          </div>
-                        )}
-                      </div>
-                      <h2 className="scan-result-url text-2xl md:text-5xl font-display font-black break-all tracking-tighter uppercase italic">{url}</h2>
-                      <div className="flex items-center gap-6 text-[10px] font-black text-slate-500 uppercase tracking-widest">
-                        <div className="flex items-center gap-2"><Activity className="w-4 h-4" /> Engine v5.0 DeepScan</div>
-                        <div className="flex items-center gap-2"><Clock className="w-4 h-4" /> Verified {new Date().toLocaleTimeString()}</div>
-                      </div>
-                    </div>
+                {/* Results Header (PROBLEM 1 FIX) */}
+                <div style={{
+                  background: '#0d1424',
+                  border: '1px solid #1a2234',
+                  borderRadius: '16px',
+                  padding: '24px 32px',
+                  marginBottom: '24px',
+                  boxShadow: 'none'
+                }}>
+                  {/* Status badges row */}
+                  <div style={{
+                    display: 'flex',
+                    gap: '10px',
+                    marginBottom: '16px',
+                    flexWrap: 'wrap'
+                  }}>
+                    <span style={{
+                      background: 'rgba(0,212,255,0.1)',
+                      border: '1px solid rgba(0,212,255,0.3)',
+                      color: '#00d4ff',
+                      padding: '4px 12px',
+                      borderRadius: '20px',
+                      fontSize: '12px',
+                      fontWeight: '600',
+                      textTransform: 'uppercase'
+                    }}>
+                      OPERATIONAL AUDIT
+                    </span>
+                    <span style={{
+                      background: 'rgba(255,255,255,0.05)',
+                      border: '1px solid #1a2234',
+                      color: '#8892a4',
+                      padding: '4px 12px',
+                      borderRadius: '20px',
+                      fontSize: '12px',
+                      textTransform: 'uppercase'
+                    }}>
+                      🖥️ {detectPlatform(scanResult?.url || '')} DETECTED
+                    </span>
                   </div>
 
-                  <div className="action-buttons-row flex flex-wrap items-center gap-3 w-full lg:w-auto">
-                      <Button 
-                        onClick={() => {
-                          const el = document.getElementById('vuln-section');
-                          el?.scrollIntoView({ behavior: 'smooth' });
-                          setShowModal(true);
-                        }} 
-                        disabled={!vulnerabilities || vulnerabilities.length === 0} 
-                        className="primary-action-btn flex-1 lg:flex-none h-16 px-10 rounded-2xl bg-primary text-black hover:bg-white transition-all font-display font-black uppercase text-xs tracking-widest shadow-xl"
-                      >
-                        <Lock className="w-5 h-5 mr-3" /> FIX VULNERABILITIES
-                      </Button>
-                      <Button 
-                        variant="ghost" size="icon" 
-                        onClick={() => handleScan(url)}
-                        className="h-16 w-16 rounded-2xl bg-white/5 text-white hover:text-primary border border-white/5"
-                        title="Re-Scan Site"
-                      >
-                        <RefreshCcw className="w-5 h-5" />
-                      </Button>
-                      <Button 
-                        variant="ghost" size="icon" 
-                        onClick={handleShare}
-                        className="h-16 w-16 rounded-2xl bg-white/5 text-white hover:text-primary border border-white/5"
-                        title="Share Report"
-                      >
-                        <Share2 className="w-5 h-5" />
-                      </Button>
-                      <Button 
-                        variant="ghost" size="icon" 
-                        onClick={() => {
-                          generatePDFReport(scanResult);
-                          toast.success("PDF Generated Successfully");
-                        }} 
-                        className="h-16 w-16 rounded-2xl bg-white/5 text-white hover:text-success border border-white/5"
-                        title="Download PDF"
-                      >
-                        <Download className="w-5 h-5" />
-                      </Button>
-                      <Button variant="ghost" size="icon" onClick={scanAnother} className="h-16 w-16 rounded-2xl bg-white/5 text-red-400 hover:bg-red-500/10 border border-white/5">
-                        <X className="w-5 h-5" />
-                      </Button>
-                    </div>
+                  {/* BIG URL display */}
+                  <h1 style={{
+                    color: '#f0f4ff',
+                    fontSize: 'clamp(20px, 3vw, 32px)',
+                    fontWeight: '700',
+                    fontFamily: 'monospace',
+                    margin: '0 0 20px 0',
+                    wordBreak: 'break-all',
+                    lineHeight: '1.3'
+                  }}>
+                    {(scanResult.url || '').toUpperCase()}
+                  </h1>
+
+                  {/* Meta row */}
+                  <div style={{
+                    display: 'flex',
+                    gap: '24px',
+                    flexWrap: 'wrap',
+                    marginBottom: '24px'
+                  }}>
+                    <span style={{
+                      color: '#8892a4',
+                      fontSize: '13px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px'
+                    }}>
+                      ⚡ ENGINE V5.0 DEEPSCAN
+                    </span>
+                    <span style={{
+                      color: '#8892a4',
+                      fontSize: '13px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px'
+                    }}>
+                      🕐 VERIFIED {new Date(scanResult.scannedAt || new Date()).toLocaleTimeString()}
+                    </span>
+                    <span style={{
+                      color: scanResult.status === 'secure' ? '#00ff88' : scanResult.status === 'vulnerable' ? '#ff3366' : '#ffaa00',
+                      fontSize: '13px',
+                      fontWeight: '600',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px'
+                    }}>
+                      ● {scanResult.status?.toUpperCase()}
+                    </span>
+                  </div>
+
+                  {/* Action buttons */}
+                  <div style={{
+                    display: 'flex',
+                    gap: '12px',
+                    flexWrap: 'wrap',
+                    alignItems: 'center'
+                  }}>
+                    <button
+                      onClick={() => {
+                        const el = document.getElementById('vuln-section');
+                        el?.scrollIntoView({ behavior: 'smooth' });
+                        setShowModal(true);
+                      }}
+                      style={{
+                        background: 'linear-gradient(135deg,#7c3aed,#4f46e5)',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '10px',
+                        padding: '14px 28px',
+                        fontSize: '15px',
+                        fontWeight: '700',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px'
+                      }}>
+                      🔒 FIX VULNERABILITIES
+                    </button>
+                    <button onClick={() => handleScan(url)}
+                      style={{
+                        background: 'rgba(255,255,255,0.05)',
+                        border: '1px solid #1a2234',
+                        color: '#f0f4ff',
+                        borderRadius: '10px',
+                        padding: '14px 20px',
+                        fontSize: '14px',
+                        cursor: 'pointer'
+                      }}>
+                      ↺ RE-SCAN
+                    </button>
+                    <button onClick={handleShare}
+                      style={{
+                        background: 'rgba(255,255,255,0.05)',
+                        border: '1px solid #1a2234',
+                        color: '#f0f4ff',
+                        borderRadius: '10px',
+                        padding: '14px 20px',
+                        fontSize: '14px',
+                        cursor: 'pointer'
+                      }}>
+                      ↗ SHARE
+                    </button>
+                    <button onClick={() => generatePDFReport(scanResult)}
+                      style={{
+                        background: 'rgba(255,255,255,0.05)',
+                        border: '1px solid #1a2234',
+                        color: '#f0f4ff',
+                        borderRadius: '10px',
+                        padding: '14px 20px',
+                        fontSize: '14px',
+                        cursor: 'pointer'
+                      }}>
+                      ↓ PDF
+                    </button>
                   </div>
                 </div>
 
@@ -627,20 +792,85 @@ const Scanner = () => {
                         </div>
                       )}
                       
-                      <div className="glass-card p-6 border-white/5 flex flex-col justify-between space-y-4 !bg-[#0d1424] !border-[#1a2234]">
-                         <div className="flex items-center justify-between border-bottom pb-2 border-[#1a2234]">
-                            <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Strategic Insights</h4>
-                            <Sparkles className="w-5 h-5 text-primary" />
-                         </div>
-                         <div className="space-y-3">
-                            <p className="text-[11px] font-medium leading-relaxed italic text-slate-400">
-                               Detected {vulnerabilities?.length} security anomalies. Score optimization required to reach <span className="text-success font-black underline underline-offset-4">Grade A</span>.
-                            </p>
-                            <div className="flex gap-2">
-                               <Button variant="outline" onClick={() => handleScan(url)} className="flex-1 h-10 rounded-lg text-[8px] font-black uppercase tracking-widest border-white/5 bg-white/5 hover:bg-white/10">RE-RUN</Button>
-                               <Button variant="outline" onClick={handleEnableMonitor} className="flex-1 h-10 rounded-lg text-[8px] font-black uppercase tracking-widest border-primary/20 text-primary hover:bg-primary/5">GUARD</Button>
-                            </div>
-                         </div>
+                      <div style={{
+                        background: '#0d1424',
+                        border: '1px solid #1a2234',
+                        borderRadius: '12px',
+                        padding: '20px',
+                        width: '100%',
+                        boxSizing: 'border-box'
+                      }}>
+                        <div style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          marginBottom: '16px'
+                        }}>
+                          <span style={{
+                            color: '#8892a4',
+                            fontSize: '12px',
+                            fontWeight: '600',
+                            letterSpacing: '1px',
+                            textTransform: 'uppercase'
+                          }}>
+                            STRATEGIC INSIGHTS
+                          </span>
+                          <span style={{ fontSize: '18px' }}>✨</span>
+                        </div>
+
+                        <p style={{
+                          color: '#f0f4ff',
+                          fontSize: '14px',
+                          lineHeight: '1.6',
+                          margin: '0 0 16px 0',
+                          fontStyle: 'italic'
+                        }}>
+                          {(vulnerabilities?.length || 0) === 0
+                            ? '✅ Excellent! No security anomalies detected. Your website follows security best practices.'
+                            : `Detected ${vulnerabilities?.length} security anomalie${(vulnerabilities?.length || 0) > 1 ? 's' : ''}. Fix remaining issues to reach Grade A.`
+                          }
+                        </p>
+
+                        <div style={{
+                          display: 'flex',
+                          gap: '10px',
+                          flexWrap: 'wrap'
+                        }}>
+                          <button onClick={() => handleScan(url)}
+                            style={{
+                              flex: 1,
+                              background: 'rgba(0,212,255,0.1)',
+                              border: '1px solid rgba(0,212,255,0.3)',
+                              color: '#00d4ff',
+                              borderRadius: '8px',
+                              padding: '10px',
+                              fontSize: '13px',
+                              cursor: 'pointer',
+                              fontWeight: '600',
+                              textTransform: 'uppercase'
+                            }}>
+                            RE-SCAN
+                          </button>
+                          <button onClick={() => {
+                              const el = document.getElementById('vuln-section');
+                              el?.scrollIntoView({ behavior: 'smooth' });
+                              setShowModal(true);
+                            }}
+                            style={{
+                              flex: 1,
+                              background: 'rgba(124,58,237,0.2)',
+                              border: '1px solid rgba(124,58,237,0.4)',
+                              color: '#a78bfa',
+                              borderRadius: '8px',
+                              padding: '10px',
+                              fontSize: '13px',
+                              cursor: 'pointer',
+                              fontWeight: '600',
+                              textTransform: 'uppercase'
+                            }}>
+                            GET SHIELD
+                          </button>
+                        </div>
                       </div>
                     </div>
 

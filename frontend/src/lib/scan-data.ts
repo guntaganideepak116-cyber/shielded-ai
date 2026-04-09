@@ -57,6 +57,9 @@ export interface ScanResult {
   ssl?: SSLInfo;
   virusTotal?: VirusTotalInfo;
   timestamp?: Date | string;
+  scannedAt?: string; // added for persistence and header
+  suggestions?: string[]; // added for error reporting
+  afterScore?: number; // added for score comparison in history/reports
   created_at?: string;
   createdAt?: string | Timestamp | any; // allow any for now but try to use Timestamp
   issues?: Vulnerability[]; // sometimes returned as issues

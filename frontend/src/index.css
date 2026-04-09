@@ -13,6 +13,10 @@
   -ms-overflow-style: none !important; /* IE/Edge */
 }
 
+.beta-badge, [class*="beta"] {
+  font-family: Arial, sans-serif !important;
+}
+
 *::-webkit-scrollbar {
   display: none !important; /* Chrome/Safari/Opera */
   width: 0 !important;

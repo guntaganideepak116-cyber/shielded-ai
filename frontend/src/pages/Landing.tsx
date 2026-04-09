@@ -37,9 +37,9 @@ const FEATURES = [
 ];
 
 const STATS = [
-  { value: '90s', label: 'Average fix time' },
-  { value: '50+', label: 'Security checks' },
-  { value: '99.2%', label: 'Fix success rate' },
+  { value: 'LIVE', label: 'Network status' },
+  { value: '0-Day', label: 'Threat detection' },
+  { value: '24/7', label: 'Audit interval' },
 ];
 
 const TESTIMONIALS = [
@@ -51,10 +51,17 @@ const TESTIMONIALS = [
 const Landing = () => {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
-  const [globalCount, setGlobalCount] = useState(10247);
+  const [stats, setStats] = useState<{totalScans: number, totalUsers: number, secureCount: number} | null>(null);
   const [lang, setLang] = useState<'EN' | 'TE'>('EN');
   const [canInstall, setCanInstall] = useState(false);
-  const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
+  const [installPrompt, setInstallPrompt] = useState<any | null>(null);
+
+  useEffect(() => {
+    fetch('/api/stats')
+      .then(r => r.json())
+      .then(data => setStats(data))
+      .catch(() => setStats(null));
+  }, []);
 
   useEffect(() => {
     if (window.deferredInstallPrompt) {
@@ -89,7 +96,7 @@ const Landing = () => {
   };
 
   useEffect(() => {
-    setGlobalCount(10247);
+    // Stats fetch is handled above
   }, []);
 
   return (
@@ -112,9 +119,19 @@ const Landing = () => {
             <span className="logo-text font-display font-bold text-lg sm:text-xl gradient-text text-nowrap leading-tight">SECUREWEB AI</span>
           </div>
           <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-            <span className="text-[10px] py-1 px-2 rounded-full bg-white/5 border border-white/10 text-white/20 font-mono tracking-tighter hidden sm:inline-block">
+            <div style={{
+              background: 'rgba(0,212,255,0.1)',
+              border: '1px solid rgba(0,212,255,0.3)',
+              color: '#00d4ff',
+              padding: '4px 10px',
+              borderRadius: '6px',
+              fontSize: '11px',
+              fontWeight: '700',
+              letterSpacing: '0.5px',
+              fontFamily: 'Arial, sans-serif'
+            }} className="hidden sm:block">
               BETA v1.4 LIVE
-            </span>
+            </div>
             <button
               onClick={() => setLang(lang === 'EN' ? 'TE' : 'EN')}
               className="text-xs font-display font-bold px-2 py-1 rounded bg-white/5 border border-white/10 text-primary hover:bg-white/10 transition-all"
@@ -213,7 +230,11 @@ const Landing = () => {
                 className="inline-flex items-center gap-2 glass-card px-3 py-1.5 text-xs font-body text-primary mb-6"
               >
                 <Sparkles className="w-3.5 h-3.5" />
-                <span>{globalCount.toLocaleString()} websites fortified</span>
+                {stats && stats.totalScans > 0 ? (
+                  <span>⚡ {stats.totalScans.toLocaleString()} websites scanned</span>
+                ) : (
+                  <span>⚡ AI-powered security scanner</span>
+                )}
               </motion.div>
 
               <motion.h1 variants={fadeUp} custom={1}
@@ -257,7 +278,11 @@ const Landing = () => {
                     <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
                   ))}
                 </div>
-                <span className="text-xs text-muted-foreground font-body">4.9/5 from 2,400+ users</span>
+                {stats && stats.totalUsers > 0 ? (
+                  <span className="text-xs text-muted-foreground font-body">Trusted by {stats.totalUsers.toLocaleString()} digital architects</span>
+                ) : (
+                  <span className="text-xs text-muted-foreground font-body">Real-time AI Security Scanner</span>
+                )}
               </motion.div>
             </motion.div>
 
