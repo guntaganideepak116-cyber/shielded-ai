@@ -60,11 +60,10 @@ main::-webkit-scrollbar {
 }
 
 /* 5. Fix white lines between sections/dividers */
-hr, .divider, [class*="divider"],
-[class*="separator"], [class*="border"] {
+hr, .divider, [class*="divider-line"],
+[class*="separator-line"] {
   border-color: #1a2234 !important;
   background-color: #1a2234 !important;
-  color: transparent !important;
 }
 
 /* 6. Fix stat section white lines (Image 1) */
