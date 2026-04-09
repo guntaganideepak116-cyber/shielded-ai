@@ -116,44 +116,33 @@ export default async function handler(req, res) {
       headers: { 'User-Agent': 'SecureWeb-AI-Scanner/1.0' }
     });
     clearTimeout(timeoutId);
+    
+    // If it's a 4xx or 5xx, some sites block HEAD, we'll let axios.get try later
+    // Only block if it's a DNS failure (ENOTFOUND) handled in the catch block
   } catch (fetchError) {
     if (fetchError.name === 'AbortError') {
       return res.status(400).json({
         status: 'timeout',
-        message: `Cannot reach "${hostname}". The website is taking too long to respond or doesn't exist.`,
+        message: `Cannot reach "${hostname}". The website is taking too long to respond.`,
         url: targetUrl
       });
     }
 
-    if (fetchError.code === 'ENOTFOUND' || fetchError.message.includes('ENOTFOUND') || fetchError.message.includes('getaddrinfo')) {
+    // DNS failure or complete connection failure
+    if (fetchError.name === 'TypeError' || fetchError.code === 'ENOTFOUND' || fetchError.message.includes('ENOTFOUND') || fetchError.message.includes('getaddrinfo')) {
       return res.status(400).json({
         status: 'not_found',
-        message: `"${hostname}" does not exist on the internet. Please check the URL and try again.`,
+        message: `"${hostname}" does not exist on the internet. Please check the URL.`,
         url: targetUrl,
         suggestions: [
           `Did you mean https://www.${hostname}?`,
-          'Check for typos in the URL',
-          'Make sure the website is publicly accessible'
+          'Check for typos in the URL'
         ]
       });
     }
 
-    if (fetchError.message.includes('ECONNREFUSED')) {
-      return res.status(400).json({
-        status: 'unreachable',
-        message: `"${hostname}" is currently unreachable. It may be down or blocking scanners.`,
-        url: targetUrl
-      });
-    }
-
-    if (!(fetchError.message.includes('certificate') || fetchError.message.includes('SSL') || fetchError.message.includes('CERT'))) {
-      return res.status(400).json({
-        status: 'unreachable',
-        message: `Cannot connect to "${hostname}". Please verify the URL is correct and publicly accessible.`,
-        url: targetUrl
-      });
-    }
-    // SSL error is ignored here and handled in checkSSL (STEP 7)
+    // For other errors (CORS, SSL during HEAD, 403 on HEAD), we'll let the main axios.get handle it or fail there.
+    // So we DON'T throw/return here if it's just a general failure of the HEAD request.
   }
 
   try {

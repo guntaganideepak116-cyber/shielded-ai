@@ -132,9 +132,9 @@ const Landing = () => {
             }} className="hidden sm:block">
               BETA v1.4 LIVE
             </div>
-            <button
+             <button
               onClick={() => setLang(lang === 'EN' ? 'TE' : 'EN')}
-              className="text-xs font-display font-bold px-2 py-1 rounded bg-white/5 border border-white/10 text-primary hover:bg-white/10 transition-all"
+              className="px-2.5 py-1 rounded bg-white/5 border border-white/10 text-primary hover:bg-white/10 transition-all font-display text-[11px] font-bold"
             >
               {lang === 'EN' ? 'తెలుగు' : 'ENGLISH'}
             </button>
