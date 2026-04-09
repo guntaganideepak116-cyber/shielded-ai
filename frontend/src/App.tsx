@@ -15,6 +15,7 @@ import SignupPage from "./pages/Signup.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import { AuthProvider, useAuth } from "@/hooks/use-auth";
 import { ScanProvider } from "@/context/ScanContext";
+import { LanguageProvider } from "@/context/LanguageContext";
 import FreeChatbot from "@/components/FreeChatbot";
 import Report from "./pages/Report.tsx";
 import { Loader2 } from "lucide-react";
@@ -124,11 +125,13 @@ const AppContent = () => {
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
-      <ScanProvider>
-        <TooltipProvider>
-          <AppContent />
-        </TooltipProvider>
-      </ScanProvider>
+      <LanguageProvider>
+        <ScanProvider>
+          <TooltipProvider>
+            <AppContent />
+          </TooltipProvider>
+        </ScanProvider>
+      </LanguageProvider>
     </AuthProvider>
   </QueryClientProvider>
 );

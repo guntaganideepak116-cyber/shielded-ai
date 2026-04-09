@@ -9,6 +9,7 @@ import { useEffect, useState } from 'react';
 import { LogoRenderer } from '@/components/LogoRenderer';
 // Counters can be fetched from the new Node.js backend if needed
 import { useAuth } from '@/hooks/use-auth';
+import { useLanguage } from '@/context/LanguageContext';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import {
   DropdownMenu,
@@ -51,8 +52,8 @@ const TESTIMONIALS = [
 const Landing = () => {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
+  const { lang, setLang, t } = useLanguage();
   const [stats, setStats] = useState<{totalScans: number, totalUsers: number, secureCount: number} | null>(null);
-  const [lang, setLang] = useState<'EN' | 'TE'>('EN');
   const [canInstall, setCanInstall] = useState(false);
   const [installPrompt, setInstallPrompt] = useState<any | null>(null);
 
@@ -130,25 +131,26 @@ const Landing = () => {
               letterSpacing: '0.5px',
               fontFamily: 'Arial, sans-serif'
             }} className="hidden sm:block">
-              BETA v1.4 LIVE
+              {t('common.beta')}
             </div>
              <button
               onClick={() => setLang(lang === 'EN' ? 'TE' : 'EN')}
-              className="px-2.5 py-1 rounded bg-white/5 border border-white/10 text-primary hover:bg-white/10 transition-all font-display text-[11px] font-bold"
+              className="px-2.5 py-1 rounded bg-white/5 border border-white/10 text-primary hover:bg-white/10 transition-all font-display text-[11px] font-bold flex items-center gap-1.5 min-w-[140px] justify-center"
             >
-              {lang === 'EN' ? 'తెలుగు' : 'ENGLISH'}
+              <Globe className="w-3.5 h-3.5" />
+              {lang === 'EN' ? 'ENGLISH / తెలుగు' : 'తెలుగు / ENGLISH'}
             </button>
             <button
               onClick={() => navigate('/documentation')}
               className="text-xs text-muted-foreground hover:text-foreground transition-colors font-body hidden sm:block"
             >
-              Docs
+              {t('nav.docs')}
             </button>
             <button
               onClick={() => navigate('/history')}
               className="text-xs text-muted-foreground hover:text-foreground transition-colors font-body hidden sm:block"
             >
-              History
+              {t('nav.history')}
             </button>
             
             <div className="hidden lg:flex items-center gap-3">
@@ -240,17 +242,13 @@ const Landing = () => {
               <motion.h1 variants={fadeUp} custom={1}
                 className="hero-title font-display text-4xl sm:text-6xl md:text-7xl font-bold text-foreground leading-tight mb-6"
               >
-                {lang === 'EN' ? (
-                  <><span className="gradient-text">Improves security</span> by fixing common vulnerabilities.</>
-                ) : (
-                  <>సాధారణ దుర్బలత్వాలను సరిచేయడం ద్వారా <span className="gradient-text">భద్రతను మెరుగుపరుస్తుంది.</span></>
-                )}
+                <span className="gradient-text">{t('hero.title1')}</span> {t('hero.title2')}
               </motion.h1>
 
               <motion.p variants={fadeUp} custom={2}
                 className="hero-subtitle text-lg text-muted-foreground font-body mb-8 max-w-md mx-auto lg:mx-0"
               >
-                AI-powered security scanner that finds vulnerabilities, generates server configs, and fortifies your site — no security expertise needed.
+                {t('hero.subtitle')}
               </motion.p>
 
               <motion.div variants={fadeUp} custom={3}
@@ -261,7 +259,7 @@ const Landing = () => {
                   className="gradient-btn px-8 py-6 text-base font-display font-bold rounded-xl pulse-neon w-full sm:w-auto"
                 >
                   <Shield className="w-5 h-5 mr-2" />
-                  Scan Your Website Free
+                  {t('hero.scanButton')}
                   <ArrowRight className="w-4 h-4 ml-2" />
                 </Button>
               </motion.div>
@@ -291,8 +289,8 @@ const Landing = () => {
               transition={{ delay: 0.4, duration: 0.7, ease: 'easeOut' }}
             >
               <div className="relative group">
-                <div className="w-64 h-64 md:w-80 md:h-80 lg:w-96 lg:h-96 rounded-full bg-gradient-to-tr from-primary/20 to-purple-500/20 flex items-center justify-center float-animation border border-white/10 backdrop-blur-3xl shadow-[0_0_100px_rgba(102,126,234,0.15)] overflow-hidden">
-                    <img src="/images/premium_shield.png" alt="SecureWeb AI Shield" className="w-48 h-48 md:w-60 md:h-60 lg:w-72 lg:h-72 object-contain drop-shadow-[0_0_35px_rgba(168,85,247,0.7)] group-hover:scale-110 transition-transform duration-500" />
+                <div className="w-64 h-64 md:w-80 md:h-80 lg:w-96 lg:h-96 flex items-center justify-center float-animation">
+                    <img src="/images/premium_shield.png" alt="SecureWeb AI Shield" className="w-56 h-56 md:w-72 md:h-72 lg:w-80 lg:h-80 object-contain drop-shadow-[0_0_50px_rgba(168,85,247,0.4)] group-hover:scale-105 transition-transform duration-500" />
                     <Sparkles className="absolute top-1/4 right-1/4 w-8 h-8 text-primary animate-pulse opacity-50" />
                 </div>
                 <div className="absolute inset-0 rounded-full opacity-30 blur-3xl"

@@ -10,6 +10,7 @@ import {
 import confetti from 'canvas-confetti';
 import { trackEvent } from '@/lib/analytics';
 import { useAuth } from '@/hooks/use-auth';
+import { useLanguage } from '@/context/LanguageContext';
 import { callSecurityScan, getAiFixes, sendEmailAlert } from '@/lib/api-client';
 import { detectPlatform, PLATFORMS, type HostingPlatform } from '@/lib/platform-detection';
 import ShieldAnimation from '@/components/ShieldAnimation';
@@ -37,6 +38,7 @@ const Scanner = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, signInWithGoogle, signOut } = useAuth();
+  const { lang, setLang, t } = useLanguage();
   const resultsRef = useRef<HTMLDivElement>(null);
   
   const [url, setUrl] = useState('');
@@ -387,8 +389,16 @@ const Scanner = () => {
               letterSpacing: '0.5px',
               fontFamily: 'Arial, sans-serif'
             }} className="hidden md:block">
-              BETA v1.4 LIVE
+              {t('common.beta')}
             </div>
+
+            <button
+              onClick={() => setLang(lang === 'EN' ? 'TE' : 'EN')}
+              className="px-2.5 py-1 rounded bg-white/5 border border-white/10 text-primary hover:bg-white/10 transition-all font-display text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5 min-w-[140px] justify-center"
+            >
+              <Globe className="w-3.5 h-3.5" />
+              {lang === 'EN' ? 'ENGLISH / తెలుగు' : 'తెలుగు / ENGLISH'}
+            </button>
 
             <div className="nav-right flex items-center gap-4">
               {user ? (
@@ -493,12 +503,10 @@ const Scanner = () => {
                     </motion.div>
                   )}
                   <h1 className="text-6xl md:text-8xl font-display font-black tracking-tight leading-[0.9] uppercase italic">
-                    Fortify Your <br />
-                    <span className="gradient-text">Web Perimeter</span>
+                    {t('scanner.title')}
                   </h1>
                   <p className="text-slate-400 text-lg md:text-xl max-w-2xl mx-auto font-medium leading-relaxed">
-                    Deploy AI-driven deep-packet audits. Detect over 50+ vulnerabilities in seconds. 
-                    Zero dummy data. Pure security intelligence.
+                    {t('scanner.subtitle')}
                   </p>
                 </div>
 

@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { toast } from 'react-hot-toast';
 import { LogoRenderer } from '@/components/LogoRenderer';
 import { getGrade, getGradeColor, type ScanResult, type Vulnerability } from '@/lib/scan-data';
+import { useLanguage } from '@/context/LanguageContext';
 import ScoreDisplay from '@/components/ScoreDisplay';
 import VulnerabilityCard from '@/components/VulnerabilityCard';
 import HeadersGrid from '@/components/HeadersGrid';
@@ -20,6 +21,7 @@ import { generatePDFReport } from '@/lib/report-generator';
 const Report = () => {
   const { scanId } = useParams();
   const navigate = useNavigate();
+  const { t, lang } = useLanguage();
   const [report, setReport] = useState<ScanResult | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -90,7 +92,7 @@ const Report = () => {
                     <ArrowLeft className="w-4 h-4" />
                  </button>
                  <div className="space-y-1">
-                    <span className="text-[10px] font-bold text-primary uppercase tracking-[0.3em]">CERTIFIED AUDIT REPORT</span>
+                    <span className="text-[10px] font-bold text-primary uppercase tracking-[0.3em]">{t('report.certified')}</span>
                     <h1 className="text-3xl md:text-5xl font-display font-black uppercase italic tracking-tighter break-all">{report.url}</h1>
                  </div>
               </div>
