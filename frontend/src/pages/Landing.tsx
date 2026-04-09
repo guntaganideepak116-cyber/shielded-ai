@@ -262,11 +262,7 @@ const Landing = () => {
                 >
                   <Shield className="w-5 h-5 mr-2" />
                   Scan Your Website Free
-                  <ArrowRight className="w-4 h-4 ml-2" />
                 </Button>
-                <span className="text-xs text-muted-foreground font-body flex items-center gap-1">
-                  <Lock className="w-3 h-3" /> No signup required
-                </span>
               </motion.div>
 
               {/* Trust row */}
@@ -294,8 +290,8 @@ const Landing = () => {
               transition={{ delay: 0.4, duration: 0.7, ease: 'easeOut' }}
             >
               <div className="relative group">
-                <div className="w-64 h-64 md:w-80 md:h-80 lg:w-96 lg:h-96 rounded-full bg-gradient-to-tr from-primary/20 to-purple-500/20 flex items-center justify-center float-animation border border-white/10 backdrop-blur-3xl shadow-[0_0_100px_rgba(102,126,234,0.15)]">
-                    <LogoRenderer className="w-32 h-32 md:w-40 md:h-40 lg:w-48 lg:h-48 drop-shadow-[0_0_35px_rgba(168,85,247,0.7)] group-hover:scale-110 transition-transform duration-500" animate={true} />
+                <div className="w-64 h-64 md:w-80 md:h-80 lg:w-96 lg:h-96 rounded-full bg-gradient-to-tr from-primary/20 to-purple-500/20 flex items-center justify-center float-animation border border-white/10 backdrop-blur-3xl shadow-[0_0_100px_rgba(102,126,234,0.15)] overflow-hidden">
+                    <img src="/images/premium_shield.png" alt="SecureWeb AI Shield" className="w-48 h-48 md:w-60 md:h-60 lg:w-72 lg:h-72 object-contain drop-shadow-[0_0_35px_rgba(168,85,247,0.7)] group-hover:scale-110 transition-transform duration-500" />
                     <Sparkles className="absolute top-1/4 right-1/4 w-8 h-8 text-primary animate-pulse opacity-50" />
                 </div>
                 <div className="absolute inset-0 rounded-full opacity-30 blur-3xl"
