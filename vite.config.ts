@@ -13,6 +13,7 @@ export default defineConfig(({ mode }) => ({
     },
   },
   plugins: [react(), mode === "development" && componentTagger()].filter(Boolean),
+  publicDir: "frontend/public",
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./frontend/src"),

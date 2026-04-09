@@ -1,5 +1,5 @@
 {
   "firestore": {
-    "rules": "db/firestore.rules"
+    "rules": "backend/db/firestore.rules"
   }
 }
