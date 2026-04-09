@@ -171,7 +171,7 @@ export default async function handler(req, res) {
     const { findings, status: headerStatus } = checkHeaders(headers);
 
     // Additional Check: HTTP to HTTPS Redirect
-    if (validatedUrl.protocol === 'http:') {
+    if (parsedUrl.protocol === 'http:') {
         // If it returns a 3xx redirect to https, it's fine.
         // We'll just check if the initial request was http and no HSTS.
         findings.push({

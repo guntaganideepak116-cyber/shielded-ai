@@ -376,6 +376,20 @@ const Scanner = () => {
               ))}
             </div>
 
+            <div style={{
+              background: 'rgba(0,212,255,0.1)',
+              border: '1px solid rgba(0,212,255,0.3)',
+              color: '#00d4ff',
+              padding: '4px 10px',
+              borderRadius: '6px',
+              fontSize: '11px',
+              fontWeight: '700',
+              letterSpacing: '0.5px',
+              fontFamily: 'Arial, sans-serif'
+            }} className="hidden md:block">
+              BETA v1.4 LIVE
+            </div>
+
             <div className="nav-right flex items-center gap-4">
               {user ? (
                 <div className="relative">
