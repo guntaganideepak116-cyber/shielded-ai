@@ -16,6 +16,16 @@ import { detectPlatform, PLATFORMS, type HostingPlatform } from '@/lib/platform-
 import ShieldAnimation from '@/components/ShieldAnimation';
 import { LogoRenderer } from '@/components/LogoRenderer';
 import { useScan } from '@/context/ScanContext';
+
+// --- SVG HELPER COMPONENTS ---
+const ArrowLeft = ({ className }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+);
+
+const ShieldAlert = ({ className }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+);
+// -----------------------------
 import ScannerInput from '@/components/ScannerInput';
 import ScoreDisplay from '@/components/ScoreDisplay';
 import VulnerabilityCard from '@/components/VulnerabilityCard';
@@ -58,6 +68,8 @@ const Scanner = () => {
   const [emailStatus, setEmailStatus] = useState<'sending' | 'success' | 'error' | null>(null);
   const [emailMessage, setEmailMessage] = useState('');
   const [scanError, setScanError] = useState<{type: string, message: string, suggestions?: string[]} | null>(null);
+  const [isRescanning, setIsRescanning] = useState(false);
+  const [previousScore, setPreviousScore] = useState<number | null>(null);
 
   // Problem 6 — Restore scan result if it exists
   useEffect(() => {
@@ -333,7 +345,6 @@ const Scanner = () => {
   const isActive = (path: string) => location.pathname === path;
 
   const platformInfo = detectedPlatform ? PLATFORMS[detectedPlatform] : PLATFORMS.apache;
-  const isSecure = (score !== null && score >= 90);
 
   // Chart Data preparation
   const chartData = [
@@ -353,9 +364,8 @@ const Scanner = () => {
   return (
     <div className="min-h-screen bg-slate-950 relative overflow-hidden font-body text-slate-200">
       {/* Background Ambience */}
-        <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] rounded-full opacity-10 blur-[120px]" style={{ background: 'radial-gradient(circle, #a855f7 0%, transparent 70%)' }} />
-      </div>
-
+      <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] rounded-full opacity-10 blur-[120px]" style={{ background: 'radial-gradient(circle, #a855f7 0%, transparent 70%)' }} />
+      
       <div className="relative z-10 w-full pt-4">
         <main className="container mx-auto px-6 py-12 md:py-24">
           <AnimatePresence mode="wait">
@@ -969,13 +979,5 @@ const Scanner = () => {
     }
   }
 };
-
-const ArrowLeft = ({ className }: { className?: string }) => (
-  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
-);
-
-const ShieldAlert = ({ className }: { className?: string }) => (
-  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-);
 
 export default Scanner;
