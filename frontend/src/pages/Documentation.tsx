@@ -38,21 +38,10 @@ const Documentation = () => {
 
   return (
     <div className="min-h-screen bg-slate-950 text-white font-body selection:bg-primary/30">
-      {/* Search Header */}
-      <nav className="flex items-center justify-between p-6 bg-slate-900 border-b border-white/5 sticky top-0 z-50 backdrop-blur-3xl">
-        <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate('/')}>
-          <LogoRenderer className="w-8 h-8" />
-          <span className="font-display font-bold text-xl tracking-tighter uppercase italic gradient-text">SecureDocs</span>
-        </div>
-        <div className="flex items-center gap-4">
-           <Button variant="ghost" onClick={() => navigate('/api-docs')} className="text-xs font-black uppercase tracking-widest text-slate-500 hover:text-white">API Reference</Button>
-           <Button variant="outline" onClick={() => navigate('/scan')} className="hidden sm:flex h-10 border-primary/20 text-primary font-bold uppercase text-[10px] tracking-widest px-6 rounded-xl hover:bg-primary/5 transition-all">Start Scanning</Button>
-        </div>
-      </nav>
 
       <div className="flex max-w-[1440px] mx-auto">
         {/* Sidebar */}
-        <aside className={`fixed inset-y-0 left-0 z-40 w-72 bg-slate-900/50 border-r border-white/5 transform transition-transform duration-300 md:relative md:translate-x-0 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} pt-24 md:pt-12 px-6 safe-padding-bottom`}>
+        <aside className={`fixed inset-y-0 left-0 z-40 w-72 bg-slate-900/50 border-r border-white/5 transform transition-transform duration-300 md:relative md:translate-x-0 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} pt-24 md:pt-20 px-6 safe-padding-bottom`}>
           <div className="mb-8 space-y-4">
              <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
@@ -90,7 +79,7 @@ const Documentation = () => {
         )}
 
         {/* Content */}
-        <main className="flex-1 p-8 md:p-16 lg:p-24 overflow-y-auto max-w-4xl mx-auto min-h-screen">
+        <main className="flex-1 p-8 md:p-16 lg:p-24 overflow-y-auto max-w-4xl mx-auto min-h-screen pt-24 md:pt-32">
            <AnimatePresence mode="wait">
               {activeSection === 'getting-started' && (
                  <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="space-y-12">

@@ -54,47 +54,12 @@ const Landing = () => {
   const { user, signOut } = useAuth();
   const { lang, setLang, t } = useLanguage();
   const [stats, setStats] = useState<{totalScans: number, totalUsers: number, secureCount: number} | null>(null);
-  const [canInstall, setCanInstall] = useState(false);
-  const [installPrompt, setInstallPrompt] = useState<any | null>(null);
-
   useEffect(() => {
     fetch('/api/stats')
       .then(r => r.json())
       .then(data => setStats(data))
       .catch(() => setStats(null));
   }, []);
-
-  useEffect(() => {
-    if (window.deferredInstallPrompt) {
-      setInstallPrompt(window.deferredInstallPrompt);
-      setCanInstall(true);
-    }
-
-    const handler = (e: Event) => {
-      e.preventDefault();
-      setInstallPrompt(e as BeforeInstallPromptEvent);
-      setCanInstall(true);
-    };
-
-    window.addEventListener('beforeinstallprompt', handler as any);
-    window.addEventListener('pwaInstallReady', () => {
-      if (window.deferredInstallPrompt) {
-        setInstallPrompt(window.deferredInstallPrompt);
-        setCanInstall(true);
-      }
-    });
-
-    return () => {
-      window.removeEventListener('beforeinstallprompt', handler as any);
-    };
-  }, []);
-
-  const handleInstallClick = async () => {
-    if (!installPrompt) return;
-    installPrompt.prompt();
-    const { outcome } = await installPrompt.userChoice;
-    if (outcome === 'accepted') setCanInstall(false);
-  };
 
   useEffect(() => {
     // Stats fetch is handled above
@@ -113,113 +78,6 @@ const Landing = () => {
       </div>
 
       <div className="relative z-10">
-        {/* NAV */}
-        <nav className="container mx-auto px-4 py-4 flex items-center justify-between gap-4">
-          <div className="logo-wrapper flex items-center gap-2">
-            <LogoRenderer className="logo-icon w-8 h-8 drop-shadow-[0_0_8px_rgba(99,102,241,0.5)]" />
-            <span className="logo-text font-display font-bold text-lg sm:text-xl gradient-text text-nowrap leading-tight">SECUREWEB AI</span>
-          </div>
-          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-            <div style={{
-              background: 'rgba(0,212,255,0.1)',
-              border: '1px solid rgba(0,212,255,0.3)',
-              color: '#00d4ff',
-              padding: '4px 10px',
-              borderRadius: '6px',
-              fontSize: '11px',
-              fontWeight: '700',
-              letterSpacing: '0.5px',
-              fontFamily: 'Arial, sans-serif'
-            }} className="hidden sm:block">
-              {t('common.beta')}
-            </div>
-             <button
-              onClick={() => setLang(lang === 'EN' ? 'TE' : 'EN')}
-              className="px-2.5 py-1 rounded bg-white/5 border border-white/10 text-primary hover:bg-white/10 transition-all font-display text-[11px] font-bold flex items-center gap-1.5 min-w-[140px] justify-center"
-            >
-              <Globe className="w-3.5 h-3.5" />
-              {lang === 'EN' ? 'ENGLISH / తెలుగు' : 'తెలుగు / ENGLISH'}
-            </button>
-            <button
-              onClick={() => navigate('/documentation')}
-              className="text-xs text-muted-foreground hover:text-foreground transition-colors font-body hidden sm:block"
-            >
-              {t('nav.docs')}
-            </button>
-            <button
-              onClick={() => navigate('/history')}
-              className="text-xs text-muted-foreground hover:text-foreground transition-colors font-body hidden sm:block"
-            >
-              {t('nav.history')}
-            </button>
-            
-            <div className="hidden lg:flex items-center gap-3">
-              {(user && !user.isAnonymous) ? (
-                <div className="flex items-center gap-3">
-                  <Button
-                    onClick={() => navigate('/scan')}
-                    className="gradient-btn text-sm font-display px-5 py-2"
-                  >
-                    Dashboard
-                  </Button>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Avatar className="w-8 h-8 border border-white/10 cursor-pointer hover:ring-2 hover:ring-primary/50 transition-all">
-                        <AvatarImage src={user.photoURL || ''} />
-                        <AvatarFallback className="bg-primary/20 text-[10px]">{user.email?.charAt(0).toUpperCase() || '?'}</AvatarFallback>
-                      </Avatar>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent className="w-56 glass-card-strong border-white/10 text-white" align="end">
-                      <DropdownMenuLabel className="font-display font-bold text-xs uppercase tracking-widest text-white/50">My Terminal</DropdownMenuLabel>
-                      <DropdownMenuSeparator className="bg-white/10" />
-                      <DropdownMenuItem className="focus:bg-white/5 cursor-pointer py-3" onClick={() => navigate('/scan')}>
-                        Dashboard
-                      </DropdownMenuItem>
-                      <DropdownMenuItem className="focus:bg-white/5 cursor-pointer py-3" onClick={() => navigate('/monitoring')}>
-                        Monitoring
-                      </DropdownMenuItem>
-                      <DropdownMenuItem className="focus:bg-white/5 cursor-pointer py-3" onClick={() => navigate('/api-docs')}>
-                        Security API
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator className="bg-white/10" />
-                      <DropdownMenuItem className="focus:bg-red-500/20 text-red-400 cursor-pointer py-3 font-bold" onClick={() => signOut()}>
-                        <LogOut className="w-4 h-4 mr-2" />
-                        De-authorize Terminal
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
-              ) : (
-                <>
-                  <Button
-                    variant="ghost"
-                    onClick={() => navigate('/login')}
-                    className="text-xs sm:text-sm font-display px-3 py-2 hover:bg-white/5"
-                  >
-                    Sign In
-                  </Button>
-                  <Button
-                    onClick={() => navigate('/signup')}
-                    className="gradient-btn text-xs sm:text-sm font-display px-3 py-2"
-                  >
-                    Start Scanning
-                  </Button>
-                </>
-              )}
-            </div>
-
-            <button 
-              className="hamburger lg:hidden text-slate-400 group flex items-center justify-center"
-              onClick={() => navigate('/scan')}
-            >
-              <div className="flex flex-col gap-1.5 p-2">
-                <span className="w-6 h-0.5 bg-primary rounded-full transition-all group-hover:w-8 group-hover:bg-white" />
-                <span className="w-8 h-0.5 bg-primary rounded-full transition-all group-hover:w-6 group-hover:bg-white" />
-                <span className="w-5 h-0.5 bg-primary rounded-full transition-all group-hover:w-8 group-hover:bg-white" />
-              </div>
-            </button>
-          </div>
-        </nav>
 
         {/* HERO */}
         <section className="container mx-auto px-4 pt-12 pb-20 md:pt-20 md:pb-28">
@@ -240,27 +98,35 @@ const Landing = () => {
               </motion.div>
 
               <motion.h1 variants={fadeUp} custom={1}
-                className="hero-title font-display text-4xl sm:text-6xl md:text-7xl font-bold text-foreground leading-tight mb-6"
+                className="font-display text-4xl md:text-5xl lg:text-7xl font-bold tracking-tight text-foreground leading-[1.1] mb-6"
               >
-                <span className="gradient-text">{t('hero.title1')}</span> {t('hero.title2')}
+                {t('hero.title1')}<br />
+                <span className="gradient-text">{t('hero.title2')}</span>
               </motion.h1>
-
+              
               <motion.p variants={fadeUp} custom={2}
-                className="hero-subtitle text-lg text-muted-foreground font-body mb-8 max-w-md mx-auto lg:mx-0"
+                className="text-lg text-muted-foreground font-body leading-relaxed max-w-lg mx-auto lg:mx-0 mb-10"
               >
                 {t('hero.subtitle')}
               </motion.p>
 
               <motion.div variants={fadeUp} custom={3}
-                className="flex flex-col sm:flex-row items-center gap-3 justify-center lg:justify-start"
+                className="flex flex-col sm:flex-row items-center gap-4 justify-center lg:justify-start"
               >
-                <Button
-                  onClick={() => navigate((user && !user.isAnonymous) ? '/scan' : '/signup')}
-                  className="gradient-btn px-8 py-6 text-base font-display font-bold rounded-xl pulse-neon w-full sm:w-auto"
+                <Button 
+                   onClick={() => navigate('/scan')}
+                   className="gradient-btn h-14 px-10 rounded-2xl text-base font-display font-bold group w-full sm:w-auto"
                 >
-                  <Shield className="w-5 h-5 mr-2" />
-                  {t('hero.scanButton')}
-                  <ArrowRight className="w-4 h-4 ml-2" />
+                  {t('hero.cta')}
+                  <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                </Button>
+                
+                <Button 
+                  variant="outline" 
+                  onClick={() => navigate('/documentation')}
+                  className="h-14 px-10 rounded-2xl border-border hover:bg-white/5 font-display text-base w-full sm:w-auto"
+                >
+                  {t('nav.docs')}
                 </Button>
               </motion.div>
 
@@ -449,10 +315,9 @@ const Landing = () => {
                 <ArrowRight className="w-5 h-5 ml-1 sm:ml-2 shrink-0" />
               </Button>
             </div>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4 mt-6 text-[10px] sm:text-xs text-muted-foreground font-body">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-6 mt-6 text-[10px] sm:text-xs text-muted-foreground font-body">
               <span className="flex items-center gap-1"><CheckCircle className="w-3.5 h-3.5 text-success" /> Free forever</span>
               <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5 text-primary" /> 90-second results</span>
-              <span className="flex items-center gap-1"><Lock className="w-3.5 h-3.5" /> No signup</span>
             </div>
           </motion.div>
         </section>

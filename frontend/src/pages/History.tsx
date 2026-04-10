@@ -14,6 +14,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { getGrade, getGradeColor, type Vulnerability, type ScanResult } from '@/lib/scan-data';
 import { toast } from 'react-hot-toast';
 import { LogoRenderer } from '@/components/LogoRenderer';
+import { useLanguage } from '@/context/LanguageContext';
 
 interface ScanItem extends Partial<ScanResult> {
   id: string;
@@ -25,6 +26,7 @@ interface ScanItem extends Partial<ScanResult> {
 
 const History = () => {
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const { user } = useAuth();
   const [scans, setScans] = useState<ScanItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -33,25 +35,6 @@ const History = () => {
   const [sort, setSort] = useState<'latest' | 'oldest' | 'score-high' | 'score-low'>('latest');
   const [isPurging, setIsPurging] = useState(false);
   const [showPurgeConfirm, setShowPurgeConfirm] = useState(false);
-  const [canInstall, setCanInstall] = useState(false);
-  const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
-
-  useEffect(() => {
-    const handler = (e: Event) => {
-      e.preventDefault();
-      setInstallPrompt(e as BeforeInstallPromptEvent);
-      setCanInstall(true);
-    };
-    window.addEventListener('beforeinstallprompt', handler as EventListener);
-    return () => window.removeEventListener('beforeinstallprompt', handler as EventListener);
-  }, []);
-
-  const handleInstallClick = async () => {
-    if (!installPrompt) return;
-    installPrompt.prompt();
-    const { outcome } = await installPrompt.userChoice;
-    if (outcome === 'accepted') setCanInstall(false);
-  };
 
   useEffect(() => {
     const loadScans = async () => {
@@ -128,33 +111,6 @@ const History = () => {
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-200 font-body pb-20">
-      <nav className="border-b border-white/5 bg-slate-950/80 backdrop-blur-xl sticky top-0 z-50">
-        <div className="container mx-auto px-6 py-4 flex items-center justify-between">
-           <div className="flex items-center gap-3 cursor-pointer group" onClick={() => navigate('/scan')}>
-              <LogoRenderer className="w-8 h-8 group-hover:rotate-12 transition-transform" />
-              <span className="font-display font-bold text-xl tracking-tighter gradient-text uppercase">SecureRecord</span>
-           </div>
-           <div className="flex items-center gap-6">
-              <Button onClick={() => navigate('/scan')} variant="outline" className="hidden md:flex h-10 px-6 rounded-xl border-primary/20 text-primary font-black uppercase text-[10px] tracking-widest hover:bg-primary/5">New Audit</Button>
-              
-              {canInstall && (
-                <button onClick={handleInstallClick}
-                  style={{
-                    background: 'linear-gradient(135deg, #00d4ff, #7c3aed)',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '6px',
-                    padding: '6px 14px',
-                    fontSize: '11px',
-                    cursor: 'pointer',
-                    fontWeight: '600'
-                  }}>
-                  📱 Install App
-                </button>
-              )}
-           </div>
-        </div>
-      </nav>
 
       <main className="container mx-auto px-6 py-12 max-w-5xl">
         <div className="space-y-12">
@@ -171,14 +127,15 @@ const History = () => {
                  </div>
               </div>
 
-              {scans.length > 0 && (
-                <Button 
-                  onClick={() => setShowPurgeConfirm(true)} variant="ghost" 
-                  className="h-12 px-6 rounded-xl border border-red-500/20 text-red-500/50 hover:text-red-500 hover:bg-red-500/10 font-black uppercase text-[10px] tracking-[0.2em]"
-                >
-                  <Trash2 className="w-4 h-4 mr-3" /> PURGE_DB_RECORDS
-                </Button>
-              )}
+              <div className="flex items-center gap-3">
+             <Button 
+               variant="outline" 
+               onClick={() => setShowPurgeConfirm(true)}
+               className="h-12 bg-white/5 border-white/5 text-slate-400 font-bold uppercase text-[10px] tracking-widest px-6 rounded-xl hover:bg-destructive/10 hover:text-destructive hover:border-destructive/20 transition-all"
+             >
+                <Trash2 className="w-4 h-4 mr-2" /> {t('hist.purge')}
+             </Button>
+          </div>
            </div>
 
            {/* Toolbar */}
@@ -232,7 +189,7 @@ const History = () => {
                       <Shield className="w-10 h-10 text-slate-800" />
                    </div>
                    <div className="space-y-2">
-                      <h3 className="text-2xl font-display font-black uppercase italic">Null records detected</h3>
+                      <h3 className="text-2xl font-display font-black uppercase italic">{t('hist.empty')}</h3>
                       <p className="text-sm text-slate-500 font-medium max-w-xs mx-auto">Either no scans match your criteria or the database is unpopulated.</p>
                    </div>
                    <Button onClick={() => navigate('/scan')} className="h-14 px-10 rounded-xl bg-primary text-black font-black uppercase text-[10px] tracking-widest pulse-neon">Initiate First Audit</Button>

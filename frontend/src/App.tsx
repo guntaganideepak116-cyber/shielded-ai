@@ -106,15 +106,18 @@ const AppRoutes = () => {
 };
 
 import PWAInstallBanner from './components/PWAInstallBanner';
+import { Navbar } from './components/Navbar';
+
 
 const AppContent = () => {
   return (
     <>
       <Toaster />
       <Sonner position="top-center" richColors />
-      <PWAInstallBanner />
       <BrowserRouter>
+        <Navbar />
         <AppRoutes />
+        <PWAInstallBanner />
       </BrowserRouter>
       {/* Floating chatbot with context from latest scan */}
       <FreeChatbot />

@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { LogoRenderer } from '@/components/LogoRenderer';
+import { useLanguage } from '@/context/LanguageContext';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -27,6 +28,7 @@ import { type ScanResult } from '@/lib/scan-data';
 
 const Monitoring = () => {
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const { user } = useAuth();
   const [monitors, setMonitors] = useState<ScanResult[]>([]);
   const [loading, setLoading] = useState(true);
@@ -38,25 +40,6 @@ const Monitoring = () => {
   // New monitor form
   const [newUrl, setNewUrl] = useState('');
   const [newEmail, setNewEmail] = useState(user?.email || '');
-  const [canInstall, setCanInstall] = useState(false);
-  const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
-
-  useEffect(() => {
-    const handler = (e: Event) => {
-      e.preventDefault();
-      setInstallPrompt(e as BeforeInstallPromptEvent);
-      setCanInstall(true);
-    };
-    window.addEventListener('beforeinstallprompt', handler as any);
-    return () => window.removeEventListener('beforeinstallprompt', handler as any);
-  }, []);
-
-  const handleInstallClick = async () => {
-    if (!installPrompt) return;
-    installPrompt.prompt();
-    const { outcome } = await installPrompt.userChoice;
-    if (outcome === 'accepted') setCanInstall(false);
-  };
 
   useEffect(() => {
     if (!user) return;
@@ -217,42 +200,11 @@ const Monitoring = () => {
 
   return (
     <div className="min-h-screen bg-slate-950 text-white font-body pb-20">
-      {/* Navbar Integration */}
-      <nav className="flex items-center justify-between p-6 bg-slate-900/50 border-b border-white/5 sticky top-0 z-40 backdrop-blur-xl">
-        <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate('/')}>
-          <LogoRenderer className="w-8 h-8" />
-          <span className="font-display font-bold text-xl tracking-tighter uppercase gradient-text">SecureWeb AI</span>
-        </div>
-        <div className="flex items-center gap-4">
-           <Button 
-            onClick={() => setShowAddModal(true)} 
-            className="bg-primary text-black font-black uppercase text-[10px] tracking-widest px-6 h-10 rounded-xl hover:scale-105 active:scale-95 transition-all"
-           >
-              <Plus className="w-4 h-4 mr-2" /> Add Site
-           </Button>
-           
-           {canInstall && (
-             <button onClick={handleInstallClick}
-               style={{
-                 background: 'linear-gradient(135deg, #00d4ff, #7c3aed)',
-                 color: 'white',
-                 border: 'none',
-                 borderRadius: '6px',
-                 padding: '6px 14px',
-                 fontSize: '11px',
-                 cursor: 'pointer',
-                 fontWeight: '600'
-               }}>
-               📱 Install App
-             </button>
-           )}
-        </div>
-      </nav>
 
-      <div className="max-w-6xl mx-auto px-6 mt-12 space-y-12">
+      <div className="max-w-6xl mx-auto px-6 mt-12 space-y-12 pt-12 md:pt-20">
         <div className="space-y-1">
-          <h1 className="text-4xl font-display font-black tracking-tighter uppercase italic">Active Monitoring</h1>
-          <p className="text-xs text-slate-500 font-bold uppercase tracking-[0.2em]">Guard your infrastructure 24/7</p>
+          <h1 className="text-4xl font-display font-black tracking-tighter uppercase italic">{t('mon.title')}</h1>
+          <p className="text-xs text-slate-500 font-bold uppercase tracking-[0.2em]">{t('mon.status')}</p>
         </div>
 
         {/* Stats Grid */}

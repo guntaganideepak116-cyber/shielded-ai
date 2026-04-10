@@ -15,9 +15,11 @@ import ScoreDisplay from '@/components/ScoreDisplay';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { LogoRenderer } from '@/components/LogoRenderer';
+import { useLanguage } from '@/context/LanguageContext';
 
 const Dashboard = () => {
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
     totalScans: 0,
@@ -29,23 +31,6 @@ const Dashboard = () => {
     commonVulns: [] as { name: string; count: number }[],
     recentActivity: [] as ScanResult[]
   });
-  const [canInstall, setCanInstall] = useState(false);
-  const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
-
-  useEffect(() => {
-    window.addEventListener('beforeinstallprompt', (e) => {
-      e.preventDefault();
-      setInstallPrompt(e as BeforeInstallPromptEvent);
-      setCanInstall(true);
-    });
-  }, []);
-
-  const handleInstallClick = async () => {
-    if (!installPrompt) return;
-    installPrompt.prompt();
-    const { outcome } = await installPrompt.userChoice;
-    if (outcome === 'accepted') setCanInstall(false);
-  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -122,45 +107,15 @@ const Dashboard = () => {
   );
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white font-body p-6 lg:p-12 overflow-x-hidden">
-      {/* Navbar */}
-      <nav className="flex items-center justify-between mb-12">
-        <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate('/')}>
-          <LogoRenderer className="w-8 h-8" />
-          <span className="font-display font-bold text-xl tracking-tighter uppercase gradient-text">SecureWeb AI</span>
-        </div>
-        <div className="flex items-center gap-4">
-           <Button variant="ghost" onClick={() => navigate('/scan')} className="text-xs font-bold uppercase tracking-widest text-slate-400 hover:text-white">New Scan</Button>
-           
-           {canInstall && (
-             <button onClick={handleInstallClick}
-               style={{
-                 background: 'linear-gradient(135deg, #00d4ff, #7c3aed)',
-                 color: 'white',
-                 border: 'none',
-                 borderRadius: '6px',
-                 padding: '6px 1px',
-                 fontSize: '11px',
-                 cursor: 'pointer',
-                 fontWeight: '600'
-               }}>
-               📱 Install App
-             </button>
-           )}
-
-           <div className="w-10 h-10 rounded-full bg-primary/20 border border-primary/40 flex items-center justify-center text-primary">
-              <Activity className="w-5 h-5" />
-           </div>
-        </div>
-      </nav>
+    <div className="min-h-screen bg-slate-950 text-white font-body p-6 lg:p-12 overflow-x-hidden pt-12 md:pt-20">
 
       {/* Row 1: Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         {[
-          { label: 'Total Scans', value: stats.totalScans, icon: Search, color: 'text-primary' },
-          { label: 'Avg Health Score', value: `${stats.avgScore}/100`, icon: Shield, color: 'text-success' },
-          { label: 'Secure Sites', value: stats.secureCount, icon: ShieldCheck, color: 'text-green-400' },
-          { label: 'Vulnerable Sites', value: stats.vulnerableCount, icon: AlertTriangle, color: 'text-destructive' }
+          { label: t('dash.total_scans'), value: stats.totalScans, icon: Search, color: 'text-primary' },
+          { label: t('dash.avg_score'), value: `${stats.avgScore}/100`, icon: Shield, color: 'text-success' },
+          { label: t('common.secure'), value: stats.secureCount, icon: ShieldCheck, color: 'text-green-400' },
+          { label: t('common.vulnerable'), value: stats.vulnerableCount, icon: AlertTriangle, color: 'text-destructive' }
         ].map((card, i) => (
           <motion.div 
             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }}

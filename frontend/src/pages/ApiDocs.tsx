@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { LogoRenderer } from '@/components/LogoRenderer';
+import { useLanguage } from '@/context/LanguageContext';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -15,6 +16,7 @@ import { doc, getDoc, setDoc, updateDoc, onSnapshot } from 'firebase/firestore';
 
 const ApiDocs = () => {
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const { user } = useAuth();
   const [apiKey, setApiKey] = useState<string | null>(null);
   const [showKey, setShowKey] = useState(false);
@@ -29,23 +31,6 @@ const ApiDocs = () => {
 
   // Usage Stats
   const [usage, setUsage] = useState(0);
-  const [canInstall, setCanInstall] = useState(false);
-  const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
-
-  useEffect(() => {
-    window.addEventListener('beforeinstallprompt', (e) => {
-      e.preventDefault();
-      setInstallPrompt(e as BeforeInstallPromptEvent);
-      setCanInstall(true);
-    });
-  }, []);
-
-  const handleInstallClick = async () => {
-    if (!installPrompt) return;
-    installPrompt.prompt();
-    const { outcome } = await installPrompt.userChoice;
-    if (outcome === 'accepted') setCanInstall(false);
-  };
 
   useEffect(() => {
     if (!user) return;
@@ -141,40 +126,14 @@ print(response.json())`;
 
   return (
     <div className="min-h-screen bg-slate-950 text-white font-body pb-20">
-      <nav className="flex items-center justify-between p-6 bg-slate-900/50 border-b border-white/5 sticky top-0 z-40 backdrop-blur-xl">
-        <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate('/')}>
-          <LogoRenderer className="w-8 h-8" />
-          <span className="font-display font-bold text-xl tracking-tighter uppercase gradient-text">SecureWeb AI API</span>
-        </div>
-        <div className="flex items-center gap-4">
-           <Button variant="ghost" onClick={() => navigate('/documentation')} className="text-[10px] font-bold uppercase tracking-widest text-slate-400 hover:text-white">Full Docs</Button>
-           <Button variant="ghost" onClick={() => navigate('/dashboard')} className="text-[10px] font-bold uppercase tracking-widest text-slate-400 hover:text-white">Dashboard</Button>
-           
-           {canInstall && (
-             <button onClick={handleInstallClick}
-               style={{
-                 background: 'linear-gradient(135deg, #00d4ff, #7c3aed)',
-                 color: 'white',
-                 border: 'none',
-                 borderRadius: '6px',
-                 padding: '6px 14px',
-                 fontSize: '11px',
-                 cursor: 'pointer',
-                 fontWeight: '600'
-               }}>
-               📱 Install App
-             </button>
-           )}
-        </div>
-      </nav>
 
-      <div className="max-w-6xl mx-auto px-6 mt-12 grid grid-cols-1 lg:grid-cols-12 gap-8">
+      <div className="max-w-6xl mx-auto px-6 mt-12 grid grid-cols-1 lg:grid-cols-12 gap-8 pt-12 md:pt-20">
         
         {/* Left Column: API Console */}
         <div className="lg:col-span-8 space-y-8">
            <div className="space-y-1">
-              <h1 className="text-4xl font-display font-black tracking-tighter uppercase italic">Developer Interface</h1>
-              <p className="text-xs text-slate-500 font-bold uppercase tracking-[0.2em]">Build secure-first architectures with our high-speed audit engine</p>
+              <h1 className="text-4xl font-display font-black tracking-tighter uppercase italic">{t('nav.api')}</h1>
+              <p className="text-xs text-slate-500 font-bold uppercase tracking-[0.2em]">{t('scanner.subtitle')}</p>
            </div>
 
            {/* Endpoint Details */}

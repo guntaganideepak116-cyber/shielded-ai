@@ -57,12 +57,6 @@ const Scanner = () => {
   const [emailInput, setEmailInput] = useState('');
   const [emailStatus, setEmailStatus] = useState<'sending' | 'success' | 'error' | null>(null);
   const [emailMessage, setEmailMessage] = useState('');
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [showUserDropdown, setShowUserDropdown] = useState(false);
-  const [isRescanning, setIsRescanning] = useState(false);
-  const [previousScore, setPreviousScore] = useState<number | null>(null);
-  const [canInstall, setCanInstall] = useState(false);
-  const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [scanError, setScanError] = useState<{type: string, message: string, suggestions?: string[]} | null>(null);
 
   // Problem 6 — Restore scan result if it exists
@@ -97,38 +91,6 @@ const Scanner = () => {
     }
   }, []);
 
-  useEffect(() => {
-    // Check if prompt already caught in index.html
-    if (window.deferredInstallPrompt) {
-      setInstallPrompt(window.deferredInstallPrompt);
-      setCanInstall(true);
-    }
-    
-    const handler = (e: Event) => {
-      e.preventDefault();
-      setInstallPrompt(e as BeforeInstallPromptEvent);
-      setCanInstall(true);
-    };
-
-    window.addEventListener('beforeinstallprompt', handler as any);
-    window.addEventListener('pwaInstallReady', () => {
-      if (window.deferredInstallPrompt) {
-        setInstallPrompt(window.deferredInstallPrompt);
-        setCanInstall(true);
-      }
-    });
-
-    return () => {
-      window.removeEventListener('beforeinstallprompt', handler as any);
-    };
-  }, []);
-
-  const handleInstallClick = async () => {
-    if (!installPrompt) return;
-    installPrompt.prompt();
-    const { outcome } = await installPrompt.userChoice;
-    if (outcome === 'accepted') setCanInstall(false);
-  };
 
   useEffect(() => {
     if (location.state?.reScanUrl) {
@@ -233,6 +195,52 @@ const Scanner = () => {
         }
         
         trackEvent('scan_completed', { url: cleanUrl, score: finalScore });
+
+        // ─── AUTO EMAIL AFTER SCAN ───────────────────────
+        const autoSendEmail = async (scanData: ScanResult) => {
+          try {
+            // Only auto-send if user is logged in
+            if (!user || !user.email) return;
+
+            const response = await fetch('/api/send-email', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                email: user.email,
+                userName: user.displayName || 'there',
+                scanResult: scanData,
+                autoSent: true  // flag to track auto vs manual
+              })
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+              setScore(finalScore); // Ensure score is set
+              toast.success(
+                `📧 Report sent to ${user.email}`,
+                {
+                  duration: 4000,
+                  style: {
+                    background: '#0d1424',
+                    color: '#00ff88',
+                    border: '1px solid #00ff88',
+                    borderRadius: '8px',
+                    fontSize: '13px'
+                  },
+                  icon: '📧'
+                }
+              );
+            }
+          } catch (err: any) {
+            // Silent fail — never block the UI for email
+            console.log('Auto email skipped:', err.message);
+          }
+        };
+
+        // Call it right after scan completes
+        autoSendEmail(realData);
+        // ─────────────────────────────────────────────────
     } catch (err) {
         toast.error("Critical Engine Error", { id: 'engine-error' });
         setErrorMessage("Critical Engine Error. Please try again.");
@@ -282,6 +290,7 @@ const Scanner = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           email: emailInput.trim(),
+          userName: user?.displayName || 'there',
           scanResult: scanResult
         })
       });
@@ -320,13 +329,6 @@ const Scanner = () => {
     }
   };
 
-  const navLinks = [
-    { name: 'Scan History', path: '/history', icon: <HistoryIcon className="w-4 h-4" /> },
-    { name: 'Security API', path: '/api-docs', icon: <Lock className="w-4 h-4" /> },
-    { name: 'Documentation', path: '/documentation', icon: <FileText className="w-4 h-4" /> },
-    { name: 'Monitoring', path: '/monitoring', icon: <Activity className="w-4 h-4" /> },
-    { name: 'Dashboard', path: '/dashboard', icon: <LayoutDashboard className="w-4 h-4" /> },
-  ];
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -351,147 +353,10 @@ const Scanner = () => {
   return (
     <div className="min-h-screen bg-slate-950 relative overflow-hidden font-body text-slate-200">
       {/* Background Ambience */}
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-0 left-1/4 w-[500px] h-[500px] rounded-full opacity-10 blur-[120px]" style={{ background: 'radial-gradient(circle, #6366f1 0%, transparent 70%)' }} />
         <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] rounded-full opacity-10 blur-[120px]" style={{ background: 'radial-gradient(circle, #a855f7 0%, transparent 70%)' }} />
       </div>
 
-      <div className="relative z-10 w-full">
-        {/* Navbar */}
-        <nav className="border-b border-white/5 bg-slate-950/50 backdrop-blur-xl sticky top-0 z-[100]">
-          <div className="container mx-auto px-6 py-4 flex items-center justify-between">
-            <div className="logo-wrapper flex items-center gap-3 cursor-pointer group" onClick={() => navigate('/scan')}>
-              <LogoRenderer className="logo-icon w-8 h-8 group-hover:rotate-12 transition-transform" />
-              <span className="logo-text font-display font-bold text-xl tracking-tighter gradient-text uppercase">SecureWeb AI</span>
-            </div>
-
-            {/* Desktop Nav */}
-            <div className="hidden lg:flex items-center gap-8">
-              {navLinks.map((link) => (
-                <Link 
-                  key={link.path} 
-                  to={link.path} 
-                  className={`text-[10px] font-black uppercase tracking-widest transition-all px-3 py-1.5 rounded-lg ${isActive(link.path) ? 'text-primary bg-primary/10' : 'text-slate-500 hover:text-white hover:bg-white/5'}`}
-                >
-                  {link.name}
-                </Link>
-              ))}
-            </div>
-
-            <div style={{
-              background: 'rgba(0,212,255,0.1)',
-              border: '1px solid rgba(0,212,255,0.3)',
-              color: '#00d4ff',
-              padding: '4px 10px',
-              borderRadius: '6px',
-              fontSize: '11px',
-              fontWeight: '700',
-              letterSpacing: '0.5px',
-              fontFamily: 'Arial, sans-serif'
-            }} className="hidden md:block">
-              {t('common.beta')}
-            </div>
-
-            <button
-              onClick={() => setLang(lang === 'EN' ? 'TE' : 'EN')}
-              className="px-2.5 py-1 rounded bg-white/5 border border-white/10 text-primary hover:bg-white/10 transition-all font-display text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5 min-w-[140px] justify-center"
-            >
-              <Globe className="w-3.5 h-3.5" />
-              {lang === 'EN' ? 'ENGLISH / తెలుగు' : 'తెలుగు / ENGLISH'}
-            </button>
-
-            <div className="nav-right flex items-center gap-4">
-              {user ? (
-                <div className="relative">
-                  <button 
-                    onClick={() => setShowUserDropdown(!showUserDropdown)}
-                    className="user-profile-btn flex items-center gap-3 pl-3 pr-1 py-1 rounded-full bg-slate-900 border border-white/10 hover:border-primary/50 transition-all"
-                  >
-                    <span className="user-name text-[10px] font-black uppercase tracking-widest text-slate-400">
-                      {user.displayName?.split(' ')[0] || user.email?.split('@')[0]}
-                    </span>
-                    <div className="user-avatar w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary overflow-hidden border border-primary/20">
-                      {user.photoURL ? <img src={user.photoURL} alt="User" /> : <User className="w-4 h-4" />}
-                    </div>
-                  </button>
-                  
-                  <AnimatePresence>
-                    {showUserDropdown && (
-                      <motion.div 
-                        initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }}
-                        className="absolute right-0 mt-3 w-56 glass-card bg-slate-900 border-white/10 shadow-2xl overflow-hidden p-1.5"
-                      >
-                         <button onClick={() => {navigate('/history'); setShowUserDropdown(false)}} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold text-slate-400 hover:text-white hover:bg-white/5 transition-all text-left">
-                            <HistoryIcon className="w-4 h-4" /> My Scan History
-                         </button>
-                         <button onClick={() => {navigate('/dashboard'); setShowUserDropdown(false)}} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold text-slate-400 hover:text-white hover:bg-white/5 transition-all text-left">
-                            <LayoutDashboard className="w-4 h-4" /> Dashboard
-                         </button>
-                         <div className="h-px bg-white/5 my-1.5" />
-                         <button onClick={() => {signOut(); setShowUserDropdown(false)}} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold text-red-400 hover:bg-red-500/10 transition-all text-left">
-                            <LogOut className="w-4 h-4" /> Sign Out
-                         </button>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-              ) : (
-                <Button onClick={() => setShowAuthModal(true)} className="auth-button h-10 px-6 rounded-xl bg-primary text-black font-black uppercase text-[10px] tracking-widest pulse-neon">
-                  Sign In
-                </Button>
-              )}
-              
-              {canInstall && (
-                <button onClick={handleInstallClick}
-                  className="hidden sm:inline-flex"
-                  style={{
-                    background: 'linear-gradient(135deg, #00d4ff, #7c3aed)',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '6px',
-                    padding: '6px 14px',
-                    fontSize: '13px',
-                    cursor: 'pointer',
-                    fontWeight: '600'
-                  }}>
-                  📱 Install App
-                </button>
-              )}
-              
-              <button 
-                className="hamburger lg:hidden text-slate-400"
-                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              >
-                <span></span>
-                <span></span>
-                <span></span>
-              </button>
-            </div>
-          </div>
-        </nav>
-
-        {/* Mobile menu */}
-        <AnimatePresence>
-          {isMobileMenuOpen && (
-            <motion.div 
-              initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }}
-              className="lg:hidden bg-slate-900 border-b border-white/5 overflow-hidden sticky top-[73px] z-[90]"
-            >
-               <div className="p-6 space-y-4">
-                  {navLinks.map((link) => (
-                    <Link 
-                      key={link.path} to={link.path} 
-                      onClick={() => setIsMobileMenuOpen(false)}
-                      className={`flex items-center gap-4 p-4 rounded-2xl text-sm font-bold ${isActive(link.path) ? 'bg-primary/10 text-primary' : 'text-slate-400'}`}
-                    >
-                      {link.icon} {link.name}
-                    </Link>
-                  ))}
-               </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
+      <div className="relative z-10 w-full pt-4">
         <main className="container mx-auto px-6 py-12 md:py-24">
           <AnimatePresence mode="wait">
             {phase === 'landing' && (
@@ -931,7 +796,7 @@ const Scanner = () => {
                     {/* 1. Security Headers Analysis */}
                     <HeadersGrid headers={scanResult.headers} />
 
-                    <div className="email-report-section glass-card p-8 border-primary/20 bg-primary/5 space-y-6 !bg-[#0d1424] !border-[#1a2234]">
+                    <div className="email-report-section glass-card !bg-[#0d1424] !border-[#1a2234] !p-8 shadow-none space-y-6">
                        <div className="flex items-center gap-3">
                           <div className="p-2.5 bg-primary/20 rounded-xl text-primary">
                              <Mail className="w-5 h-5 text-primary" />
