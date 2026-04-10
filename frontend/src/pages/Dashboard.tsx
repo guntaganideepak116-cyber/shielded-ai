@@ -59,10 +59,15 @@ const Dashboard = () => {
         ];
 
         // Trend (Simulated trend based on fetched data chunks)
-        const trend = data.slice(0, 7).reverse().map((s: ScanResult) => ({
-          date: s.createdAt && typeof s.createdAt === 'object' && 'toDate' in s.createdAt ? (s.createdAt as any).toDate().toLocaleDateString() : 'N/A',
-          score: s.score
-        }));
+        const trend = data.slice(0, 7).reverse().map((s) => {
+          let dateStr = 'N/A';
+          if (s.createdAt && typeof s.createdAt === 'object' && 'toDate' in s.createdAt) {
+             dateStr = (s.createdAt as any).toDate().toLocaleDateString();
+          } else if (s.createdAt && typeof s.createdAt === 'string') {
+             dateStr = new Date(s.createdAt).toLocaleDateString();
+          }
+          return { date: dateStr, score: s.score };
+        });
 
         // Common Vulns count
         const vulnCounts: Record<string, number> = {};
@@ -107,10 +112,10 @@ const Dashboard = () => {
   );
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white font-body p-6 lg:p-12 overflow-x-hidden pt-12 md:pt-20">
+    <div className="min-h-screen bg-slate-950 text-white font-body page-wrapper pt-12 md:pt-20">
 
       {/* Row 1: Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div className="dashboard-stats-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         {[
           { label: t('dash.total_scans'), value: stats.totalScans, icon: Search, color: 'text-primary' },
           { label: t('dash.avg_score'), value: `${stats.avgScore}/100`, icon: Shield, color: 'text-success' },
@@ -209,10 +214,16 @@ const Dashboard = () => {
                    <div className={`p-2 rounded-lg ${scan.score >= 90 ? 'bg-success/10 text-success' : 'bg-destructive/10 text-destructive'}`}>
                       <Globe className="w-5 h-5" />
                    </div>
-                   <div className="flex flex-col min-w-0">
-                      <span className="text-xs font-bold text-slate-200 truncate">{scan.url}</span>
-                      <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">{scan.createdAt && typeof scan.createdAt === 'object' && 'toDate' in scan.createdAt ? (scan.createdAt as { toDate: () => Date }).toDate().toLocaleDateString() : 'Just now'}</span>
-                   </div>
+                    <div className="flex flex-col min-w-0">
+                       <span className="text-xs font-bold text-slate-200 truncate">{scan.url}</span>
+                       <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">
+                         {scan.createdAt && typeof scan.createdAt === 'object' && 'toDate' in scan.createdAt 
+                           ? (scan.createdAt as any).toDate().toLocaleDateString() 
+                           : typeof scan.createdAt === 'string' 
+                           ? new Date(scan.createdAt).toLocaleDateString() 
+                           : 'Just now'}
+                       </span>
+                    </div>
                 </div>
                 <div className="text-right">
                    <p className="text-sm font-black tracking-tighter">{scan.score}/100</p>

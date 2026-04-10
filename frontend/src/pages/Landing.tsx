@@ -167,21 +167,23 @@ const Landing = () => {
         </section>
 
         {/* STATS BAR */}
-        <section className="stats-section border-y border-border">
-          <div className="container mx-auto px-4 py-8 grid grid-cols-3 gap-4">
-            {STATS.map((stat, i) => (
-              <motion.div
-                key={stat.label}
-                className="stat-item text-center"
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.1 }}
-              >
-                <div className="font-display text-3xl md:text-4xl font-bold gradient-text">{stat.value}</div>
-                <div className="text-xs text-muted-foreground font-body mt-1">{stat.label}</div>
-              </motion.div>
-            ))}
+        <section className="stats-section border-y border-white/5 bg-white/[0.02]">
+          <div className="container mx-auto px-4 py-10">
+            <div className="grid grid-cols-3 divide-x divide-white/5">
+              {STATS.map((stat, i) => (
+                <motion.div
+                  key={stat.label}
+                  className="stat-item px-4 first:pl-0 last:pr-0 text-center sm:text-left"
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.1 }}
+                >
+                  <div className="font-display text-2xl md:text-5xl font-black gradient-text tracking-tighter italic uppercase">{stat.value}</div>
+                  <div className="text-[9px] md:text-[11px] text-slate-500 font-bold uppercase tracking-[0.2em] mt-2">{stat.label}</div>
+                </motion.div>
+              ))}
+            </div>
           </div>
         </section>
 

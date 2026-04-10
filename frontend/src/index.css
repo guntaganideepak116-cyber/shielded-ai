@@ -278,7 +278,7 @@ body.is-loading {
 @layer base {
   /* ===== GLOBAL MOBILE OVERFLOW FIX ===== */
   *, *::before, *::after {
-    box-sizing: border-box !important;
+    box-sizing: border-box;
   }
 
   :root {
@@ -287,12 +287,12 @@ body.is-loading {
   }
 
   html, body {
-    overflow-x: hidden !important;
-    max-width: 100% !important;
-    position: relative !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    width: 100% !important;
+    overflow-x: hidden;
+    max-width: 100%;
+    position: relative;
+    margin: 0;
+    padding: 0;
+    width: 100%;
   }
 
   body {
@@ -300,17 +300,19 @@ body.is-loading {
     font-family: 'Inter', system-ui, sans-serif;
   }
 
-  /* Force all text to wrap and prevent flex overflow */
-  * {
-    overflow-wrap: break-word !important;
-    word-wrap: break-word !important;
-    word-break: break-word !important;
-    min-width: 0 !important;
+  /* Target specific containers instead of all divs */
+  .app-container, .page-wrapper, .section-container {
+    max-width: 100%;
+    overflow-x: hidden;
+    padding-left: 1rem;
+    padding-right: 1rem;
   }
 
-  #root, .app, main, section, div {
-    max-width: 100% !important;
-    overflow-x: hidden !important;
+  @media (min-width: 768px) {
+    .app-container, .page-wrapper, .section-container {
+      padding-left: 1.5rem;
+      padding-right: 1.5rem;
+    }
   }
 
   h1, h2, h3, h4, h5, h6 {
@@ -608,13 +610,14 @@ body.is-loading {
 
   .logo-text {
     font-size: 14px;
-    font-weight: 700;
+    font-weight: 800;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    /* Keep "SECUREWEB AI" on ONE line */
     display: block;
-    line-height: 1;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+    flex-shrink: 0;
   }
 
   /* Hide all nav links on mobile */
@@ -674,6 +677,11 @@ body.is-loading {
     background: #f0f4ff;
     border-radius: 2px;
     display: block;
+  }
+  /* Global Mobile Padding normalization */
+  .container {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
   }
 }
 

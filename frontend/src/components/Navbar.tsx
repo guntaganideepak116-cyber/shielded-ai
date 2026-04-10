@@ -67,51 +67,61 @@ export const Navbar = () => {
     <>
       <nav className="navbar container mx-auto px-4 py-4 flex items-center justify-between gap-4">
         {/* LOGO */}
-        <div className="nav-logo logo-wrapper flex items-center gap-2 cursor-pointer" onClick={() => navigate('/')}>
-          <LogoRenderer className="logo-icon w-8 h-8 drop-shadow-[0_0_8px_rgba(99,102,241,0.5)]" />
-          <span className="logo-text font-display font-bold text-lg sm:text-xl gradient-text text-nowrap leading-tight">SECUREWEB AI</span>
+        <div className="nav-logo logo-wrapper flex items-center gap-1.5 cursor-pointer shrink-0" onClick={() => navigate('/')}>
+          <LogoRenderer className="logo-icon w-7 h-7 sm:w-8 sm:h-8 drop-shadow-[0_0_8px_rgba(99,102,241,0.5)]" />
+          <span className="logo-text font-display font-black text-xs sm:text-base md:text-xl gradient-text tracking-tighter italic uppercase truncate">SECUREWEB AI</span>
         </div>
 
         {/* DESKTOP NAV */}
-        <div className="hidden lg:flex items-center gap-6">
+        <div className="hidden lg:flex items-center gap-8">
           {navLinks.map((link) => (
             <button
               key={link.path}
               onClick={() => navigate(link.path)}
-              className={`text-xs font-body transition-colors ${
-                location.pathname === link.path ? 'text-primary font-bold' : 'text-muted-foreground hover:text-foreground'
+              className={`text-[11px] font-black uppercase tracking-widest transition-all duration-300 relative group ${
+                location.pathname === link.path ? 'text-primary' : 'text-slate-500 hover:text-white'
               }`}
             >
               {link.name}
+              <span className={`absolute -bottom-1 left-0 h-[1px] bg-primary transition-all duration-300 ${location.pathname === link.path ? 'w-full' : 'w-0 group-hover:w-full'}`} />
             </button>
           ))}
         </div>
 
         {/* RIGHT SECTION */}
-        <div className="nav-right flex items-center gap-2 sm:gap-3 shrink-0">
-          {/* PWA Install (Desktop only) */}
+        <div className="nav-right flex items-center gap-2 sm:gap-4 shrink-0">
+          {/* PWA Install (Desktop) */}
           {canInstall && (
             <Button 
               variant="outline" 
               size="sm" 
               onClick={handleInstallClick}
-              className="hidden lg:flex items-center gap-2 border-primary/30 text-primary hover:bg-primary/10 h-8 text-[11px] font-bold uppercase tracking-wider"
+              className="hidden xl:flex items-center gap-2 border-primary/30 text-primary hover:bg-primary/10 h-9 text-[10px] font-black uppercase tracking-widest px-4 rounded-xl shadow-lg shadow-primary/10"
             >
               <Download className="w-3.5 h-3.5" />
               {t('mon.add')}
             </Button>
           )}
 
-          {/* Lang Toggle */}
-          <button
-            onClick={() => setLang(lang === 'EN' ? 'TE' : 'EN')}
-            className="px-2 py-1 rounded bg-white/5 border border-white/10 text-primary hover:bg-white/10 transition-all font-display text-[10px] sm:text-[11px] font-bold flex items-center gap-1.5 min-w-[120px] sm:min-w-[140px] justify-center h-8"
-          >
-            <Globe className="w-3.5 h-3.5" />
-            <span className="text-white/80">{lang === 'EN' ? 'ENGLISH' : 'తెలుగు'}</span>
-            <span className="text-primary/40 mx-0.5">/</span>
-            <span>{lang === 'EN' ? 'తెలుగు' : 'ENGLISH'}</span>
-          </button>
+          {/* Lang Toggle Improved */}
+          <div className="flex items-center glass-card border-white/5 p-1 rounded-xl h-9">
+            <button
+              onClick={() => setLang('EN')}
+              className={`px-3 h-full rounded-lg text-[10px] sm:text-[11px] font-black uppercase tracking-widest transition-all ${
+                lang === 'EN' ? 'bg-primary text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'
+              }`}
+            >
+              EN
+            </button>
+            <button
+              onClick={() => setLang('TE')}
+              className={`px-3 h-full rounded-lg text-[10px] sm:text-[11px] font-black uppercase tracking-widest transition-all ${
+                lang === 'TE' ? 'bg-primary text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'
+              }`}
+            >
+              తెలుగు
+            </button>
+          </div>
 
           {/* Auth Section */}
           <div className="flex items-center gap-3">
@@ -152,7 +162,7 @@ export const Navbar = () => {
                   {t('nav.signin')}
                 </Button>
                 <div className="flex flex-col items-center">
-                   <div className="text-[10px] font-black text-primary/50 uppercase tracking-[0.2em] mb-0.5">{t('common.beta')}</div>
+                   <div className="text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-0.5">{t('common.beta')}</div>
                    <Button
                      onClick={() => navigate('/signup')}
                      className="gradient-btn text-xs font-display px-4 h-8"
@@ -195,22 +205,31 @@ export const Navbar = () => {
               className="mobile-nav-menu open"
             >
               <div className="flex flex-col gap-2">
-                <div className="px-4 py-2 mb-4 border-b border-white/5">
-                   <div className="flex items-center gap-2 mb-4">
-                      <LogoRenderer className="w-6 h-6" />
-                      <span className="font-display font-bold text-sm gradient-text">SECUREWEB AI</span>
-                   </div>
-                   <button
-                      onClick={() => {
-                        setLang(lang === 'EN' ? 'TE' : 'EN');
-                        setMenuOpen(false);
-                      }}
-                      className="w-full text-left py-2 text-xs text-primary font-bold flex items-center gap-2"
-                    >
-                      <Globe className="w-4 h-4" />
-                      {lang === 'EN' ? 'SWITCH TO తెలుగు' : 'SWITCH TO ENGLISH'}
-                    </button>
-                </div>
+                 <div className="px-4 py-6 mb-2 border-b border-white/5 bg-white/5 rounded-2xl mx-2">
+                    <div className="flex items-center gap-3 mb-6">
+                       <LogoRenderer className="w-8 h-8 drop-shadow-[0_0_8px_rgba(99,102,241,0.5)]" />
+                       <span className="font-display font-black text-lg gradient-text uppercase italic tracking-tighter">SECUREWEB AI</span>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-2 glass-card p-1 rounded-xl border-white/5 h-10">
+                      <button
+                        onClick={() => setLang('EN')}
+                        className={`rounded-lg text-[11px] font-black uppercase tracking-widest transition-all ${
+                          lang === 'EN' ? 'bg-primary text-white' : 'text-slate-500'
+                        }`}
+                      >
+                        English
+                      </button>
+                      <button
+                        onClick={() => setLang('TE')}
+                        className={`rounded-lg text-[11px] font-black uppercase tracking-widest transition-all ${
+                          lang === 'TE' ? 'bg-primary text-white' : 'text-slate-500'
+                        }`}
+                      >
+                        తెలుగు
+                      </button>
+                    </div>
+                 </div>
 
                 {navLinks.map((link) => (
                   <button

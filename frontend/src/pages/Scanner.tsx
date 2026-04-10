@@ -1,11 +1,11 @@
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useNavigate, useLocation, Link } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { 
-  Lock, Shield, Clock, LogOut, Sparkles, AlertTriangle, Globe,
-  Activity, PieChart as PieIcon, X, ShieldCheck, Download,
-  Search, History as HistoryIcon, LayoutDashboard, FileText, Zap,
-  ArrowRight, Loader2, Mail, Share2, RefreshCcw, User
+  Shield, Sparkles, AlertTriangle, Globe,
+  Activity, PieChart as PieIcon, ShieldCheck, Download,
+  Search, Loader2, Mail, ArrowRight,
+  ArrowLeft, ShieldAlert
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { trackEvent } from '@/lib/analytics';
@@ -15,16 +15,7 @@ import { callSecurityScan, getAiFixes, sendEmailAlert } from '@/lib/api-client';
 import { detectPlatform, PLATFORMS, type HostingPlatform } from '@/lib/platform-detection';
 import ShieldAnimation from '@/components/ShieldAnimation';
 import { LogoRenderer } from '@/components/LogoRenderer';
-import { useScan } from '@/context/ScanContext';
 
-// --- SVG HELPER COMPONENTS ---
-const ArrowLeft = ({ className }: { className?: string }) => (
-  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
-);
-
-const ShieldAlert = ({ className }: { className?: string }) => (
-  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-);
 // -----------------------------
 import ScannerInput from '@/components/ScannerInput';
 import ScoreDisplay from '@/components/ScoreDisplay';
@@ -38,11 +29,10 @@ import VirusTotalCard from '@/components/VirusTotalCard';
 import OWASPCard from '@/components/OWASPCard';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { type Vulnerability } from '@/lib/scan-data';
+import { type Vulnerability, type ScanResult, type AiFixResponse } from '@/lib/scan-data';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip } from 'recharts';
 import { toast } from 'react-hot-toast';
 import { generatePDFReport } from '@/lib/report-generator';
-import { type ScanResult, type AiFixResponse } from '@/lib/scan-data';
 
 const Scanner = () => {
   const navigate = useNavigate();
@@ -54,7 +44,6 @@ const Scanner = () => {
   const [url, setUrl] = useState('');
   const [phase, setPhase] = useState<'landing' | 'scanning' | 'results'>('landing');
   const [progress, setProgress] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(5);
   const [vulnerabilities, setVulnerabilities] = useState<Vulnerability[] | null>(null);
   const [score, setScore] = useState<number | null>(null);
   const [showModal, setShowModal] = useState(false);
@@ -85,13 +74,13 @@ const Scanner = () => {
           setScore(parsed.score);
           setUrl(parsed.url);
           if (parsed.vulnerabilities) {
-            setVulnerabilities(parsed.vulnerabilities.map((issue: any) => ({
-                id: issue.id || Math.random().toString(),
-                issue: issue.title || issue.issue,
-                severity: (issue.severity?.toLowerCase() || 'medium') as 'critical' | 'high' | 'medium' | 'low',
+            setVulnerabilities(parsed.vulnerabilities.map((v: any) => ({
+                id: v.id || Math.random().toString(),
+                issue: v.title || v.issue || 'Insecure Configuration',
+                severity: (v.severity?.toLowerCase() || 'medium') as 'critical' | 'high' | 'medium' | 'low',
                 status: 'failed',
                 fixTime: '1m',
-                description: issue.description
+                description: v.description || 'Security vector mitigation recommended.'
             })));
           }
         } else {
@@ -145,7 +134,6 @@ const Scanner = () => {
         const elapsed = Date.now() - startTime;
         const pct = Math.min((elapsed / duration) * 100, 100);
         setProgress(pct);
-        setTimeLeft(Math.max(0, Math.ceil((duration - elapsed) / 1000)));
 
         // Step-by-step progress messages
         if (pct < 20) setStatusMessage("🔍 Validating URL...");
@@ -342,9 +330,7 @@ const Scanner = () => {
   };
 
 
-  const isActive = (path: string) => location.pathname === path;
 
-  const platformInfo = detectedPlatform ? PLATFORMS[detectedPlatform] : PLATFORMS.apache;
 
   // Chart Data preparation
   const chartData = [
