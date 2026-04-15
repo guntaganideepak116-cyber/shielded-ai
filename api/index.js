@@ -1,19 +1,19 @@
-import chat from '../api-core/handlers/chat.js';
-import scan from '../api-core/handlers/scan.js';
-import aiFix from '../api-core/handlers/ai-fix.js';
-import history from '../api-core/handlers/history.js';
-import sendEmail from '../api-core/handlers/send-email.js';
-import sendAlert from '../api-core/handlers/send-alert.js';
-import monitor from '../api-core/handlers/monitor.js';
-import stats from '../api-core/handlers/stats.js';
-import chatbot from '../api-core/handlers/chatbot.js';
-import generateApiKey from '../api-core/handlers/user/generate-api-key.js';
-import updatePlan from '../api-core/handlers/user/update-plan.js';
-import addMonitor from '../api-core/handlers/monitors/add.js';
-import cronMonitor from '../api-core/handlers/cron/monitor.js';
+import chat from './_core/handlers/chat.js';
+import scan from './_core/handlers/scan.js';
+import aiFix from './_core/handlers/ai-fix.js';
+import history from './_core/handlers/history.js';
+import sendEmail from './_core/handlers/send-email.js';
+import sendAlert from './_core/handlers/send-alert.js';
+import monitor from './_core/handlers/monitor.js';
+import stats from './_core/handlers/stats.js';
+import chatbot from './_core/handlers/chatbot.js';
+import generateApiKey from './_core/handlers/user/generate-api-key.js';
+import updatePlan from './_core/handlers/user/update-plan.js';
+import addMonitor from './_core/handlers/monitors/add.js';
+import cronMonitor from './_core/handlers/cron/monitor.js';
 
 export default async function handler(req, res) {
-  const url = new URL(req.url, `http://${req.headers.host}`);
+  const url = new URL(req.url, 'http://localhost');
   const path = url.pathname;
 
   // Route mapping
