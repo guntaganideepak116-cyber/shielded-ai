@@ -454,7 +454,7 @@ const Monitoring = () => {
         {/* Recent Alerts Section */}
         {monitors.length > 0 && (
           <div className="space-y-6 pt-12 border-t border-white/5">
-            <div className="flex items-center justify-between">
+            <div id="monitoring-activities" className="flex items-center justify-between">
                <h2 className="text-[10px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">
                   <AlertCircle className="w-4 h-4" /> Strategic Security Alerts
                </h2>
