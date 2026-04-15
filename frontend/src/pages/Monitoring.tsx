@@ -5,7 +5,7 @@ import {
   Power, ExternalLink, ShieldCheck, AlertCircle,
   TrendingUp, History as HistoryIcon, Check, Loader2, BarChart3,
   ArrowUpRight, ArrowDownRight, LayoutGrid, FileText, RefreshCw, 
-  ChevronRight, ArrowRight, Gauge
+  ChevronRight, ArrowRight, Gauge, ShieldAlert, Sparkles
 } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { LogoRenderer } from '@/components/LogoRenderer';
