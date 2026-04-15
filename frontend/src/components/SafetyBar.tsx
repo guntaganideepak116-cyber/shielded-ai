@@ -75,17 +75,6 @@ const SafetyBar = ({
                 <TrendingDown className="w-4 h-4 text-red-500" />
              </Button>
              <div className="w-px h-4 bg-white/10 mx-1" />
-             <div className="flex items-center gap-1">
-                {['EN', 'TE', 'HI'].map(l => (
-                  <button 
-                  key={l}
-                  onClick={() => onLangChange(l)}
-                  className={`text-[9px] font-bold w-6 h-6 rounded-md transition-all ${currentLang === l ? 'bg-primary text-white' : 'text-white/40 hover:bg-white/10'}`}
-                  >
-                    {l}
-                  </button>
-                ))}
-             </div>
            </div>
 
           {onOpenChat && (

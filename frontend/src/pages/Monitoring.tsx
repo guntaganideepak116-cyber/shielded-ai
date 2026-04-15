@@ -81,7 +81,15 @@ const Monitoring = () => {
       setNewUrl('');
       toast.success(data.message || "Monitoring activated!");
 
-      // Trigger first scan using the existing function
+      // Scroll to the list of assets/activities
+      setTimeout(() => {
+        window.scrollTo({ 
+          top: document.getElementById('asset-guard-list')?.offsetTop || 500, 
+          behavior: 'smooth' 
+        });
+      }, 300);
+
+      // Trigger first scan
       if (data.siteId) {
         runImmediateScan(data.siteId, newUrl);
       }
@@ -234,7 +242,7 @@ const Monitoring = () => {
         {/* Monitors List */}
         <div className="space-y-6">
           <div className="flex items-center justify-between">
-            <h2 className="text-[10px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">
+            <h2 id="asset-guard-list" className="text-[10px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">
               <Activity className="w-4 h-4" /> Asset Guard List
             </h2>
             <div className="flex items-center gap-4 text-[10px] font-bold text-slate-600">

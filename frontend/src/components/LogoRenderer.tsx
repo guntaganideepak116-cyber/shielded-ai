@@ -44,9 +44,9 @@ export const LogoRenderer: React.FC<LogoRendererProps> = ({ className = "w-10 h-
       <path 
         d="M 50 5 L 90 20 L 90 55 C 90 85 50 97 50 97 C 50 97 10 85 10 55 L 10 20 Z" 
         fill="url(#logoBg)" 
-        stroke="#4f46e5" 
-        strokeWidth="1.5"
-        filter="drop-shadow(0px 8px 10px rgba(0,0,0,0.6))"
+        stroke="#6366f1" 
+        strokeWidth="3"
+        filter="drop-shadow(0px 0px 12px rgba(99,102,241,0.8))"
       />
 
       {/* 2. Right Half Shadow for 3D depth */}

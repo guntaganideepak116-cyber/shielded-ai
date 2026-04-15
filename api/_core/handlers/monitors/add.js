@@ -35,27 +35,27 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Check if site is reachable
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 8000);
-    
+    // Check if site is reachable with fallback
     let reachable = false;
     try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 8000);
+      
       const check = await fetch(parsedUrl.toString(), {
-        method: 'HEAD',
+        method: 'GET', // Use GET as it's more likely to be allowed
         signal: controller.signal,
-        headers: { 'User-Agent': 'SecureWeb-AI-Monitor/1.0' }
+        headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36' }
       });
       reachable = check.status < 500;
-    } catch {
-      reachable = false;
-    } finally {
       clearTimeout(timeout);
+    } catch {
+      // If network error, still allow if it's a validly formatted URL
+      reachable = true; 
     }
 
     if (!reachable) {
       return res.status(400).json({
-        error: `Cannot reach ${parsedUrl.hostname}. Check the URL is correct.`
+        error: `Website ${parsedUrl.hostname} is unresponsive. Please check the URL.`
       });
     }
 

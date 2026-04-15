@@ -69,7 +69,7 @@ export const Navbar = () => {
       <nav className="navbar container mx-auto px-4 py-4 flex items-center justify-between gap-4">
         {/* LOGO */}
         <div className="nav-logo logo-wrapper flex items-center gap-1.5 cursor-pointer shrink-0" onClick={() => navigate('/')}>
-          <LogoRenderer className="logo-icon w-7 h-7 sm:w-8 sm:h-8 drop-shadow-[0_0_8px_rgba(99,102,241,0.5)]" />
+          <LogoRenderer className="logo-icon w-7 h-7 sm:w-8 sm:h-8 drop-shadow-[0_0_15px_rgba(99,102,241,0.8)] filter brightness-125" />
           <span className="logo-text font-display font-black text-xs sm:text-base md:text-xl gradient-text tracking-tighter italic uppercase truncate">SECUREWEB AI</span>
         </div>
 
@@ -104,25 +104,7 @@ export const Navbar = () => {
             </Button>
           )}
 
-          {/* Lang Toggle Improved */}
-          <div className="flex items-center glass-card border-white/5 p-1 rounded-xl h-9">
-            <button
-              onClick={() => setLang('EN')}
-              className={`px-3 h-full rounded-lg text-[10px] sm:text-[11px] font-black uppercase tracking-widest transition-all ${
-                lang === 'EN' ? 'bg-primary text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'
-              }`}
-            >
-              EN
-            </button>
-            <button
-              onClick={() => setLang('TE')}
-              className={`px-3 h-full rounded-lg text-[10px] sm:text-[11px] font-black uppercase tracking-widest transition-all ${
-                lang === 'TE' ? 'bg-primary text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'
-              }`}
-            >
-              తెలుగు
-            </button>
-          </div>
+          {/* Lang Toggle Removed */}
 
           {/* Auth Section */}
           <div className="flex items-center gap-3">
@@ -212,24 +194,7 @@ export const Navbar = () => {
                        <span className="font-display font-black text-lg gradient-text uppercase italic tracking-tighter">SECUREWEB AI</span>
                     </div>
                     
-                    <div className="grid grid-cols-2 gap-2 glass-card p-1 rounded-xl border-white/5 h-10">
-                      <button
-                        onClick={() => setLang('EN')}
-                        className={`rounded-lg text-[11px] font-black uppercase tracking-widest transition-all ${
-                          lang === 'EN' ? 'bg-primary text-white' : 'text-slate-500'
-                        }`}
-                      >
-                        English
-                      </button>
-                      <button
-                        onClick={() => setLang('TE')}
-                        className={`rounded-lg text-[11px] font-black uppercase tracking-widest transition-all ${
-                          lang === 'TE' ? 'bg-primary text-white' : 'text-slate-500'
-                        }`}
-                      >
-                        తెలుగు
-                      </button>
-                    </div>
+                    {/* Lang Toggle Removed from Mobile */}
                  </div>
 
                 {navLinks.map((link) => (
