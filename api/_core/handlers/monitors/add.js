@@ -59,7 +59,11 @@ export default async function handler(req, res) {
       });
     }
 
-    // Save to Firestore
+    if (!db) {
+      throw new Error('Database connection not established. Check Firebase Environment Variables.');
+    }
+
+    // Save to Firestore using server-side timestamps for reliability
     const siteData = {
       userId,
       url: parsedUrl.toString(),
@@ -68,8 +72,8 @@ export default async function handler(req, res) {
       enabled: true,
       lastScore: 0,
       lastStatus: 'pending',
-      lastChecked: admin.firestore.Timestamp.now(),
-      createdAt: admin.firestore.Timestamp.now(),
+      lastChecked: admin.firestore.FieldValue.serverTimestamp(),
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
       checkInterval: 'daily',
       uptime: 100
     };
@@ -87,7 +91,11 @@ export default async function handler(req, res) {
     });
 
   } catch (err) {
-    console.error('Monitor add error:', err);
-    return res.status(500).json({ error: err.message });
+    console.error('Monitor add error:', err.message);
+    return res.status(500).json({ 
+      error: 'Security Node Error', 
+      message: err.message,
+      suggestion: 'Ensure FIREBASE_PROJECT_ID and other service account keys are set.' 
+    });
   }
 }
