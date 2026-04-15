@@ -1,4 +1,4 @@
-import { db } from '../lib/firebase-admin.js';
+import { db } from '../../lib/firebase-admin.js';
 
 export default async function handler(req, res) {
   // CORS

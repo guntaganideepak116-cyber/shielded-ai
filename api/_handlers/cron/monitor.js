@@ -1,6 +1,6 @@
-const admin = require('firebase-admin');
-const axios = require('axios');
-const { Resend } = require('resend');
+import admin from 'firebase-admin';
+import axios from 'axios';
+import { Resend } from 'resend';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -17,7 +17,7 @@ if (!admin.apps.length) {
 
 const db = admin.apps.length ? admin.firestore() : null;
 
-module.exports = async (req, res) => {
+export default async function handler(req, res) {
   const authHeader = req.headers['authorization'];
   if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
     return res.status(401).json({ error: 'Unauthorized' });
@@ -26,8 +26,6 @@ module.exports = async (req, res) => {
   if (!db) return res.status(500).json({ error: 'Database not initialized' });
 
   try {
-    // This is a simplified cron that iterates over all users' monitors
-    // Performance Note: For many users, this should be parallelized or batched
     const monitorsSnap = await db.collectionGroup('sites').where('enabled', '==', true).get();
     const results = [];
 
@@ -35,21 +33,16 @@ module.exports = async (req, res) => {
       const monitor = doc.data();
       const { url, email, lastScore } = monitor;
 
-      // Run new scan (Internal call or external call to the scan API)
-      // For Vercel Serverless, we can use an internal function or just re-implement the scan logic
-      // Simplest: call the local scan API endpoint
       try {
         const scanResponse = await axios.post(`${process.env.VERCEL_URL || 'http://localhost:3000'}/api/scan`, { url });
         const newResult = scanResponse.data;
         const newScore = newResult.score;
 
-        // Update last checked
         await doc.ref.update({
           lastScore: newScore,
           lastChecked: new Date()
         });
 
-        // 4. Send email if score dropped significantly (10+ points)
         if (lastScore && (lastScore - newScore) >= 10) {
            await resend.emails.send({
              from: 'SecureWeb AI <onboarding@resend.dev>',
@@ -70,8 +63,8 @@ module.exports = async (req, res) => {
       }
     }
 
-    res.status(200).json({ success: true, scans: results });
+    return res.status(200).json({ success: true, scans: results });
   } catch (e) {
-    res.status(500).json({ error: e.message });
+    return res.status(500).json({ error: e.message });
   }
-};
+}
