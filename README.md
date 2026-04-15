@@ -50,3 +50,5 @@ This project uses **Firestore Security Rules** to ensure that:
 1. Only authenticated users can write data.
 2. Users can only read their own scan history.
 3. Anonymous sessions are blocked from persistent storage (SaaS Guard).
+
+
