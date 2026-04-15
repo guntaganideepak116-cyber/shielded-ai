@@ -1,10 +1,17 @@
 import Anthropic from '@anthropic-ai/sdk';
 
-const client = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY
-});
+let client;
 
 export default async function handler(req, res) {
+  if (!client && process.env.ANTHROPIC_API_KEY) {
+    client = new Anthropic({
+      apiKey: process.env.ANTHROPIC_API_KEY
+    });
+  }
+
+  if (!client) {
+    return res.status(500).json({ error: 'Chat service not configured (API key missing)' });
+  }
   // CORS
   res.setHeader('Access-Control-Allow-Credentials', true);
   res.setHeader('Access-Control-Allow-Origin', '*');
