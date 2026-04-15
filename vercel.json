@@ -2,36 +2,8 @@
   "version": 2,
   "rewrites": [
     {
-      "source": "/api/chat",
-      "destination": "/api/chat.js"
-    },
-    {
-      "source": "/api/scan",
-      "destination": "/api/scan.js"
-    },
-    {
-      "source": "/api/ai-fix",
-      "destination": "/api/ai-fix.js"
-    },
-    {
-      "source": "/api/history",
-      "destination": "/api/history.js"
-    },
-    {
-      "source": "/api/send-email",
-      "destination": "/api/send-email.js"
-    },
-    {
-      "source": "/api/send-alert",
-      "destination": "/api/send-alert.js"
-    },
-    {
-      "source": "/api/monitor",
-      "destination": "/api/monitor.js"
-    },
-    {
-      "source": "/api/stats",
-      "destination": "/api/stats.js"
+      "source": "/api/(.*)",
+      "destination": "/api/index.js"
     },
     {
       "source": "/((?!api/|assets/|favicon.ico|manifest.json|sw.js|robots.txt).*)",
@@ -50,6 +22,12 @@
         { "key": "Strict-Transport-Security", "value": "max-age=31536000; includeSubDomains" },
         { "key": "Permissions-Policy", "value": "camera=(), microphone=(), geolocation=()" }
       ]
+    }
+  ],
+  "crons": [
+    {
+      "path": "/api/cron/monitor",
+      "schedule": "0 * * * *"
     }
   ]
 }

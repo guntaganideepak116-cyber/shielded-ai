@@ -1,4 +1,4 @@
-import { db, admin } from './lib/firebase-admin.js';
+import { db, admin } from '../lib/firebase-admin.js';
 
 const PLANS = {
   free: { limits: { dailyScans: 10 } },
