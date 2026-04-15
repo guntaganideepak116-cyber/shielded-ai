@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <title>SECUREWEB AI - Website Security Scanner</title>
+    <meta name="description" content="AI-Powered Website Fortress Generator. Find vulnerabilities and fortify in 90 seconds." />
+    <meta name="author" content="SECUREWEB AI" />
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#00d4ff">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" 
+          content="black-translucent">
+    <meta name="apple-mobile-web-app-title" 
+          content="SecureWeb AI">
+    <link rel="apple-touch-icon" href="/icon-192.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+
+    <meta property="og:title" content="SECUREWEB AI - Website Security Scanner" />
+    <meta property="og:description" content="AI-Powered Website Fortress Generator" />
+    <meta property="og:type" content="website" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@SecureWeb" />
+
+    <script>
+      window._pwaPrompt = null;
+      window._pwaShown = false;
+
+      window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        window._pwaPrompt = e;
+        // Dispatch after short delay so React mounts first
+        setTimeout(() => {
+          window.dispatchEvent(new CustomEvent('pwa:ready'));
+        }, 2500);
+      });
+
+      window.addEventListener('appinstalled', () => {
+        window._pwaPrompt = null;
+        localStorage.setItem('pwa:installed', '1');
+        window.dispatchEvent(new CustomEvent('pwa:installed'));
+      });
+    </script>
+  </head>
+
+  <body>
+    <div id="root"></div>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js');
+        });
+      }
+    </script>
+    <script type="module" src="/frontend/src/main.tsx"></script>
+  </body>
+</html>
