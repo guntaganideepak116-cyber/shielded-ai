@@ -68,9 +68,9 @@ export const Navbar = () => {
     <>
       <nav className="navbar container mx-auto px-4 py-4 flex items-center justify-between gap-4">
         {/* LOGO */}
-        <div className="nav-logo logo-wrapper flex items-center gap-1.5 cursor-pointer shrink-0" onClick={() => navigate('/')}>
+        <div className="nav-logo logo-wrapper flex items-center gap-2 cursor-pointer shrink-0" onClick={() => navigate('/')}>
           <LogoRenderer className="logo-icon w-7 h-7 sm:w-8 sm:h-8 drop-shadow-[0_0_15px_rgba(99,102,241,0.8)] filter brightness-125" />
-          <span className="logo-text font-display font-black text-xs sm:text-base md:text-xl gradient-text tracking-tighter italic uppercase truncate">SECUREWEB AI</span>
+          <span className="logo-text font-display font-black text-sm sm:text-base md:text-xl gradient-text tracking-tighter italic uppercase whitespace-nowrap">SECUREWEB AI</span>
         </div>
 
         {/* DESKTOP NAV */}
@@ -111,10 +111,18 @@ export const Navbar = () => {
             {(user && !user.isAnonymous) ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Avatar className="user-avatar w-8 h-8 border border-white/10 cursor-pointer hover:ring-2 hover:ring-primary/50 transition-all">
-                    <AvatarImage src={user.photoURL || ''} />
-                    <AvatarFallback className="bg-primary/20 text-[10px]">{user.email?.charAt(0).toUpperCase() || '?'}</AvatarFallback>
-                  </Avatar>
+                  <div className="flex items-center gap-3 glass-card border-white/5 p-1 pr-3 rounded-full hover:bg-white/5 transition-colors cursor-pointer">
+                    <Avatar className="w-8 h-8 border border-primary/20">
+                      <AvatarImage src={user.photoURL || ''} />
+                      <AvatarFallback className="bg-primary/10 text-primary text-[10px] font-black uppercase">
+                        {user.email?.substring(0, 2)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="hidden sm:flex flex-col">
+                      <span className="text-[10px] font-black text-white uppercase tracking-tighter leading-none">{user.displayName || 'Architect'}</span>
+                      <span className="text-[8px] font-bold text-success uppercase tracking-widest mt-0.5">Verified</span>
+                    </div>
+                  </div>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-56 glass-card-strong border-white/10 text-white" align="end">
                   <DropdownMenuLabel className="font-display font-bold text-xs uppercase tracking-widest text-white/50">My Terminal</DropdownMenuLabel>

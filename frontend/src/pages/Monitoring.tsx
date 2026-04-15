@@ -159,9 +159,21 @@ const Monitoring = () => {
             timestamp: date.getTime()
          }
       });
-      // Sort by timestamp just in case
+      // If history is empty, add the current score as the only point
+      if (history.length === 0) {
+        const currentSite = monitors.find(m => m.id === siteId);
+        if (currentSite) {
+          const now = new Date();
+          history.push({
+            date: now.toLocaleDateString(),
+            displayDate: now.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+            score: currentSite.lastScore || 0,
+            timestamp: now.getTime()
+          });
+        }
+      }
+      
       const sortedHistory = [...history].sort((a, b) => a.timestamp - b.timestamp);
-      // Only keep last 7 days (or items)
       setSiteHistory(sortedHistory.slice(-7));
     } catch (e) {
       console.error(e);
@@ -296,6 +308,12 @@ const Monitoring = () => {
                                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-tighter">Uptime: <span className="text-white">{site.uptime || 99.9}%</span></span>
                               </div>
                               {getStatusBadge(site.lastScore)}
+                              {site.enabled && site.lastScore < 90 && site.lastScore > 0 && (
+                                 <div className="flex items-center gap-1.5 py-0.5 px-3 bg-destructive/10 text-destructive rounded-full border border-destructive/20 animate-pulse">
+                                   <ShieldAlert className="w-3 h-3" />
+                                   <span className="text-[9px] font-black uppercase tracking-widest">Action Needed</span>
+                                 </div>
+                               )}
                            </div>
                         </div>
                       </div>
@@ -332,6 +350,14 @@ const Monitoring = () => {
                         >
                           <Trash2 className="w-4 h-4" /> Delete
                         </Button>
+                        {site.lastScore < 90 && (
+                          <Button 
+                            onClick={() => navigate('/scan', { state: { reScanUrl: site.url } })}
+                            className="h-11 px-6 rounded-xl bg-primary text-black text-[10px] font-black uppercase tracking-widest gap-2 hover:scale-105 transition-all shadow-lg shadow-primary/30"
+                          >
+                            <Sparkles className="w-4 h-4" /> Fix Now
+                          </Button>
+                        )}
                       </div>
                     </div>
 
