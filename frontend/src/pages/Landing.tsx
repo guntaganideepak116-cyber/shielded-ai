@@ -157,7 +157,7 @@ const Landing = () => {
               <div className="relative group max-w-2xl w-full">
                 <div className="relative z-10 glass-card-strong border-white/10 overflow-hidden rounded-[2rem] shadow-[0_0_100px_rgba(168,85,247,0.15)] transform group-hover:scale-[1.02] transition-transform duration-700">
                     <img 
-                      src="/security_dashboard_hero_1776352867817.png" 
+                      src="/images/dashboard_hero.png" 
                       alt="SecureWeb AI Dashboard" 
                       className="w-full h-auto object-cover opacity-90 group-hover:opacity-100 transition-opacity" 
                     />
