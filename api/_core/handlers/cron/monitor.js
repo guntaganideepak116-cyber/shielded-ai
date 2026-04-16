@@ -1,21 +1,8 @@
-import admin from 'firebase-admin';
+import { db, admin } from '../../lib/firebase-admin.js';
 import axios from 'axios';
 import { Resend } from 'resend';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
-
-if (!admin.apps.length) {
-  try {
-    const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT 
-      ? JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT) 
-      : null;
-    if (serviceAccount) {
-      admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
-    }
-  } catch (e) {}
-}
-
-const db = admin.apps.length ? admin.firestore() : null;
 
 export default async function handler(req, res) {
   const authHeader = req.headers['authorization'];

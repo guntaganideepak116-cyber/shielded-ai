@@ -1,19 +1,6 @@
-const admin = require('firebase-admin');
+import { db, admin } from '../lib/firebase-admin.js';
 
-if (!admin.apps.length) {
-  try {
-    const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT 
-      ? JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT) 
-      : null;
-    if (serviceAccount) {
-      admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
-    }
-  } catch (e) {}
-}
-
-const db = admin.apps.length ? admin.firestore() : null;
-
-module.exports = async (req, res) => {
+export default async (req, res) => {
   if (!db) return res.status(500).json({ error: 'Database not initialized' });
 
   if (req.method === 'POST') {
