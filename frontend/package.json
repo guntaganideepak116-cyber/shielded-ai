@@ -7,10 +7,10 @@
     "dev": "vite",
     "build": "vite build",
     "build:dev": "vite build --mode development",
-    "lint": "eslint frontend/src",
+    "lint": "eslint src",
     "preview": "vite preview",
-    "test": "vitest run frontend/src",
-    "test:watch": "vitest frontend/src"
+    "test": "vitest run src",
+    "test:watch": "vitest src"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.89.0",
