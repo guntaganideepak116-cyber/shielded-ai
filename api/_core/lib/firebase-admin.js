@@ -2,8 +2,24 @@ import admin from 'firebase-admin';
 
 if (!admin.apps.length) {
   try {
+    let serviceAccount = null;
+
     if (process.env.FIREBASE_SERVICE_ACCOUNT) {
-      const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+      try {
+        // Handle unescaped newlines that often happen in Vercel env vars
+        const cleanJson = process.env.FIREBASE_SERVICE_ACCOUNT.replace(/\n/g, '\\n').trim();
+        serviceAccount = JSON.parse(cleanJson);
+      } catch (e) {
+        // Fallback: try raw parse if cleaning failed
+        serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+      }
+    }
+
+    if (serviceAccount) {
+      // Ensure the private key has real newlines
+      if (serviceAccount.private_key) {
+        serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
+      }
       admin.initializeApp({
         credential: admin.credential.cert(serviceAccount)
       });
@@ -17,7 +33,7 @@ if (!admin.apps.length) {
       });
     }
   } catch (error) {
-    console.error('Firebase admin initialization error', error.stack);
+    console.error('CRITICAL: Firebase admin initialization failed:', error.message);
   }
 }
 
