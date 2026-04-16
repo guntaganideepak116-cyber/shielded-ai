@@ -149,18 +149,23 @@ const Landing = () => {
 
             {/* Hero image */}
             <motion.div
-              className="flex-1 flex justify-center"
-              initial={{ opacity: 0, scale: 0.85 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.4, duration: 0.7, ease: 'easeOut' }}
+              className="flex-1 flex justify-center lg:justify-end"
+              initial={{ opacity: 0, x: 50 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.4, duration: 0.8, ease: 'easeOut' }}
             >
-              <div className="relative group">
-                <div className="w-64 h-64 md:w-80 md:h-80 lg:w-96 lg:h-96 flex items-center justify-center float-animation">
-                    <img src="/images/premium_shield.png" alt="SecureWeb AI Shield" className="w-56 h-56 md:w-72 md:h-72 lg:w-80 lg:h-80 object-contain drop-shadow-[0_0_50px_rgba(168,85,247,0.4)] group-hover:scale-105 transition-transform duration-500" />
-                    <Sparkles className="absolute top-1/4 right-1/4 w-8 h-8 text-primary animate-pulse opacity-50" />
+              <div className="relative group max-w-2xl w-full">
+                <div className="relative z-10 glass-card-strong border-white/10 overflow-hidden rounded-[2rem] shadow-[0_0_100px_rgba(168,85,247,0.15)] transform group-hover:scale-[1.02] transition-transform duration-700">
+                    <img 
+                      src="/security_dashboard_hero_1776352867817.png" 
+                      alt="SecureWeb AI Dashboard" 
+                      className="w-full h-auto object-cover opacity-90 group-hover:opacity-100 transition-opacity" 
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent pointer-events-none" />
                 </div>
-                <div className="absolute inset-0 rounded-full opacity-30 blur-3xl"
-                  style={{ background: 'radial-gradient(circle, #667eea 0%, transparent 60%)' }} />
+                {/* Decorative glows */}
+                <div className="absolute -top-20 -right-20 w-64 h-64 bg-primary/20 rounded-full blur-[100px] animate-pulse" />
+                <div className="absolute -bottom-20 -left-20 w-64 h-64 bg-purple-500/20 rounded-full blur-[100px] animate-pulse delay-700" />
               </div>
             </motion.div>
           </div>
@@ -325,32 +330,18 @@ const Landing = () => {
         </section>
 
         {/* FOOTER */}
-        <footer className="border-t border-border">
-          <div className="container mx-auto px-4 py-8 flex flex-col sm:flex-row items-center justify-between gap-6">
-            <div className="flex items-center gap-2">
-              <LogoRenderer className="w-6 h-6 drop-shadow-[0_0_5px_rgba(99,102,241,0.5)]" />
-              <span className="font-display font-semibold text-sm gradient-text">SECUREWEB AI</span>
+        <footer className="border-t border-white/5 bg-background relative z-20">
+          <div className="container mx-auto px-6 py-12 flex flex-col md:flex-row items-center justify-between gap-8">
+            <div className="flex items-center gap-3">
+              <LogoRenderer className="w-8 h-8 drop-shadow-[0_0_8px_rgba(168,85,247,0.5)]" />
+              <span className="font-display font-black text-xl tracking-tighter gradient-text uppercase italic">SECUREWEB AI</span>
             </div>
             
-            <div className="flex items-center gap-4 text-[10px] text-muted-foreground font-body uppercase tracking-tighter">
-              <span>Powered by Groq Cloud AI</span>
-              <span className="w-1 h-1 rounded-full bg-border" />
-              <span>In partnership with Hackathon Secure</span>
-            </div>
-
-            <div className="flex flex-wrap items-center justify-center gap-6 text-[10px] text-muted-foreground font-body uppercase tracking-[0.2em]">
-               <button onClick={() => navigate('/monitoring')} className="hover:text-primary transition-colors">Monitoring</button>
-               <button onClick={() => navigate('/api-docs')} className="hover:text-primary transition-colors">API</button>
-               <button onClick={() => navigate('/documentation')} className="hover:text-primary transition-colors">Docs</button>
-            </div>
-            
-            <p className="text-[10px] text-muted-foreground font-body italic opacity-50 max-w-xs text-center sm:text-right">
-              “This tool performs surface-level security audits. For full penetration testing, contact a certified provider.”
+            <p className="text-sm text-slate-500 font-medium tracking-tight">
+              © 2026 Secureweb AI. All rights reserved.
             </p>
 
-            <p className="text-xs text-muted-foreground font-body">
-              © {new Date().getFullYear()} SECUREWEB AI.
-            </p>
+            <div className="hidden md:block w-32" /> {/* Spacer for balance */}
           </div>
         </footer>
       </div>

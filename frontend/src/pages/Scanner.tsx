@@ -128,23 +128,35 @@ const Scanner = () => {
     setDetectedPlatform(platform);
 
     const startTime = Date.now();
-    const duration = 5000;
-    
+    let isComplete = false;
+
+    // Start API call immediately
+    const apiPromise = finishScan(cleanUrl).then(() => {
+      isComplete = true;
+    });
+
     const interval = setInterval(() => {
         const elapsed = Date.now() - startTime;
-        const pct = Math.min((elapsed / duration) * 100, 100);
+        // If API finished, accelerate to 100%, otherwise slow down at 90%
+        let pct;
+        if (isComplete) {
+          pct = 100;
+        } else {
+          // Normal progress up to 90% over 6 seconds
+          pct = Math.min((elapsed / 6000) * 90, 90);
+        }
+        
         setProgress(pct);
 
         // Step-by-step progress messages
         if (pct < 20) setStatusMessage("🔍 Validating URL...");
         else if (pct < 40) setStatusMessage("📡 Fetching security headers...");
         else if (pct < 60) setStatusMessage("🔒 Checking SSL certificate...");
-        else if (pct < 80) setStatusMessage("🦠 Running VirusTotal scan...");
+        else if (pct < 85) setStatusMessage("🦠 Running VirusTotal scan...");
         else setStatusMessage("🤖 Generating AI recommendations...");
 
         if (pct >= 100) {
             clearInterval(interval);
-            finishScan(cleanUrl);
         }
     }, 100);
   };
