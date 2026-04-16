@@ -3,11 +3,11 @@
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "/api/index.js"
+      "destination": "/BACKEND/index.js"
     },
     {
       "source": "/((?!api/|assets/|favicon.ico|manifest.json|sw.js|robots.txt).*)",
-      "destination": "/index.html"
+      "destination": "/FRONTEND/index.html"
     }
   ],
   "headers": [

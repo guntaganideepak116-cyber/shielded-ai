@@ -2,23 +2,12 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import {
   Shield, ShieldCheck, Zap, Lock, Eye, Code, ArrowRight,
-  CheckCircle, Users, Star, BarChart3, Globe, Clock, Sparkles, LogOut,
+  CheckCircle, Users, Star, BarChart3, Globe, Clock, Sparkles,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useEffect, useState } from 'react';
-import { LogoRenderer } from '@/components/LogoRenderer';
-// Counters can be fetched from the new Node.js backend if needed
-import { useAuth } from '@/hooks/use-auth';
-import { useLanguage } from '@/context/LanguageContext';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger
-} from "@/components/ui/dropdown-menu";
+import { getGlobalScanCount, subscribeToCounter } from '@/lib/supabase-helpers';
+import heroShield from '@/assets/hero-shield.png';
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
@@ -38,9 +27,9 @@ const FEATURES = [
 ];
 
 const STATS = [
-  { value: 'LIVE', label: 'Network status' },
-  { value: '0-Day', label: 'Threat detection' },
-  { value: '24/7', label: 'Audit interval' },
+  { value: '90s', label: 'Average fix time' },
+  { value: '50+', label: 'Security checks' },
+  { value: '99.2%', label: 'Fix success rate' },
 ];
 
 const TESTIMONIALS = [
@@ -51,18 +40,12 @@ const TESTIMONIALS = [
 
 const Landing = () => {
   const navigate = useNavigate();
-  const { user, signOut } = useAuth();
-  const { lang, setLang, t } = useLanguage();
-  const [stats, setStats] = useState<{totalScans: number, totalUsers: number, secureCount: number} | null>(null);
-  useEffect(() => {
-    fetch('/api/stats')
-      .then(r => r.json())
-      .then(data => setStats(data))
-      .catch(() => setStats(null));
-  }, []);
+  const [globalCount, setGlobalCount] = useState(10247);
 
   useEffect(() => {
-    // Stats fetch is handled above
+    getGlobalScanCount().then(setGlobalCount);
+    const unsub = subscribeToCounter(setGlobalCount);
+    return unsub;
   }, []);
 
   return (
@@ -78,6 +61,27 @@ const Landing = () => {
       </div>
 
       <div className="relative z-10">
+        {/* NAV */}
+        <nav className="container mx-auto px-4 py-5 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Shield className="w-6 h-6 text-primary" />
+            <span className="font-display font-bold text-lg gradient-text">SECURESHIELD AI</span>
+          </div>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => navigate('/history')}
+              className="text-xs text-muted-foreground hover:text-foreground transition-colors font-body hidden sm:block"
+            >
+              History
+            </button>
+            <Button
+              onClick={() => navigate('/scan')}
+              className="gradient-btn text-sm font-display px-5 py-2"
+            >
+              Start Scanning
+            </Button>
+          </div>
+        </nav>
 
         {/* HERO */}
         <section className="container mx-auto px-4 pt-12 pb-20 md:pt-20 md:pb-28">
@@ -90,44 +94,38 @@ const Landing = () => {
                 className="inline-flex items-center gap-2 glass-card px-3 py-1.5 text-xs font-body text-primary mb-6"
               >
                 <Sparkles className="w-3.5 h-3.5" />
-                {stats && stats.totalScans > 0 ? (
-                  <span>⚡ {stats.totalScans.toLocaleString()} websites scanned</span>
-                ) : (
-                  <span>⚡ AI-powered security scanner</span>
-                )}
+                <span>{globalCount.toLocaleString()} websites fortified</span>
               </motion.div>
 
               <motion.h1 variants={fadeUp} custom={1}
-                className="font-display text-4xl md:text-5xl lg:text-7xl font-bold tracking-tight text-foreground leading-[1.1] mb-6"
+                className="font-display text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground leading-tight mb-6"
               >
-                {t('hero.title1')}<br />
-                <span className="gradient-text">{t('hero.title2')}</span>
+                Your Website Is{' '}
+                <span className="gradient-text">Hackable.</span>
+                <br />
+                We Fix It in <span className="gradient-text">90 Seconds.</span>
               </motion.h1>
-              
+
               <motion.p variants={fadeUp} custom={2}
-                className="text-lg text-muted-foreground font-body leading-relaxed max-w-lg mx-auto lg:mx-0 mb-10"
+                className="text-lg text-muted-foreground font-body mb-8 max-w-md mx-auto lg:mx-0"
               >
-                {t('hero.subtitle')}
+                AI-powered security scanner that finds vulnerabilities, generates server configs, and fortifies your site — no security expertise needed.
               </motion.p>
 
               <motion.div variants={fadeUp} custom={3}
-                className="flex flex-col sm:flex-row items-center gap-4 justify-center lg:justify-start"
+                className="flex flex-col sm:flex-row items-center gap-3 justify-center lg:justify-start"
               >
-                <Button 
-                   onClick={() => navigate('/scan')}
-                   className="gradient-btn h-14 px-10 rounded-2xl text-base font-display font-bold group w-full sm:w-auto"
+                <Button
+                  onClick={() => navigate('/scan')}
+                  className="gradient-btn px-8 py-6 text-base font-display font-bold rounded-xl pulse-neon w-full sm:w-auto"
                 >
-                  {t('hero.cta')}
-                  <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                  <Shield className="w-5 h-5 mr-2" />
+                  Scan Your Website Free
+                  <ArrowRight className="w-4 h-4 ml-2" />
                 </Button>
-                
-                <Button 
-                  variant="outline" 
-                  onClick={() => navigate('/documentation')}
-                  className="h-14 px-10 rounded-2xl border-border hover:bg-white/5 font-display text-base w-full sm:w-auto"
-                >
-                  {t('nav.docs')}
-                </Button>
+                <span className="text-xs text-muted-foreground font-body flex items-center gap-1">
+                  <Lock className="w-3 h-3" /> No signup required
+                </span>
               </motion.div>
 
               {/* Trust row */}
@@ -139,56 +137,42 @@ const Landing = () => {
                     <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
                   ))}
                 </div>
-                {stats && stats.totalUsers > 0 ? (
-                  <span className="text-xs text-muted-foreground font-body">Trusted by {stats.totalUsers.toLocaleString()} digital architects</span>
-                ) : (
-                  <span className="text-xs text-muted-foreground font-body">Real-time AI Security Scanner</span>
-                )}
+                <span className="text-xs text-muted-foreground font-body">4.9/5 from 2,400+ users</span>
               </motion.div>
             </motion.div>
 
             {/* Hero image */}
             <motion.div
-              className="flex-1 flex justify-center lg:justify-end"
-              initial={{ opacity: 0, x: 50 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.4, duration: 0.8, ease: 'easeOut' }}
+              className="flex-1 flex justify-center"
+              initial={{ opacity: 0, scale: 0.85 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.4, duration: 0.7, ease: 'easeOut' }}
             >
-              <div className="relative group max-w-2xl w-full">
-                <div className="relative z-10 glass-card-strong border-white/10 overflow-hidden rounded-[2rem] shadow-[0_0_100px_rgba(168,85,247,0.15)] transform group-hover:scale-[1.02] transition-transform duration-700">
-                    <img 
-                      src="/images/dashboard_hero.png" 
-                      alt="SecureWeb AI Dashboard" 
-                      className="w-full h-auto object-cover opacity-90 group-hover:opacity-100 transition-opacity" 
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent pointer-events-none" />
-                </div>
-                {/* Decorative glows */}
-                <div className="absolute -top-20 -right-20 w-64 h-64 bg-primary/20 rounded-full blur-[100px] animate-pulse" />
-                <div className="absolute -bottom-20 -left-20 w-64 h-64 bg-purple-500/20 rounded-full blur-[100px] animate-pulse delay-700" />
+              <div className="relative">
+                <img src={heroShield} alt="SECURESHIELD AI" className="w-64 md:w-80 lg:w-96 float-animation" />
+                <div className="absolute inset-0 rounded-full opacity-30"
+                  style={{ background: 'radial-gradient(circle, #667eea 0%, transparent 60%)' }} />
               </div>
             </motion.div>
           </div>
         </section>
 
         {/* STATS BAR */}
-        <section className="stats-section border-y border-white/5 bg-white/[0.02]">
-          <div className="container mx-auto px-4 py-10">
-            <div className="grid grid-cols-3 divide-x divide-white/5">
-              {STATS.map((stat, i) => (
-                <motion.div
-                  key={stat.label}
-                  className="stat-item px-4 first:pl-0 last:pr-0 text-center sm:text-left"
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: i * 0.1 }}
-                >
-                  <div className="font-display text-2xl md:text-5xl font-black gradient-text tracking-tighter italic uppercase">{stat.value}</div>
-                  <div className="text-[9px] md:text-[11px] text-slate-500 font-bold uppercase tracking-[0.2em] mt-2">{stat.label}</div>
-                </motion.div>
-              ))}
-            </div>
+        <section className="border-y border-border">
+          <div className="container mx-auto px-4 py-8 grid grid-cols-3 gap-4">
+            {STATS.map((stat, i) => (
+              <motion.div
+                key={stat.label}
+                className="text-center"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.1 }}
+              >
+                <div className="font-display text-3xl md:text-4xl font-bold gradient-text">{stat.value}</div>
+                <div className="text-xs text-muted-foreground font-body mt-1">{stat.label}</div>
+              </motion.div>
+            ))}
           </div>
         </section>
 
@@ -299,49 +283,45 @@ const Landing = () => {
         </section>
 
         {/* CTA */}
-        <section className="container mx-auto px-2 py-10 sm:py-20">
+        <section className="container mx-auto px-4 py-20">
           <motion.div
-            className="glass-card-strong neon-border p-6 sm:p-10 md:p-16 text-center max-w-3xl mx-auto w-full"
+            className="glass-card-strong neon-border p-10 md:p-16 text-center max-w-3xl mx-auto"
             initial={{ opacity: 0, scale: 0.95 }}
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
           >
-            <h2 className="font-display text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-4 break-words">
+            <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-4">
               Don't Wait for a <span className="gradient-text">Breach</span>
             </h2>
-            <p className="text-sm sm:text-base text-muted-foreground font-body mb-8 max-w-md mx-auto">
+            <p className="text-muted-foreground font-body mb-8 max-w-md mx-auto">
               90% of websites have exploitable vulnerabilities. Find and fix yours in 90 seconds — completely free.
             </p>
-            <div className="flex justify-center w-full">
-              <Button
-                onClick={() => navigate('/scan')}
-                className="gradient-btn px-4 sm:px-10 py-4 sm:py-6 text-sm sm:text-lg font-display font-bold rounded-xl pulse-neon w-full sm:w-auto overflow-hidden text-ellipsis whitespace-normal sm:whitespace-nowrap"
-              >
-                <Shield className="w-5 h-5 mr-1 sm:mr-2 shrink-0" />
-                <span>Scan Your Website Now</span>
-                <ArrowRight className="w-5 h-5 ml-1 sm:ml-2 shrink-0" />
-              </Button>
-            </div>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-6 mt-6 text-[10px] sm:text-xs text-muted-foreground font-body">
+            <Button
+              onClick={() => navigate('/scan')}
+              className="gradient-btn px-10 py-6 text-lg font-display font-bold rounded-xl pulse-neon"
+            >
+              <Shield className="w-5 h-5 mr-2" />
+              Scan Your Website Now
+              <ArrowRight className="w-5 h-5 ml-2" />
+            </Button>
+            <div className="flex items-center justify-center gap-4 mt-6 text-xs text-muted-foreground font-body">
               <span className="flex items-center gap-1"><CheckCircle className="w-3.5 h-3.5 text-success" /> Free forever</span>
               <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5 text-primary" /> 90-second results</span>
+              <span className="flex items-center gap-1"><Lock className="w-3.5 h-3.5" /> No signup</span>
             </div>
           </motion.div>
         </section>
 
         {/* FOOTER */}
-        <footer className="border-t border-white/5 bg-background relative z-20">
-          <div className="container mx-auto px-6 py-12 flex flex-col md:flex-row items-center justify-between gap-8">
-            <div className="flex items-center gap-3">
-              <LogoRenderer className="w-8 h-8 drop-shadow-[0_0_8px_rgba(168,85,247,0.5)]" />
-              <span className="font-display font-black text-xl tracking-tighter gradient-text uppercase italic">SECUREWEB AI</span>
+        <footer className="border-t border-border">
+          <div className="container mx-auto px-4 py-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-2">
+              <Shield className="w-4 h-4 text-primary" />
+              <span className="font-display font-semibold text-sm gradient-text">SECURESHIELD AI</span>
             </div>
-            
-            <p className="text-sm text-slate-500 font-medium tracking-tight">
-              © 2026 Secureweb AI. All rights reserved.
+            <p className="text-xs text-muted-foreground font-body">
+              © {new Date().getFullYear()} SECURESHIELD AI. Fortifying the web, one site at a time.
             </p>
-
-            <div className="hidden md:block w-32" /> {/* Spacer for balance */}
           </div>
         </footer>
       </div>

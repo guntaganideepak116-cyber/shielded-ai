@@ -60,7 +60,7 @@ export function getPlatformCode(platform: HostingPlatform): string {
     case 'github-pages':
     case 'cloudflare':
       return `# ═══════════════════════════════════════════
-# SECUREWEB AI - Security Headers
+# SECURESHIELD AI - Security Headers
 # Generated: ${date}
 # ═══════════════════════════════════════════
 
@@ -75,7 +75,7 @@ export function getPlatformCode(platform: HostingPlatform): string {
 
     case 'wordpress':
       return `# ═══════════════════════════════════════════
-# SECUREWEB AI - WordPress Fortress
+# SECURESHIELD AI - WordPress Fortress
 # Generated: ${date}
 # ═══════════════════════════════════════════
 
@@ -117,7 +117,7 @@ RewriteRule ^/?author=([0-9]*) - [F,L]`;
 
     case 'nginx':
       return `# ═══════════════════════════════════════════
-# SECUREWEB AI - NGINX Security Config
+# SECURESHIELD AI - NGINX Security Config
 # Generated: ${date}
 # ═══════════════════════════════════════════
 
@@ -143,7 +143,7 @@ location ~* ^/(admin|wp-admin) {
     case 'apache':
     default:
       return `# ═══════════════════════════════════════════
-# SECUREWEB AI - Auto-Generated Fortress
+# SECURESHIELD AI - Auto-Generated Fortress
 # Generated: ${date}
 # ═══════════════════════════════════════════
 

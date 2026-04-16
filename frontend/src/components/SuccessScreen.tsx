@@ -35,26 +35,24 @@ const SuccessScreen = ({ oldScore, newScore, onScanAnother }: SuccessScreenProps
 
       <ScoreDisplay score={newScore} />
 
-      {/* Before/After - Only show if oldScore is valid/greater than 0 */}
-      {oldScore > 0 && (
-        <div className="flex items-center justify-center gap-8">
-          <div className="text-center">
-            <div className="text-sm text-muted-foreground font-body mb-1">Before</div>
-            <div className="font-display text-2xl font-bold text-destructive">{oldScore}/100</div>
-          </div>
-          <motion.div
-            initial={{ scaleX: 0 }}
-            animate={{ scaleX: 1 }}
-            className="text-2xl"
-          >
-            →
-          </motion.div>
-          <div className="text-center">
-            <div className="text-sm text-muted-foreground font-body mb-1">After</div>
-            <div className="font-display text-2xl font-bold text-success">{newScore}/100</div>
-          </div>
+      {/* Before/After */}
+      <div className="flex items-center justify-center gap-8">
+        <div className="text-center">
+          <div className="text-sm text-muted-foreground font-body mb-1">Before</div>
+          <div className="font-display text-2xl font-bold text-destructive">{oldScore}/100</div>
         </div>
-      )}
+        <motion.div
+          initial={{ scaleX: 0 }}
+          animate={{ scaleX: 1 }}
+          className="text-2xl"
+        >
+          →
+        </motion.div>
+        <div className="text-center">
+          <div className="text-sm text-muted-foreground font-body mb-1">After</div>
+          <div className="font-display text-2xl font-bold text-success">{newScore}/100</div>
+        </div>
+      </div>
 
       {/* Benefits */}
       <div className="flex flex-col items-center gap-2">

@@ -1,128 +1,36 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Copy, CheckCircle, X, Download, Shield, Loader2 } from 'lucide-react';
+import { Copy, CheckCircle, X, Download, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { type HostingPlatform, PLATFORMS, getPlatformCode, getPlatformSteps } from '@/lib/platform-detection';
-import { toast } from 'react-hot-toast';
-import { type Vulnerability, type AiFixResponse, type ScanResult } from '@/lib/scan-data';
 
 interface FortressModalProps {
   isOpen: boolean;
   onClose: () => void;
   onFixed: () => void;
   platform: HostingPlatform;
-  vulnerabilities?: Vulnerability[];
-  aiFixes?: AiFixResponse;
-  scanResult?: ScanResult;
-  setScanResult?: (result: ScanResult) => void;
-  setIsRescanning?: (val: boolean) => void;
-  setPreviousScore?: (score: number | null) => void;
 }
 
-const FortressModal = ({ 
-  isOpen, 
-  onClose, 
-  onFixed, 
-  platform: initialPlatform,
-  vulnerabilities = [],
-  aiFixes = null,
-  scanResult,
-  setScanResult,
-  setIsRescanning,
-  setPreviousScore
-}: FortressModalProps) => {
-  const [selectedPlatform, setSelectedPlatform] = useState<HostingPlatform>(initialPlatform);
+const FortressModal = ({ isOpen, onClose, onFixed, platform }: FortressModalProps) => {
   const [copied, setCopied] = useState(false);
-  const [isExpanded, setIsExpanded] = useState(false);
-  const [copyText, setCopyText] = useState('COPY ALL');
-  const [localIsRescanning, setLocalIsRescanning] = useState(false);
-  
-  const info = PLATFORMS[selectedPlatform];
-  const code = getPlatformCode(selectedPlatform);
-  const steps = getPlatformSteps(selectedPlatform);
+  const info = PLATFORMS[platform];
+  const code = getPlatformCode(platform);
+  const steps = getPlatformSteps(platform);
 
-  const handleCopyAll = async () => {
-    try {
-      await navigator.clipboard.writeText(code);
-      setCopied(true);
-      setCopyText('Copied! ✓');
-      toast.success("Code copied to clipboard!", { id: 'copy-fix' });
-      setTimeout(() => {
-        setCopied(false);
-        setCopyText('COPY ALL');
-      }, 2000);
-    } catch (e) {
-      toast.error("Failed to copy code");
-    }
+  const handleCopy = async () => {
+    await navigator.clipboard.writeText(code);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
   const handleDownload = () => {
-    try {
-      const blob = new Blob([code], { type: 'text/plain' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = info.fileName;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-      toast.success(`Downloaded ${info.fileName} ✓`);
-    } catch (e) {
-      toast.error("Download failed");
-    }
-  };
-
-  const handleFixedIt = async () => {
-    if (!scanResult || !setScanResult || !setIsRescanning || !setPreviousScore) {
-       // Fallback to simple close if props missing
-       onFixed();
-       return;
-    }
-
-    // 1. Save current score as "before"
-    setPreviousScore(scanResult.score);
-
-    // 2. Close fix panel immediately
-    onClose();
-
-    // 3. Start re-scan
-    setIsRescanning(true);
-    setLocalIsRescanning(true);
-
-    try {
-      toast.loading("Verifying your fix...", { id: 'rescan-status' });
-      
-      const response = await fetch('/api/scan', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url: scanResult.url })
-      });
-      
-      if (!response.ok) throw new Error("Scan failed");
-      
-      const newResult = await response.json();
-
-      // 4. Update results with new scan
-      setScanResult(newResult);
-      setIsRescanning(false);
-      setLocalIsRescanning(false);
-
-      // 5. Show score comparison toast
-      const diff = (newResult.score || 0) - (scanResult.score || 0);
-      if (diff > 0) {
-        toast.success(`Score improved by +${diff} points!`, { id: 'rescan-status', duration: 5000 });
-      } else if (diff === 0) {
-        toast.error('Score unchanged. Check your deployment.', { id: 'rescan-status', duration: 5000 });
-      } else {
-        toast.error(`Score dropped by ${Math.abs(diff)} points.`, { id: 'rescan-status', duration: 5000 });
-      }
-
-    } catch (err) {
-      setIsRescanning(false);
-      setLocalIsRescanning(false);
-      toast.error('Re-scan failed. Check connection.', { id: 'rescan-status' });
-    }
+    const blob = new Blob([code], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = info.fileName;
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -136,7 +44,7 @@ const FortressModal = ({
         >
           <div className="absolute inset-0 bg-background/80 backdrop-blur-sm" onClick={onClose} />
           <motion.div
-            className="relative w-full h-[100dvh] md:h-auto md:max-h-[85vh] max-w-2xl overflow-y-auto no-scrollbar glass-card-strong md:rounded-3xl p-6 pb-24 md:p-8 rounded-none md:my-8 safe-padding-top safe-padding-bottom"
+            className="relative w-full max-w-2xl max-h-[85vh] overflow-auto glass-card-strong p-6 md:p-8"
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}
@@ -175,27 +83,6 @@ const FortressModal = ({
               </motion.div>
             </div>
 
-            {/* Platform Selection */}
-            <div className="mb-6">
-              <label className="text-[10px] uppercase font-bold text-muted-foreground block mb-2 px-1">SELECT YOUR PLATFORM:</label>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                {(Object.keys(PLATFORMS) as HostingPlatform[]).map((p) => (
-                  <button
-                    key={p}
-                    onClick={() => setSelectedPlatform(p)}
-                    className={`flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg border text-xs font-display font-bold transition-all ${
-                      selectedPlatform === p 
-                        ? 'bg-primary/20 border-primary text-primary' 
-                        : 'bg-white/5 border-white/10 text-muted-foreground hover:bg-white/10'
-                    }`}
-                  >
-                    <span>{PLATFORMS[p].icon}</span>
-                    <span>{PLATFORMS[p].name}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
             {/* Steps */}
             <motion.div
               className="glass-card p-4 mb-4"
@@ -216,23 +103,15 @@ const FortressModal = ({
 
             {/* Code block */}
             <motion.div
-              className={`relative rounded-lg overflow-hidden neon-border transition-all duration-300 ${isExpanded ? 'max-h-none' : 'max-h-64'}`}
+              className="relative rounded-lg overflow-hidden neon-border"
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.2 }}
             >
               <div className="flex items-center justify-between px-4 py-2 bg-muted/50 border-b border-border">
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-muted-foreground font-body">{info.fileName}</span>
-                  <button 
-                    onClick={() => setIsExpanded(!isExpanded)}
-                    className="text-[10px] uppercase font-bold text-primary/60 hover:text-primary transition-colors"
-                  >
-                    [{isExpanded ? 'Collapse' : 'Expand'}]
-                  </button>
-                </div>
+                <span className="text-xs text-muted-foreground font-body">{info.fileName}</span>
                 <button
-                  onClick={handleCopyAll}
+                  onClick={handleCopy}
                   className="flex items-center gap-1.5 text-xs text-primary hover:text-primary/80 transition-colors"
                 >
                   {copied ? (
@@ -243,21 +122,30 @@ const FortressModal = ({
                   ) : (
                     <>
                       <Copy className="w-3.5 h-3.5" />
-                      {copyText}
+                      Copy All
                     </>
                   )}
                 </button>
               </div>
-              <pre className={`p-4 text-xs text-foreground/80 overflow-x-auto font-mono leading-relaxed ${isExpanded ? '' : 'overflow-hidden'}`}>
+              <pre className="p-4 text-xs text-foreground/80 overflow-x-auto font-mono leading-relaxed max-h-64">
                 {code}
               </pre>
-              {!isExpanded && (
-                <div 
-                  className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-background to-transparent pointer-events-none cursor-pointer" 
-                  onClick={() => setIsExpanded(true)}
-                />
-              )}
             </motion.div>
+
+            {/* WordPress plugin recommendation */}
+            {platform === 'wordpress' && (
+              <motion.div
+                className="mt-4 glass-card p-4"
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.3 }}
+              >
+                <h3 className="font-display font-semibold text-sm mb-1">🔌 Recommended Plugin:</h3>
+                <p className="text-xs text-muted-foreground font-body">
+                  Install <span className="text-primary font-semibold">"Security Headers"</span> plugin by SimonW for GUI-based header management alongside .htaccess rules.
+                </p>
+              </motion.div>
+            )}
 
             {/* Actions */}
             <motion.div
@@ -266,24 +154,16 @@ const FortressModal = ({
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.4 }}
             >
-              <Button onClick={handleCopyAll} className="gradient-btn flex-1 font-display">
+              <Button onClick={handleCopy} className="gradient-btn flex-1 font-display">
                 <Copy className="w-4 h-4 mr-2" />
-                {copyText}
+                {copied ? 'COPIED!' : 'COPY ALL'}
               </Button>
               <Button onClick={handleDownload} variant="outline" className="flex-1 font-display border-border text-foreground hover:bg-muted">
                 <Download className="w-4 h-4 mr-2" />
                 DOWNLOAD {info.fileName.toUpperCase()}
               </Button>
-              <Button 
-                onClick={handleFixedIt} 
-                className="flex-1 font-display bg-success hover:bg-success/90 text-success-foreground"
-                disabled={localIsRescanning}
-              >
-                {localIsRescanning ? (
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                ) : (
-                  <CheckCircle className="w-4 h-4 mr-2" />
-                )}
+              <Button onClick={onFixed} className="flex-1 font-display bg-success hover:bg-success/90 text-success-foreground">
+                <CheckCircle className="w-4 h-4 mr-2" />
                 I'VE FIXED IT
               </Button>
             </motion.div>
