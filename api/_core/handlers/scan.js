@@ -419,6 +419,15 @@ export default async function handler(req, res) {
         category: 'cookies'
       });
     }
+    if (!cookieStr.toLowerCase().includes('samesite')) {
+      vulnerabilities.push({
+        id: 'cookie-no-samesite',
+        title: 'Cookies Missing SameSite Attribute',
+        severity: 'low',
+        description: 'Cookies missing SameSite attribute are vulnerable to CSRF.',
+        category: 'cookies'
+      });
+    }
   }
 
   // ── STEP 9: Server Version Disclosure ──────────────
@@ -474,13 +483,44 @@ export default async function handler(req, res) {
 
   // ── STEP 12: DNS Security Check ────────────────────
   try {
+    // SPF Check
     const spfRes = await fetch(`https://dns.google/resolve?name=${hostname}&type=TXT`);
     const spfData = await spfRes.json();
     const txt = (spfData.Answer || []).map(r => r.data).join(' ');
     if (!txt.includes('v=spf1')) {
       vulnerabilities.push({
         id: 'dns-no-spf', title: 'Missing SPF Record', severity: 'medium',
-        description: 'Domain is vulnerable to email spoofing.', category: 'dns'
+        description: 'Domain is vulnerable to email spoofing (no SPF).', category: 'dns'
+      });
+    }
+
+    // DMARC Check
+    const dmarcRes = await fetch(`https://dns.google/resolve?name=_dmarc.${hostname}&type=TXT`);
+    const dmarcData = await dmarcRes.json();
+    const dmarcTxt = (dmarcData.Answer || []).map(r => r.data).join(' ');
+    if (!dmarcTxt.includes('v=DMARC1')) {
+      vulnerabilities.push({
+        id: 'dns-no-dmarc', title: 'Missing DMARC Record', severity: 'medium',
+        description: 'Domain is vulnerable to phishing (no DMARC policy).', category: 'dns'
+      });
+    }
+
+    // DKIM Check (Basic selector detection)
+    // Note: DKIM varies by selector, but we can check if any exists for the domain as a proxy
+    if (!txt.includes('v=DKIM1')) {
+      vulnerabilities.push({
+        id: 'dns-no-dkim', title: 'DKIM Not Detected', severity: 'low',
+        description: 'No DKIM signature policy found on the base domain.', category: 'dns'
+      });
+    }
+
+    // CAA Check
+    const caaRes = await fetch(`https://dns.google/resolve?name=${hostname}&type=CAA`);
+    const caaData = await caaRes.json();
+    if (!caaData.Answer || caaData.Answer.length === 0) {
+      vulnerabilities.push({
+        id: 'dns-no-caa', title: 'Missing CAA Record', severity: 'low',
+        description: 'No CAA record found. Any CA can issue certificates for this domain.', category: 'dns'
       });
     }
   } catch {}

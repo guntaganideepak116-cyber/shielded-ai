@@ -463,7 +463,7 @@ const Monitoring = () => {
                     <div className="w-20 h-20 bg-white/5 border border-white/10 rounded-3xl flex items-center justify-center mx-auto mb-8">
                        <ShieldCheck className="w-10 h-10 text-slate-500" />
                     </div>
-                    <h3 className="text-2xl font-display font-black uppercase italic mb-3 tracking-tight">Zero Shielded Assets</h3>
+                    <h3 className="text-2xl font-display font-black uppercase italic mb-3 tracking-tight">Zero Secured Assets</h3>
                     <p className="text-sm text-slate-500 max-w-sm mx-auto font-medium mb-10 leading-relaxed uppercase tracking-tighter">Your digital infrastructure is currently unmapped. Enable autonomous 24/7 monitoring to prevent data breaches.</p>
                     <Button 
                       onClick={() => setShowAddModal(true)} 
