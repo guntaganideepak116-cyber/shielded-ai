@@ -4,7 +4,7 @@ import { MessageCircle, X, Send, Shield, Sparkles, Loader2 } from 'lucide-react'
 import { useScan } from '@/context/ScanContext';
 
 interface Message {
-  role: 'user' | 'ai';
+  role: 'user' | 'assistant';
   content: string;
 }
 
@@ -19,9 +19,9 @@ const FreeChatbot = () => {
   useEffect(() => {
     if (isOpen && messages.length === 0) {
       const greeting = domain 
-        ? `Hi! I see you scanned ${domain}. Score: ${scanData?.score || 0}/100. How can I help with fixes?`
-        : "Hi! I'm SecureWeb AI's security assistant. How can I help you today?";
-      setMessages([{ role: 'ai', content: greeting }]);
+        ? `Hi! I see you scanned ${domain}. Score: ${scanData?.score || 0}/100. Let's fix these vulnerabilities together.`
+        : "Hi! I'm SecureWeb AI's security assistant. I'm powered by Groq Llama-3. How can I help you today?";
+      setMessages([{ role: 'assistant', content: greeting }]);
     }
   }, [isOpen, domain, scanData]);
 
@@ -36,24 +36,30 @@ const FreeChatbot = () => {
 
     const userMsg = input.trim();
     setInput('');
-    const newMessages: Message[] = [...messages, { role: 'user', content: userMsg }];
-    setMessages(newMessages);
+    
+    // Add user message to history
+    const updatedMessages: Message[] = [...messages, { role: 'user', content: userMsg }];
+    setMessages(updatedMessages);
     setIsLoading(true);
 
     try {
-      const response = await fetch('/api/chatbot', {
+      const response = await fetch('/api/assistant', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          message: userMsg,
+          messages: updatedMessages, // Send full history for interaction
           scanContext: scanData
         })
       });
 
+      if (!response.ok) {
+        throw new Error(`HTTP Error ${response.status}`);
+      }
+
       const data = await response.json();
       
       if (data.success) {
-        setMessages(prev => [...prev, { role: 'ai', content: data.message }]);
+        setMessages(prev => [...prev, { role: 'assistant', content: data.message }]);
       } else {
         throw new Error(data.error || 'Failed to get response');
       }
@@ -61,8 +67,8 @@ const FreeChatbot = () => {
     } catch (error) {
       console.error('Chatbot Error:', error);
       setMessages(prev => [...prev, { 
-        role: 'ai', 
-        content: "I'm having trouble connecting to my security nodes. Please try again in a moment."
+        role: 'assistant', 
+        content: "I'm experiencing a brief neural synchronization issue. Please try again in a moment."
       }]);
     } finally {
       setIsLoading(false);
@@ -80,7 +86,7 @@ const FreeChatbot = () => {
         <div className="absolute inset-0 rounded-full animate-ping bg-primary/20" />
         <MessageCircle className="w-8 h-8 relative z-10" />
       </motion.button>
-
+      
       <AnimatePresence>
         {isOpen && (
           <div className="fixed inset-0 z-[10000] flex items-end justify-end p-4 pointer-events-none">
@@ -110,7 +116,7 @@ const FreeChatbot = () => {
               </div>
 
               {/* Messages */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-4" ref={scrollRef}>
+              <div className="flex-1 overflow-y-auto p-4 space-y-4 no-scrollbar" ref={scrollRef}>
                 {messages.map((msg, i) => (
                   <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                     <div className={`max-w-[85%] p-3 rounded-2xl text-sm ${
@@ -123,7 +129,7 @@ const FreeChatbot = () => {
                 {isLoading && (
                   <div className="flex justify-start items-center gap-2">
                     <Loader2 className="w-4 h-4 text-primary animate-spin" />
-                    <span className="text-[10px] text-white/40 font-mono tracking-tighter">SECUREWEB AI IS ANALYZING...</span>
+                    <span className="text-[10px] text-white/40 font-mono tracking-tighter">GROQ IS ANALYZING...</span>
                   </div>
                 )}
               </div>
@@ -136,7 +142,7 @@ const FreeChatbot = () => {
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-                    placeholder="Ask about your security vulnerabilities..."
+                    placeholder="Type your security question..."
                     className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white focus:outline-none focus:ring-1 focus:ring-primary min-h-[44px]"
                   />
                   <button
@@ -148,7 +154,7 @@ const FreeChatbot = () => {
                   </button>
                 </div>
                 <p className="text-[10px] text-white/30 mt-2 flex items-center gap-1">
-                  <Sparkles className="w-3 h-3" /> Powered by Anthropic
+                  <Sparkles className="w-3 h-3" /> Powered by Groq Llama-3
                 </p>
               </div>
             </motion.div>
