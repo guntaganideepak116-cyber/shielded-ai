@@ -20,6 +20,8 @@ import { LogoRenderer } from '@/components/LogoRenderer';
 import ScannerInput from '@/components/ScannerInput';
 import ScoreDisplay from '@/components/ScoreDisplay';
 import VulnerabilityCard from '@/components/VulnerabilityCard';
+import SmartFixCard from '@/components/SmartFixCard';
+import { FIX_GUIDES } from '@/lib/fixGuides';
 import FortressModal from '@/components/FortressModal';
 import SuccessScreen from '@/components/SuccessScreen';
 import AuthModal from '@/components/AuthModal';
@@ -37,9 +39,34 @@ import { generatePDFReport } from '@/lib/report-generator';
 const Scanner = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, signInWithGoogle, signOut } = useAuth();
+  const { user } = useAuth();
   const { lang, setLang, t } = useLanguage();
   const resultsRef = useRef<HTMLDivElement>(null);
+
+  // Map scan vulnerability IDs to fix guide IDs
+  const VULN_TO_GUIDE: Record<string, string> = {
+    'ssl-invalid':          'ssl-invalid',
+    'vt-malicious':         'vt-malicious',
+    'sensitive-aws':        'exposed-api-key',
+    'sensitive-google':     'exposed-api-key',
+    'sensitive-github':     'exposed-api-key',
+    'sensitive-password':   'hardcoded-password',
+    'exposed-path-.env':    'exposed-env',
+    'sensitive-mongodb':    'db-uri-exposed',
+    'sensitive-mysql':      'db-uri-exposed',
+    'open-port-3306':       'open-db-port',
+    'open-port-27017':      'open-db-port',
+    'open-port-22':         'open-ssh-port',
+    'server-disclosure':    'server-disclosure',
+    'powered-by-disclosure':'powered-by-disclosure',
+    'exposed-path-phpinfo': 'phpinfo-exposed',
+    'exposed-path-admin':   'admin-panel-exposed',
+    'exposed-path-.git':    'git-config-exposed',
+    'dns-no-spf':           'dns-no-spf',
+    'dns-no-dmarc':         'dns-no-dmarc',
+    'dns-no-dkim':          'dns-no-dkim',
+    'dns-no-caa':           'dns-no-caa',
+  };
   
   const [url, setUrl] = useState('');
   const [phase, setPhase] = useState<'landing' | 'scanning' | 'results'>('landing');
@@ -797,6 +824,34 @@ const Scanner = () => {
 
                     {/* 4. VirusTotal Card (MOVED FROM RIGHT) */}
                     <VirusTotalCard virusTotal={scanResult.virusTotal} />
+
+                    {/* 5. SMART FIX GUIDES (NEW) */}
+                    <div className="space-y-6 pt-12">
+                      <div className="flex items-center gap-4 px-2">
+                        <div className="h-[1px] flex-1 bg-white/5" />
+                        <h3 className="text-[10px] font-black text-primary uppercase tracking-[0.4em] flex items-center gap-3">
+                           Step-By-Step Remediation Playbooks
+                        </h3>
+                        <div className="h-[1px] flex-1 bg-white/5" />
+                      </div>
+
+                      {scanResult?.vulnerabilities?.map((vuln: any) => {
+                        const guideId = VULN_TO_GUIDE[vuln.id];
+                        if (!guideId || !(FIX_GUIDES as any)[guideId]) return null;
+
+                        return (
+                          <SmartFixCard
+                            key={vuln.id + "-guide"}
+                            vulnerabilityId={guideId}
+                            scanResult={scanResult}
+                            onRescan={async () => {
+                              await handleScan(scanResult.url);
+                              toast.success('Re-scan complete! Site remediated.');
+                            }}
+                          />
+                        );
+                      })}
+                    </div>
                   </div>
 
                   {/* RIGHT COLUMN */}

@@ -558,12 +558,29 @@ export default async function handler(req, res) {
   const status = score >= 80 ? 'secure' : score >= 50 ? 'moderate' : 'vulnerable';
   const grade = score >= 90 ? 'A' : score >= 80 ? 'B' : score >= 70 ? 'C' : score >= 50 ? 'D' : 'F';
 
-  // ── STEP 14: Platform ───────────────────────────────
-  let platform = 'Web Server';
-  if (responseHeaders['cf-ray'] || serverHeader.includes('cloudflare')) platform = 'Cloudflare';
-  else if (serverHeader.includes('vercel') || responseHeaders['x-vercel-id']) platform = 'Vercel';
-  else if (serverHeader.includes('nginx')) platform = 'Nginx';
-  else if (serverHeader.includes('apache')) platform = 'Apache';
+  // ── STEP 14: Platform Detection ──────────────────────
+  const detectPlatform = (headers) => {
+    const server = (headers['server'] || '').toLowerCase();
+    const via    = (headers['via']    || '').toLowerCase();
+    const cf     = headers['cf-ray'] || '';
+    const poweredBy = (headers['x-powered-by'] || '').toLowerCase();
+
+    if (cf || server.includes('cloudflare'))
+      return 'cloudflare';
+    if (server.includes('nginx'))
+      return 'nginx';
+    if (server.includes('apache'))
+      return 'apache';
+    if (headers['x-vercel-id'] || server.includes('vercel'))
+      return 'vercel';
+    if (via.includes('vegur') || server.includes('heroku'))
+      return 'heroku';
+    if (poweredBy.includes('php'))
+      return 'cpanel';
+    return 'all';
+  };
+
+  const platform = detectPlatform(responseHeaders);
 
   // ── STEP 15: Final Response ────────────────────────
   const scanResult = {
