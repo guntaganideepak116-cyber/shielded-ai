@@ -13,6 +13,7 @@ import Documentation from "./pages/Documentation.tsx";
 import LoginPage from "./pages/Login.tsx";
 import SignupPage from "./pages/Signup.tsx";
 import NotFound from "./pages/NotFound.tsx";
+import FAQ from "./pages/FAQ.tsx";
 import { AuthProvider, useAuth } from "@/hooks/use-auth";
 import { ScanProvider } from "@/context/ScanContext";
 import { LanguageProvider } from "@/context/LanguageContext";
@@ -113,6 +114,7 @@ const AppRoutes = () => {
         path="/documentation" 
         element={<Documentation />} 
       />
+      <Route path="/faq" element={<FAQ />} />
       
       {/* 🛡️ ADMIN DASHBOARD (SECURE) */}
       <Route 

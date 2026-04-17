@@ -20,15 +20,23 @@ export default function PWAInstallBanner() {
 
     const show = () => setVisible(true);
 
-    // Already captured before React mounted
-    if ((window as any)._pwaPrompt) {
+    // Already captured
+    if ((window as any).deferredInstallPrompt) {
       setTimeout(show, 2500);
     }
 
+    const handlePrompt = (e: Event) => {
+      e.preventDefault();
+      (window as any).deferredInstallPrompt = e;
+      setTimeout(show, 2500);
+    };
+
+    window.addEventListener('beforeinstallprompt', handlePrompt);
     window.addEventListener('pwa:ready', show);
     window.addEventListener('pwa:installed', () => setVisible(false));
 
     return () => {
+      window.removeEventListener('beforeinstallprompt', handlePrompt);
       window.removeEventListener('pwa:ready', show);
     };
   }, []);
@@ -49,7 +57,7 @@ export default function PWAInstallBanner() {
       e.stopPropagation();
     }
 
-    const prompt = (window as any)._pwaPrompt;
+    const prompt = (window as any).deferredInstallPrompt;
 
     if (!prompt) {
       // iOS Safari fallback
@@ -66,9 +74,10 @@ export default function PWAInstallBanner() {
     try {
       await prompt.prompt();
       const { outcome } = await prompt.userChoice;
-      (window as any)._pwaPrompt = null;
+      (window as any).deferredInstallPrompt = null;
       if (outcome === 'accepted') {
         localStorage.setItem(INSTALL_KEY, '1');
+        window.dispatchEvent(new Event('appinstalled'));
       }
       setVisible(false);
     } catch {

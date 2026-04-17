@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Shield, Globe, LogOut, Menu, X, LayoutDashboard, 
-  History, Activity, Code, BookOpen, Download
+  History, Activity, Code, BookOpen, Download, HelpCircle
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { LogoRenderer } from '@/components/LogoRenderer';
@@ -33,6 +33,7 @@ export const Navbar = () => {
     }
     const handler = (e: Event) => {
       e.preventDefault();
+      (window as any).deferredInstallPrompt = e;
       setCanInstall(true);
     };
     window.addEventListener('beforeinstallprompt', handler);
@@ -45,18 +46,20 @@ export const Navbar = () => {
   }, []);
 
   const handleInstallClick = async () => {
-    const prompt = window.deferredInstallPrompt;
+    const prompt = (window as any).deferredInstallPrompt;
     if (!prompt) return;
     await prompt.prompt();
     const { outcome } = await prompt.userChoice;
     if (outcome === 'accepted') {
       setCanInstall(false);
+      (window as any).deferredInstallPrompt = null;
       localStorage.setItem('pwa-installed', 'true');
     }
   };
 
   const navLinks = [
     { name: t('nav.docs'), path: '/documentation', icon: BookOpen },
+    { name: 'FAQ', path: '/faq', icon: HelpCircle },
     { name: 'Pricing', path: '/pricing', icon: Shield },
     { name: t('nav.history'), path: '/history', icon: History },
     { name: t('dash.title'), path: '/scan', icon: LayoutDashboard },

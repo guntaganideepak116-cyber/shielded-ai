@@ -1,18 +1,22 @@
-const CACHE_NAME = 'secureweb-v10';
-const ASSETS = [
+const CACHE_NAME = 'secureweb-ai-v1';
+const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
-  '/manifest.json',
-  '/favicon.ico',
-  '/icons/icon-512.png'
+  '/manifest.json'
 ];
 
 self.addEventListener('install', (event) => {
-  self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      // Don't fail install if some background assets fail
-      return cache.addAll(ASSETS).catch(e => console.error('PWA caching issue:', e));
+      return cache.addAll(ASSETS_TO_CACHE);
+    })
+  );
+});
+
+self.addEventListener('fetch', (event) => {
+  event.respondWith(
+    caches.match(event.request).then((response) => {
+      return response || fetch(event.request);
     })
   );
 });
@@ -27,43 +31,6 @@ self.addEventListener('activate', (event) => {
           }
         })
       );
-    }).then(() => self.clients.claim())
-  );
-});
-
-// NETWORK-FIRST Strategy for Navigation & Assets
-// This fixes the 'blank screen' caused by Vite hash changes 
-self.addEventListener('fetch', (event) => {
-  if (event.request.method !== 'GET' || !event.request.url.startsWith(self.location.origin)) {
-    return;
-  }
-
-  // Handle navigations (HTML) or script/css requests
-  event.respondWith(
-    fetch(event.request)
-      .then((networkResponse) => {
-        // If we have network, update cache
-        if (networkResponse && networkResponse.status === 200) {
-          const responseToCache = networkResponse.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, responseToCache));
-        }
-        return networkResponse;
-      })
-      .catch(() => {
-        // Only if network fails, try the cache
-        return caches.match(event.request).then((cachedResponse) => {
-          if (cachedResponse) return cachedResponse;
-          
-          // If navigation fails completely (offline) 
-          if (event.request.mode === 'navigate') {
-            return caches.match('/index.html');
-          }
-          
-          return new Response('Offline - Assets not available', {
-            status: 408,
-            headers: { 'Content-Type': 'text/plain' },
-          });
-        });
-      })
+    })
   );
 });

@@ -716,10 +716,10 @@ const Scanner = () => {
                 </div>
 
                 {/* RESTRUCTURED SCAN RESULTS GRID */}
-                <div className="scan-results-grid overflow-hidden">
+                <div className="flex flex-col lg:flex-row gap-6 pb-24 w-full">
                   
                   {/* LEFT COLUMN */}
-                  <div className="left-column">
+                  <div className="flex-1 min-w-0 space-y-6">
                     {/* 1. Score & Strategic Insights */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {score !== null && (
@@ -855,8 +855,8 @@ const Scanner = () => {
                   </div>
 
                   {/* RIGHT COLUMN — THE ACTION COMMAND CENTER */}
-                  <div className="right-column relative">
-                    <div className="sticky top-24 space-y-6 max-h-[calc(100vh-120px)] overflow-y-auto pr-2 no-scrollbar">
+                  <div className="w-full lg:w-[450px] shrink-0 self-start">
+                    <div className="lg:sticky lg:top-24 space-y-6 lg:max-h-[calc(100vh-120px)] lg:overflow-y-auto pr-2 no-scrollbar">
                       
                       {/* Contextual Smart Fix Guide */}
                       {selectedVulnId ? (
