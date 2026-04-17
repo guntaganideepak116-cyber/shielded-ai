@@ -19,7 +19,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
-import Footer from '../components/Footer';
+import Footer from '@/components/Footer';
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },

@@ -1,4 +1,4 @@
-import { LogoRenderer } from './LogoRenderer';
+import { LogoRenderer } from '@/components/LogoRenderer';
 import { useNavigate } from 'react-router-dom';
 
 const Footer = () => {
