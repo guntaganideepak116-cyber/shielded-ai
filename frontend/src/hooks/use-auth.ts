@@ -12,17 +12,21 @@ export function useAuth() {
       setUser(JSON.parse(storedUser));
     } else {
       // Auto-sign in as a guest for your express scanner to track locally if needed
-      const guest = { id: 'guest_' + Math.random().toString(36).substr(2, 9), is_anonymous: true };
-      setUser(guest);
-      localStorage.setItem('secure_user', JSON.stringify(guest));
+      signInAnonymously();
     }
     setLoading(false);
   }, []);
+
+  const signInAnonymously = async () => {
+    const guest = { id: 'guest_' + Math.random().toString(36).substr(2, 9), is_anonymous: true };
+    setUser(guest);
+    localStorage.setItem('secure_user', JSON.stringify(guest));
+  };
 
   const signOut = async () => {
     localStorage.removeItem('secure_user');
     setUser(null);
   };
 
-  return { user, loading, signOut };
+  return { user, loading, signInAnonymously, signOut };
 }

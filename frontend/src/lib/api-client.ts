@@ -1,6 +1,6 @@
 import { type Vulnerability } from './scan-data';
 
-const API_URL = ''; // Relative to the same origin (handled by Vercel rewrites)
+const API_URL = ''; // Relative to origin
 
 export interface ScanItem {
   id: string;
@@ -12,12 +12,18 @@ export interface ScanItem {
   timestamp?: Date | string;
 }
 
+export interface ScanResponse {
+  score: number;
+  grade: string;
+  platform: string;
+  vulnerabilities: Vulnerability[];
+}
+
 export async function fetchUserScans(): Promise<ScanItem[]> {
   try {
     const response = await fetch(`${API_URL}/api/history`);
     if (!response.ok) throw new Error('Failed to fetch history');
-    const data = await response.json();
-    return data;
+    return await response.json();
   } catch (error) {
     console.error('Error fetching scans:', error);
     return [];
@@ -36,7 +42,7 @@ export async function getGlobalScanCount(): Promise<number> {
   }
 }
 
-export async function runScan(url: string, userId?: string) {
+export async function runScan(url: string, userId?: string): Promise<ScanResponse> {
   const response = await fetch(`${API_URL}/api/scan`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -52,7 +58,6 @@ export async function runScan(url: string, userId?: string) {
 }
 
 export function subscribeToCounter(callback: (value: number) => void) {
-  // Simple polling as a replacement for Supabase Realtime
   const interval = setInterval(async () => {
     const count = await getGlobalScanCount();
     callback(count);
