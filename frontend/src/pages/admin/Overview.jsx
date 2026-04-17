@@ -20,6 +20,7 @@ import {
   ShieldCheck, 
   Mail,
   TrendingUp,
+  Activity,
   PieChart as PieChartIcon
 } from 'lucide-react';
 

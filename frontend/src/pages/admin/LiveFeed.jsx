@@ -2,6 +2,18 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '@/lib/firebase';
 import { collection, query, orderBy, limit, onSnapshot } from 'firebase/firestore';
+import { 
+  Activity, 
+  Search, 
+  MapPin, 
+  Clock, 
+  User, 
+  ShieldAlert, 
+  ShieldCheck, 
+  ExternalLink,
+  MessageSquare,
+  Filter
+} from 'lucide-react';
 
 export default function LiveFeed() {
   const [scans, setScans] = useState([]);
@@ -20,7 +32,6 @@ export default function LiveFeed() {
       const list = snap.docs.map(d => ({ id: d.id, ...d.data() }));
 
       if (!first) {
-        // Track newly added docs
         const added = snap.docChanges()
           .filter(c => c.type === 'added')
           .map(c => c.doc.id);
@@ -28,15 +39,14 @@ export default function LiveFeed() {
         if (added.length) {
           setNewIds(prev => new Set([...prev, ...added]));
           
-          // Desktop notifications for critical events
           snap.docChanges().forEach(c => {
             if (c.type === 'added') {
               const d = c.doc.data();
               if ((d.score || 0) < 30 || d.isVTMalicious) {
                 if ('Notification' in window && Notification.permission === 'granted') {
-                  new Notification('🚨 Critical Scan Alert!', {
-                    body: `${d.url} — Score: ${d.score}/100`,
-                    icon: '/icon-192.png'
+                  new Notification('🚨 Critical Threat Detected', {
+                    body: `Source: ${d.url}\nIntegrity Score: ${d.score}/100`,
+                    icon: '/favicon.ico'
                   });
                 }
               }
@@ -67,219 +77,136 @@ export default function LiveFeed() {
   });
 
   return (
-    <div className="admin-fade-in">
-      {/* Header */}
-      <div style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: 24
-      }}>
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+      {/* 📡 HEADER */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
-          <h1 style={{
-            color: 'var(--admin-text-primary)',
-            fontSize: 22,
-            fontFamily: 'Space Mono, monospace',
-            margin: '0 0 6px'
-          }}>
-            Live Scan Feed
-          </h1>
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 8
-          }}>
-            <span className="live-dot" />
-            <span style={{
-              color: 'var(--admin-green)',
-              fontSize: 12,
-              fontFamily: 'Space Mono, monospace'
-            }}>
-              REAL-TIME — {filtered.length} active sessions
-            </span>
+          <div className="flex items-center gap-3 mb-2">
+            <Activity className="w-5 h-5 text-[#00f5ff]" />
+            <h1 className="text-white text-2xl font-black tracking-tight uppercase">Live Global Uplink</h1>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="admin-dot-live" />
+            <span className="text-[#10b981] text-xs font-bold uppercase tracking-[0.2em]">Situational Awareness Active</span>
+            <span className="text-slate-500 text-[10px] font-mono">— {filtered.length} NODES TRACKED</span>
           </div>
         </div>
 
-        {/* Filters */}
-        <div style={{ 
-          display: 'flex', 
-          gap: 4, 
-          background: 'var(--admin-bg-secondary)', 
-          padding: 4, 
-          borderRadius: 10,
-          border: '1px solid var(--admin-border)'
-        }}>
-          {['all','critical','malicious','today'].map(f => (
-            <button
-              key={f}
-              className={`admin-tab ${filter === f ? 'active' : ''}`}
-              onClick={() => setFilter(f)}
-              style={{
-                padding: '8px 16px',
-                borderRadius: 7,
-                fontSize: 13,
-                cursor: 'pointer',
-                transition: 'all 0.15s',
-                color: filter === f ? 'var(--admin-cyan)' : 'var(--admin-text-muted)',
-                background: filter === f ? 'var(--admin-bg-card)' : 'transparent',
-                border: 'none',
-                fontFamily: 'DM Sans, sans-serif'
-              }}
-            >
-              {f === 'all' ? 'All' : f === 'critical' ? '🚨 Critical'
-                : f === 'malicious' ? '🦠 Malicious' : '📅 Today'}
-            </button>
-          ))}
+        {/* 🎚️ FILTERS */}
+        <div className="flex items-center gap-2 p-1.5 bg-white/5 border border-white/10 rounded-2xl backdrop-blur-md">
+          {[
+            { id: 'all',       label: 'All Activity', icon: Activity },
+            { id: 'critical',  label: 'Critical',     icon: ShieldAlert },
+            { id: 'malicious', label: 'Malicious',    icon: ShieldAlert },
+            { id: 'today',     label: 'Today',        icon: Clock },
+          ].map(f => {
+            const Icon = f.icon;
+            const isActive = filter === f.id;
+            return (
+              <button
+                key={f.id}
+                onClick={() => setFilter(f.id)}
+                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[11px] font-bold uppercase tracking-widest transition-all ${
+                  isActive ? 'bg-[#00f5ff] text-black shadow-[0_0_20px_rgba(0,245,255,0.3)]' : 'text-slate-400 hover:text-white hover:bg-white/5'
+                }`}
+              >
+                <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-black' : 'text-slate-500'}`} />
+                {f.label}
+              </button>
+            );
+          })}
         </div>
       </div>
 
-      {/* Feed */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+      {/* 🚀 ACTIVITY STREAM */}
+      <div className="grid grid-cols-1 gap-4">
         {filtered.map((scan) => {
           const score = scan.score || 0;
           const isNew = newIds.has(scan.id);
           const isCritical = score < 30 || scan.isVTMalicious;
-          const borderColor = isCritical ? 'var(--admin-red)'
-            : score >= 80 ? 'var(--admin-green)' : score >= 50 ? 'var(--admin-yellow)' : 'var(--admin-red)';
+          const statusColor = isCritical ? '#f43f5e' : score >= 70 ? '#10b981' : score >= 40 ? '#f59e0b' : '#f43f5e';
 
           return (
             <div
               key={scan.id}
-              className={`admin-card ${isCritical ? 'critical-card' : ''}`}
-              style={{
-                borderColor,
-                borderLeft: `4px solid ${borderColor}`,
-                padding: '16px 20px',
-                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                animation: isNew ? 'slideInTop 0.4s ease forwards' : 'none',
-                background: isCritical ? 'rgba(255, 51, 102, 0.03)' : 'var(--admin-bg-card)'
-              }}
+              className={`admin-card-glass group relative p-6 transition-all duration-500 ${isNew ? 'ring-2 ring-[#00f5ff] ring-inset' : ''} ${isCritical ? 'bg-red-500/[0.03]' : ''}`}
             >
-              <div style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'flex-start',
-                flexWrap: 'wrap',
-                gap: 12
-              }}>
-                {/* Left info */}
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{
-                    color: 'var(--admin-cyan)',
-                    fontSize: 14,
-                    fontFamily: 'Space Mono, monospace',
-                    marginBottom: 6,
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap'
-                  }}>
-                    {scan.url}
-                  </div>
+              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+                
+                {/* 🛡️ VECTOR INFO */}
+                <div className="flex-1 min-w-0 flex items-start gap-5">
+                   <div className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 border border-white/5 transition-transform group-hover:scale-110" style={{ background: `${statusColor}15` }}>
+                      {isCritical ? <ShieldAlert className="w-6 h-6" style={{ color: statusColor }} /> : <ShieldCheck className="w-6 h-6" style={{ color: statusColor }} />}
+                   </div>
+                   
+                   <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-3 mb-2">
+                        <span className="text-[#00f5ff] font-mono text-sm font-bold truncate max-w-md">{scan.url}</span>
+                        <a href={scan.url} target="_blank" rel="noreferrer" className="text-slate-600 hover:text-[#00f5ff] transition-colors">
+                          <ExternalLink className="w-3.5 h-3.5" />
+                        </a>
+                      </div>
 
-                  <div style={{
-                    display: 'flex',
-                    gap: 16,
-                    flexWrap: 'wrap',
-                    alignItems: 'center'
-                  }}>
-                    <span style={{
-                      color: borderColor,
-                      fontWeight: 700,
-                      fontFamily: 'Space Mono, monospace',
-                      fontSize: 15
-                    }}>
-                      {score}/100
-                    </span>
+                      <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
+                         <div className="flex items-center gap-2">
+                            <span className="text-white font-black text-lg tracking-tighter" style={{ color: statusColor }}>{score}/100</span>
+                            <span className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Integrity Index</span>
+                         </div>
 
-                    <span style={{
-                      padding: '2px 8px',
-                      borderRadius: '4px',
-                      fontSize: 10,
-                      fontWeight: 700,
-                      fontFamily: 'Space Mono, monospace',
-                      background: scan.status === 'secure' ? 'rgba(0, 255, 136, 0.1)' : 'rgba(255, 51, 102, 0.1)',
-                      color: scan.status === 'secure' ? 'var(--admin-green)' : 'var(--admin-red)',
-                    }}>
-                      {scan.status?.toUpperCase() || 'SCANNING'}
-                    </span>
+                         <div className="flex items-center gap-2 px-2.5 py-1 bg-white/5 rounded-lg border border-white/5">
+                            <User className="w-3 h-3 text-slate-500" />
+                            <span className="text-slate-400 text-[11px] font-medium italic">{scan.userEmail || 'GUEST_NODE'}</span>
+                         </div>
 
-                    {scan.isVTMalicious && (
-                      <span style={{
-                        padding: '2px 8px',
-                        background: 'rgba(220, 38, 38, 0.15)',
-                        color: 'var(--admin-red)',
-                        borderRadius: '4px',
-                        fontSize: 10,
-                        fontWeight: 700,
-                        fontFamily: 'Space Mono, monospace'
-                      }}>🦠 MALICIOUS</span>
-                    )}
+                         <div className="flex items-center gap-2 text-slate-500 text-[11px] font-mono">
+                            <Clock className="w-3 h-3" />
+                            {scan.createdAt?.toDate ? scan.createdAt.toDate().toLocaleTimeString() : 'UPLINKED'}
+                         </div>
 
-                    <span style={{ color: 'var(--admin-text-muted)', fontSize: 12 }}>
-                      User: {scan.userEmail || 'Anonymous'}
-                    </span>
-
-                    <span style={{ color: 'var(--admin-text-muted)', fontSize: 12 }}>
-                      {scan.createdAt?.toDate
-                        ? scan.createdAt.toDate().toLocaleTimeString()
-                        : new Date(scan.createdAt).toLocaleTimeString()}
-                    </span>
-                  </div>
+                         {scan.isVTMalicious && (
+                            <div className="px-3 py-1 bg-red-500/10 border border-red-500/20 rounded-md">
+                               <span className="text-red-500 text-[9px] font-black uppercase tracking-[0.2em]">Positve VT Hit 🦠</span>
+                            </div>
+                         )}
+                      </div>
+                   </div>
                 </div>
 
-                {/* Action buttons */}
-                <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
+                {/* ⚡ ACTIONS */}
+                <div className="flex items-center gap-3 shrink-0">
                   {scan.userEmail && (
                     <button
-                      className="btn-ghost"
-                      style={{ 
-                        fontSize: 12, 
-                        padding: '6px 12px',
-                        background: 'rgba(255, 255, 255, 0.04)',
-                        color: 'var(--admin-text-muted)',
-                        border: '1px solid var(--admin-border)',
-                        borderRadius: '6px',
-                        cursor: 'pointer'
-                      }}
-                      onClick={() => {
-                        window.location.href = `/admin/messages?user=${scan.userEmail}&url=${scan.url}`;
-                      }}
+                      onClick={() => window.location.href = `/admin/messages?user=${scan.userEmail}&url=${scan.url}`}
+                      className="flex items-center gap-2 px-5 py-2.5 bg-white/5 hover:bg-[#00f5ff]/10 border border-white/10 hover:border-[#00f5ff]/30 text-slate-400 hover:text-[#00f5ff] rounded-xl transition-all text-xs font-bold uppercase tracking-wider"
                     >
-                      📧 Alert User
+                      <MessageSquare className="w-4 h-4" />
+                      Dispatch Alert
                     </button>
                   )}
                   <button
-                    className="btn-ghost"
-                    style={{ 
-                        fontSize: 12, 
-                        padding: '6px 12px',
-                        background: 'rgba(255, 255, 255, 0.04)',
-                        color: 'var(--admin-text-muted)',
-                        border: '1px solid var(--admin-border)',
-                        borderRadius: '6px',
-                        cursor: 'pointer'
-                    }}
-                    onClick={() => window.open(`/admin/users?email=${scan.userEmail}`, '_blank')}
+                    onClick={() => window.location.href = `/admin/users?email=${scan.userEmail}`}
+                    className="flex items-center gap-2 px-5 py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/30 text-white rounded-xl transition-all text-xs font-bold uppercase tracking-wider"
                   >
-                    👁️ View User
+                    Investigate Node
                   </button>
                 </div>
               </div>
+
+              {/* ✨ GLOW EFFECT FOR NEW ITEMS */}
+              {isNew && (
+                <div className="absolute inset-0 bg-[#00f5ff]/5 pointer-events-none animate-pulse rounded-2xl" />
+              )}
             </div>
           );
         })}
 
         {filtered.length === 0 && (
-          <div style={{
-            textAlign: 'center',
-            padding: '60px 20px',
-            color: 'var(--admin-text-muted)',
-            fontFamily: 'DM Sans, sans-serif',
-            background: 'var(--admin-bg-secondary)',
-            borderRadius: '12px',
-            border: '1px dashed var(--admin-border)'
-          }}>
-            No live scan activity matching current filters.
+          <div className="admin-card-glass p-20 flex flex-col items-center justify-center text-center">
+            <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mb-6">
+              <Search className="w-8 h-8 text-slate-700" />
+            </div>
+            <h3 className="text-white font-bold text-lg mb-2">No Vectors Intercepted</h3>
+            <p className="text-slate-500 max-w-sm text-sm">Targeted nodes are currently secure or no activity matches your decryption filter.</p>
           </div>
         )}
       </div>
