@@ -73,15 +73,14 @@ export interface ScanResult {
 
 export interface AiFix {
   vulnerabilityId: string;
+  vulnerability?: string;
   riskExplanation: string;
   priority: number;
-  fixCode: {
-    nodejs: string;
-    apache: string;
-    nginx: string;
-    vercel: string;
-    cloudflare?: string;
-    wordpress?: string;
+  platformFixes: {
+    [key: string]: {
+      code: string;
+      instructions: string;
+    };
   };
 }
 

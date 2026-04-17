@@ -9,7 +9,7 @@ interface FixRecommendationProps {
   vulnerabilityId: string;
   fix: {
     vulnerabilityId: string;
-    vulnerability: string;
+    vulnerability?: string;
     riskExplanation: string;
     priority: number;
     platformFixes: {
@@ -18,9 +18,12 @@ interface FixRecommendationProps {
   };
 }
 
-const FixRecommendation: React.FC<FixRecommendationProps> = ({ fix }) => {
+const FixRecommendation: React.FC<FixRecommendationProps> = ({ vulnerabilityId, fix }) => {
   const [copied, setCopied] = useState(false);
   const [activeTab, setActiveTab] = useState('vercel');
+
+  const pVal = Number(fix?.priority || 10);
+  const pFixes = fix?.platformFixes || {};
 
   const platforms = [
     { id: 'vercel', name: 'Vercel', icon: Box },
@@ -40,8 +43,8 @@ const FixRecommendation: React.FC<FixRecommendationProps> = ({ fix }) => {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const priorityLabel = fix.priority <= 3 ? "CRITICAL FIX" : fix.priority <= 6 ? "STRENGTHEN" : "OPTIMIZE";
-  const priorityColor = fix.priority <= 3 ? "bg-red-500/20 text-red-500 border-red-500/30" : fix.priority <= 6 ? "bg-yellow-400/20 text-yellow-400 border-yellow-400/30" : "bg-primary/20 text-primary border-primary/30";
+  const priorityLabel = pVal <= 3 ? "CRITICAL FIX" : pVal <= 6 ? "STRENGTHEN" : "OPTIMIZE";
+  const priorityColor = pVal <= 3 ? "bg-red-500/20 text-red-500 border-red-500/30" : pVal <= 6 ? "bg-yellow-400/20 text-yellow-400 border-yellow-400/30" : "bg-primary/20 text-primary border-primary/30";
 
   return (
     <div className="space-y-6 pt-4 border-t border-white/5 mt-4 animate-in fade-in duration-500">
@@ -58,7 +61,7 @@ const FixRecommendation: React.FC<FixRecommendationProps> = ({ fix }) => {
          <div className="p-4 bg-primary/[0.03] rounded-xl border border-primary/10">
             <p className="text-[11px] text-slate-400 leading-relaxed font-body">
               <span className="text-primary font-bold mr-2">ANALYSIS:</span>
-              {fix.riskExplanation}
+              {fix?.riskExplanation || "Deep analysis in progress..."}
             </p>
          </div>
 
@@ -78,7 +81,7 @@ const FixRecommendation: React.FC<FixRecommendationProps> = ({ fix }) => {
             </div>
 
             {platforms.map((p) => {
-              const platformData = fix.platformFixes?.[p.id];
+              const platformData = pFixes[p.id];
               const hasCode = !!platformData?.code;
               const hasInstructions = !!platformData?.instructions;
 
@@ -98,7 +101,7 @@ const FixRecommendation: React.FC<FixRecommendationProps> = ({ fix }) => {
                       <Button 
                         size="sm" 
                         variant="ghost"
-                        onClick={() => handleCopy(platformData.code)}
+                        onClick={() => handleCopy(platformData.code || '')}
                         className="absolute top-3 right-3 text-white/30 hover:text-white hover:bg-white/10 h-8 rounded-lg"
                       >
                         {copied ? <Check className="w-3 h-3 text-success" /> : <Copy className="w-3 h-3" />}
