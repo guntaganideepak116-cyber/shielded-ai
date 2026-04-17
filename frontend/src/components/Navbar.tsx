@@ -79,7 +79,7 @@ export const Navbar = () => {
             <button
               key={link.path}
               onClick={() => navigate(link.path)}
-              className={`text-[11px] font-black uppercase tracking-widest transition-all duration-300 relative group ${
+              className={`text-[12px] font-black uppercase tracking-widest transition-all duration-300 relative group ${
                 location.pathname === link.path ? 'text-primary' : 'text-slate-500 hover:text-white'
               }`}
             >
@@ -92,17 +92,7 @@ export const Navbar = () => {
         {/* RIGHT SECTION */}
         <div className="nav-right flex items-center gap-2 sm:gap-4 shrink-0">
           {/* PWA Install (Desktop) */}
-          {canInstall && (
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={handleInstallClick}
-              className="hidden xl:flex items-center gap-2 border-primary/30 text-primary hover:bg-primary/10 h-9 text-[10px] font-black uppercase tracking-widest px-4 rounded-xl shadow-lg shadow-primary/10"
-            >
-              <Download className="w-3.5 h-3.5" />
-              {t('mon.add')}
-            </Button>
-          )}
+
 
           {/* Lang Toggle Removed */}
 
