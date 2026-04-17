@@ -1,16 +1,16 @@
-import chat from './_core/handlers/chat.js';
-import scan from './_core/handlers/scan.js';
-import aiFix from './_core/handlers/ai-fix.js';
-import history from './_core/handlers/history.js';
-import sendEmail from './_core/handlers/send-email.js';
-import sendAlert from './_core/handlers/send-alert.js';
-import monitor from './_core/handlers/monitor.js';
-import stats from './_core/handlers/stats.js';
-import assistant from './_core/handlers/assistant.js';
-import generateApiKey from './_core/handlers/user/generate-api-key.js';
-import updatePlan from './_core/handlers/user/update-plan.js';
-import addMonitor from './_core/handlers/monitors/add.js';
-import cronMonitor from './_core/handlers/cron/monitor.js';
+import chat from './api/_core/handlers/chat.js';
+import scan from './api/_core/handlers/scan.js';
+import aiFix from './api/_core/handlers/ai-fix.js';
+import history from './api/_core/handlers/history.js';
+import sendEmail from './api/_core/handlers/send-email.js';
+import sendAlert from './api/_core/handlers/send-alert.js';
+import monitor from './api/_core/handlers/monitor.js';
+import stats from './api/_core/handlers/stats.js';
+import assistant from './api/_core/handlers/assistant.js';
+import generateApiKey from './api/_core/handlers/user/generate-api-key.js';
+import updatePlan from './api/_core/handlers/user/update-plan.js';
+import addMonitor from './api/_core/handlers/monitors/add.js';
+import cronMonitor from './api/_core/handlers/cron/monitor.js';
 
 export default async function handler(req, res) {
   // CORS HEADERS (Global)
@@ -27,10 +27,8 @@ export default async function handler(req, res) {
   }
 
   const url = new URL(req.url, 'http://localhost');
-  // Normalize path: remove trailing slashes and ensure /api prefix logic
   let path = url.pathname.replace(/\/$/, '');
   
-  // Create a handler map that is agnostic of the /api prefix if Vercel strips it
   const routes = {
     'chat': chat,
     'scan': scan,
@@ -48,7 +46,6 @@ export default async function handler(req, res) {
     'cron/monitor': cronMonitor
   };
 
-  // Resolve the key from the path
   const key = path.replace(/^\/api\//, '').replace(/^\//, '');
   const apiHandler = routes[key];
 
