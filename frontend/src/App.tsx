@@ -21,6 +21,18 @@ import Report from "./pages/Report.tsx";
 import Pricing from "./pages/Pricing.tsx";
 import { Loader2 } from "lucide-react";
 
+// Admin Imports
+import AdminRoute from "./components/admin/AdminRoute";
+import AdminLayout from "./pages/admin/AdminLayout";
+import AdminOverview from "./pages/admin/Overview";
+import AdminLive from "./pages/admin/LiveFeed";
+import AdminUsers from "./pages/admin/Users";
+import AdminMessages from "./pages/admin/Messages";
+import AdminVulns from "./pages/admin/VulnerabilityIntel";
+import AdminAnalytics from "./pages/admin/Analytics";
+import AdminSettings from "./pages/admin/Settings";
+
+
 const queryClient = new QueryClient();
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -101,6 +113,25 @@ const AppRoutes = () => {
         path="/documentation" 
         element={<Documentation />} 
       />
+      
+      {/* 🛡️ ADMIN DASHBOARD (SECURE) */}
+      <Route 
+        path="/admin" 
+        element={
+          <AdminRoute>
+            <AdminLayout />
+          </AdminRoute>
+        }
+      >
+        <Route index element={<AdminOverview />} />
+        <Route path="live" element={<AdminLive />} />
+        <Route path="users" element={<AdminUsers />} />
+        <Route path="messages" element={<AdminMessages />} />
+        <Route path="vulnerabilities" element={<AdminVulns />} />
+        <Route path="analytics" element={<AdminAnalytics />} />
+        <Route path="settings" element={<AdminSettings />} />
+      </Route>
+
       
       <Route path="*" element={<NotFound />} />
     </Routes>
