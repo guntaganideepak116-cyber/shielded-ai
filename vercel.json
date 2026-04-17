@@ -7,7 +7,7 @@
     },
     {
       "source": "/((?!api/|assets/|favicon.ico|manifest.json|sw.js|robots.txt).*)",
-      "destination": "/FRONTEND/index.html"
+      "destination": "/FRONTEND/dist/index.html"
     }
   ],
   "headers": [
