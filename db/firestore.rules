@@ -3,34 +3,48 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
+    // 🛡️ ADMIN HELPER
+    function isAdmin() {
+      return request.auth != null && request.auth.token.email == 'guntaganideepak1234@gmail.com';
+    }
+
     // User profile data
     match /users/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+      allow read: if isAdmin() || (request.auth != null && request.auth.uid == userId);
+      allow write: if isAdmin() || (request.auth != null && request.auth.uid == userId);
     }
     
-    // Scan results: Publicly readable for report sharing (Problem 1 context)
-    // Write only if user is authenticated and owns the data
+    // Scan results: Publicly readable for report sharing
     match /scans/{scanId} {
       allow read: if true;
       allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
-      allow update, delete: if request.auth != null && resource.data.userId == request.auth.uid;
+      allow update, delete: if isAdmin() || (request.auth != null && resource.data.userId == request.auth.uid);
     }
     
     // Global stats: Publicly readable, restricted from client-side writes
-    // (Managed via Admin SDK in api/stats.js)
     match /stats/{statId} {
       allow read: if true;
-      allow write: if false; 
+      allow write: if isAdmin(); 
     }
 
     // Monitoring data: Each user manages their own sites
-    match /monitors/{userId}/sites/{siteId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+    match /monitors/{userId}/{document=**} {
+      allow read, write: if isAdmin() || (request.auth != null && request.auth.uid == userId);
     }
 
-    // Baseline Security: Deny access to unspecified collections
+    // Admin-only collections (Announcements and Broadcasts)
+    match /announcements/{annId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    
+    match /broadcasts/{broadcastId} {
+      allow read, write: if isAdmin();
+    }
+
+    // Baseline Security: Deny everything else
     match /{document=**} {
-      allow read, write: if false;
+      allow read, write: if isAdmin();
     }
   }
 }
