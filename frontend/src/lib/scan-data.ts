@@ -1,10 +1,47 @@
+import { Timestamp } from 'firebase/firestore';
+
 export interface Vulnerability {
   id: string;
   issue: string;
-  severity: 'critical' | 'high' | 'medium';
+  severity: 'critical' | 'high' | 'medium' | 'low';
   status: 'failed' | 'fixed';
   fixTime: string;
   description: string;
+  title?: string; // Some API returns title instead of issue
+  header?: string; // Used in CompareResults
+}
+
+export interface SSLInfo {
+  valid: boolean;
+  issuer: string;
+  valid_to: string;
+  grade: string;
+  serialNumber?: string;
+  thumbprint?: string;
+  daysUntilExpiry?: number;
+}
+
+export interface VirusTotalInfo {
+  positives: number;
+  total: number;
+  scan_id: string;
+  permalink: string;
+  malicious?: number;
+  suspicious?: number;
+  harmless?: number;
+}
+
+export interface SecurityHeaders {
+  [key: string]: {
+    status: 'secure' | 'vulnerable';
+    value: string;
+    desc: string;
+  };
+}
+
+export interface OWASPData {
+  name: string;
+  status: 'pass' | 'warn' | 'fail';
 }
 
 export interface ScanResult {
@@ -12,25 +49,59 @@ export interface ScanResult {
   url: string;
   score: number;
   grade: string;
-  hostingType: string;
+  status: string; // added to match api-client return
+  message?: string; // added to match api-client return
+  hostingType?: string;
   vulnerabilities: Vulnerability[];
-  timestamp: Date;
+  headers?: SecurityHeaders;
+  ssl?: SSLInfo;
+  virusTotal?: VirusTotalInfo;
+  timestamp?: Date | string;
+  scannedAt?: string; // added for persistence and header
+  suggestions?: string[]; // added for error reporting
+  afterScore?: number; // added for score comparison in history/reports
+  created_at?: string;
+  createdAt?: string | Timestamp | any; // allow any for now but try to use Timestamp
+  issues?: Vulnerability[]; // sometimes returned as issues
+  enabled?: boolean;
+  lastScore?: number;
+  lastChecked?: string | Date;
+  previousScore?: number;
+  uptime?: string;
+  owasp?: Record<string, OWASPData>;
+}
+
+export interface AiFix {
+  vulnerabilityId: string;
+  riskExplanation: string;
+  priority: number;
+  fixCode: {
+    nodejs: string;
+    apache: string;
+    nginx: string;
+    vercel: string;
+    cloudflare?: string;
+    wordpress?: string;
+  };
+}
+
+export interface AiFixResponse {
+  fixes: AiFix[];
+  insights: string;
 }
 
 export const MOCK_VULNERABILITIES: Vulnerability[] = [
-  { id: '1', issue: 'No HTTPS Redirect', severity: 'critical', status: 'failed', fixTime: '30s', description: 'Site accessible over unencrypted HTTP' },
-  { id: '2', issue: '/admin Panel Exposed', severity: 'critical', status: 'failed', fixTime: '45s', description: 'Admin panel publicly accessible without protection' },
-  { id: '3', issue: 'Missing Security Headers', severity: 'critical', status: 'failed', fixTime: '20s', description: 'X-Frame-Options, CSP, and HSTS headers not set' },
-  { id: '4', issue: 'Weak Content-Type Policy', severity: 'high', status: 'failed', fixTime: '15s', description: 'X-Content-Type-Options header missing' },
-  { id: '5', issue: 'Clickjacking Vulnerable', severity: 'high', status: 'failed', fixTime: '10s', description: 'No X-Frame-Options or frame-ancestors CSP' },
-  { id: '6', issue: 'Directory Listing Enabled', severity: 'high', status: 'failed', fixTime: '20s', description: 'Server directories are browsable' },
-  { id: '7', issue: 'Server Info Exposed', severity: 'high', status: 'failed', fixTime: '10s', description: 'Server version information leaked in headers' },
-  { id: '8', issue: 'Cookie Without Secure Flag', severity: 'medium', status: 'failed', fixTime: '15s', description: 'Cookies transmitted over insecure connections' },
-  { id: '9', issue: 'Missing Referrer Policy', severity: 'medium', status: 'failed', fixTime: '10s', description: 'No Referrer-Policy header configured' },
+  { id: 'hsts', issue: 'Strict Transport Security', severity: 'critical', status: 'failed', fixTime: '30s', description: 'Enforces secure HTTPS connections' },
+  { id: 'csp', issue: 'Content Security Policy', severity: 'high', status: 'failed', fixTime: '1m', description: 'Prevents XSS and data injection attacks' },
+  { id: 'xfo', issue: 'X-Frame-Options', severity: 'medium', status: 'failed', fixTime: '15s', description: 'Prevents clickjacking' },
+  { id: 'cto', issue: 'X-Content-Type-Options', severity: 'medium', status: 'failed', fixTime: '10s', description: 'Prevents MIME type sniffing' },
+  { id: 'admin', issue: 'Admin Panel Access', severity: 'critical', status: 'failed', fixTime: '45s', description: 'Publicly accessible /admin directory' },
+  { id: 'robots', issue: 'Robots.txt Exposure', severity: 'medium', status: 'failed', fixTime: '10s', description: 'Sensitive path leakage in robots.txt' },
+  { id: 'https', issue: 'SSL/TLS Encryption', severity: 'critical', status: 'failed', fixTime: '5m', description: 'Secure connection via HTTPS' }
 ];
 
 export const FORTRESS_CODE = `# ═══════════════════════════════════════════
-# SECURESHIELD AI - Auto-Generated Fortress
+# SECUREWEB AI - Auto-Generated Fortress
 # Generated: ${new Date().toISOString().split('T')[0]}
 # ═══════════════════════════════════════════
 
@@ -62,17 +133,15 @@ Options -Indexes
 ServerSignature Off`;
 
 export function getGrade(score: number): string {
-  if (score >= 90) return 'A+';
-  if (score >= 80) return 'A';
-  if (score >= 70) return 'B';
-  if (score >= 60) return 'C';
+  if (score >= 90) return 'A';
+  if (score >= 80) return 'B';
+  if (score >= 70) return 'C';
   if (score >= 50) return 'D';
   return 'F';
 }
 
 export function getGradeColor(score: number): string {
-  if (score >= 90) return 'text-success';
-  if (score >= 70) return 'text-yellow-400';
-  if (score >= 50) return 'text-orange-400';
-  return 'text-destructive';
+  if (score >= 80) return 'text-success'; // Green
+  if (score >= 50) return 'text-yellow-500'; // Yellow
+  return 'text-destructive'; // Red
 }

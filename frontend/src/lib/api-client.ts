@@ -1,67 +1,87 @@
-import { type Vulnerability } from './scan-data';
+import { type ScanResult, type AiFixResponse } from './scan-data';
 
-const API_URL = ''; // Relative to origin
+const API_BASE_URL = '/api';
 
-export interface ScanItem {
-  id: string;
-  url: string;
-  score: number;
-  grade: string;
-  vulnerabilities: Vulnerability[];
-  created_at?: string;
-  timestamp?: Date | string;
-}
-
-export interface ScanResponse {
-  score: number;
-  grade: string;
-  platform: string;
-  vulnerabilities: Vulnerability[];
-}
-
-export async function fetchUserScans(): Promise<ScanItem[]> {
+export async function callSecurityScan(url: string): Promise<ScanResult | null> {
   try {
-    const response = await fetch(`${API_URL}/api/history`);
+    const response = await fetch(`${API_BASE_URL}/scan`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url }),
+      cache: 'no-store'
+    });
+
+    if (!response.ok) throw new Error('Scan failed');
+    return await response.json();
+  } catch (error) {
+    console.error('API Scan Error:', error);
+    return null;
+  }
+}
+
+export async function getAiFixes(scanResult: ScanResult): Promise<AiFixResponse | null> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/ai-fix`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        url: scanResult.url,
+        vulnerabilities: scanResult.vulnerabilities,
+        ssl: scanResult.ssl,
+        virusTotal: scanResult.virusTotal
+      }),
+      cache: 'no-store'
+    });
+
+    if (!response.ok) throw new Error('AI Fix generation failed');
+    return await response.json();
+  } catch (error) {
+    console.error('AI Fix Error:', error);
+    return null;
+  }
+}
+
+export async function fetchUserHistory() {
+  try {
+    const response = await fetch(`${API_BASE_URL}/history`);
     if (!response.ok) throw new Error('Failed to fetch history');
     return await response.json();
   } catch (error) {
-    console.error('Error fetching scans:', error);
+    console.error('API Fetch Error:', error);
     return [];
   }
 }
 
-export async function getGlobalScanCount(): Promise<number> {
+export async function fortifySecurity(userId: string, url: string) {
   try {
-    const response = await fetch(`${API_URL}/api/stats`);
-    if (!response.ok) throw new Error('Failed to fetch stats');
+    const response = await fetch(`${API_BASE_URL}/fortify`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId, url }),
+      cache: 'no-store'
+    });
+
+    if (!response.ok) throw new Error('Fortification failed');
     const data = await response.json();
-    return data.totalScans || 12400;
+    return data.success;
   } catch (error) {
-    console.error('Error fetching counter:', error);
-    return 12400;
+    console.error('Fortification Error:', error);
+    return false;
   }
 }
 
-export async function runScan(url: string, userId?: string): Promise<ScanResponse> {
-  const response = await fetch(`${API_URL}/api/scan`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ url, userId }),
-  });
-  
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || 'Scan failed');
+export async function sendEmailAlert(email: string, scanResult: ScanResult, alertType: string = 'report', previousScore: number | null = null) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/send-alert`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, alertType, scanResult, previousScore })
+    });
+
+    if (!response.ok) throw new Error('Email alert failed');
+    return await response.json();
+  } catch (error) {
+    console.error('Email API Error:', error);
+    return null;
   }
-  
-  return await response.json();
-}
-
-export function subscribeToCounter(callback: (value: number) => void) {
-  const interval = setInterval(async () => {
-    const count = await getGlobalScanCount();
-    callback(count);
-  }, 30000);
-
-  return () => clearInterval(interval);
 }

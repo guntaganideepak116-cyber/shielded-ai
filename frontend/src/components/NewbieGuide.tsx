@@ -170,7 +170,7 @@ function usePlatformSteps(platform: HostingPlatform, url: string): GuideStep[] {
         },
         {
           title: 'Paste code & Save',
-          subtitle: 'Paste the SECURESHIELD code → Click Save Changes',
+          subtitle: 'Paste the SECUREWEB code → Click Save Changes',
           icon: <Save className="w-6 h-6" />,
           illustration: <CodePreview code={code} fileName=".htaccess" />,
           hint: 'Select all existing content first (Ctrl+A), then paste.',
