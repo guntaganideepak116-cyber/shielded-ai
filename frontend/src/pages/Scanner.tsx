@@ -86,6 +86,7 @@ const Scanner = () => {
   const [scanError, setScanError] = useState<{type: string, message: string, suggestions?: string[]} | null>(null);
   const [isRescanning, setIsRescanning] = useState(false);
   const [previousScore, setPreviousScore] = useState<number | null>(null);
+  const [selectedVulnId, setSelectedVulnId] = useState<string | null>(null);
 
   // Problem 6 — Restore scan result if it exists
   useEffect(() => {
@@ -221,6 +222,12 @@ const Scanner = () => {
         setScore(finalScore);
         setVulnerabilities(mappedVulns);
         setPhase('results');
+        
+        // Auto-select first critical/high vuln if exists
+        if (mappedVulns.length > 0) {
+          const firstMajor = mappedVulns.find(v => v.severity === 'critical' || v.severity === 'high') || mappedVulns[0];
+          setSelectedVulnId(firstMajor.id);
+        }
         
         // Auto-scroll to results
         setTimeout(() => {
@@ -798,182 +805,113 @@ const Scanner = () => {
 
                     {/* 2. Vulnerability List */}
                     <div id="vuln-section" className="space-y-6 scroll-mt-32">
-                       <div className="flex items-center justify-between px-2">
-                          <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em] flex items-center gap-3">
-                             <ShieldAlert className="w-5 h-5 text-destructive" /> Active Security Vector Analysis
-                          </h3>
-                       </div>
-                       <div className="space-y-4">
-                        {vulnerabilities && vulnerabilities.length > 0 ? (
-                          vulnerabilities.map((vuln, i) => {
-                            const currentFix = aiFixes?.fixes?.find((f) => f.vulnerabilityId === vuln.id);
-                            return <VulnerabilityCard key={vuln.id} vuln={vuln} index={i} fix={currentFix} />;
-                          })
-                        ) : (
-                          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-20 text-center glass-card border-success/20 bg-success/5 rounded-3xl !bg-[#0d1424]">
-                             <ShieldCheck className="w-16 h-16 mx-auto mb-6 text-success animate-bounce" />
-                             <h3 className="text-2xl font-display font-black uppercase italic tracking-tighter mb-2">Perimeter Secured</h3>
-                             <p className="text-sm text-slate-500 font-medium italic">No vulnerabilities detected. Your infrastructure passes all baseline compliance checks.</p>
-                          </motion.div>
-                        )}
-                       </div>
-                    </div>
+                        <div className="flex items-center justify-between px-2">
+                           <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em] flex items-center gap-3">
+                              <ShieldAlert className="w-5 h-5 text-destructive" /> Active Security Vector Analysis
+                           </h3>
+                        </div>
+                        <div className="space-y-3">
+                         {vulnerabilities && vulnerabilities.length > 0 ? (
+                           vulnerabilities.map((vuln, i) => {
+                             const currentFix = aiFixes?.fixes?.find((f) => f.vulnerabilityId === vuln.id);
+                             const isSelected = selectedVulnId === vuln.id;
+                             return (
+                               <div 
+                                 key={vuln.id} 
+                                 onClick={() => setSelectedVulnId(vuln.id)}
+                                 className={`cursor-pointer transition-all duration-300 ${isSelected ? 'scale-[1.02] z-10' : 'opacity-80 hover:opacity-100'}`}
+                               >
+                                 <VulnerabilityCard 
+                                   vuln={vuln} 
+                                   index={i} 
+                                   fix={currentFix} 
+                                   isForcedExpanded={isSelected}
+                                 />
+                               </div>
+                             );
+                           })
+                         ) : (
+                           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-20 text-center glass-card border-success/20 bg-success/5 rounded-3xl !bg-[#0d1424]">
+                              <ShieldCheck className="w-16 h-16 mx-auto mb-6 text-success animate-bounce" />
+                              <h3 className="text-2xl font-display font-black uppercase italic tracking-tighter mb-2">Perimeter Secured</h3>
+                              <p className="text-sm text-slate-500 font-medium italic">No vulnerabilities detected. Your infrastructure passes all baseline compliance checks.</p>
+                           </motion.div>
+                         )}
+                        </div>
+                     </div>
 
-                    {/* 3. SSL Certificate Card (MOVED FROM RIGHT) */}
+                    {/* 3. SSL Certificate Card */}
                     <SSLCard ssl={scanResult.ssl} />
 
-                    {/* 4. VirusTotal Card (MOVED FROM RIGHT) */}
+                    {/* 4. VirusTotal Card */}
                     <VirusTotalCard virusTotal={scanResult.virusTotal} />
-
-                    {/* 5. SMART FIX GUIDES (NEW) */}
-                    <div className="space-y-6 pt-12">
-                      <div className="flex items-center gap-4 px-2">
-                        <div className="h-[1px] flex-1 bg-white/5" />
-                        <h3 className="text-[10px] font-black text-primary uppercase tracking-[0.4em] flex items-center gap-3">
-                           Step-By-Step Remediation Playbooks
-                        </h3>
-                        <div className="h-[1px] flex-1 bg-white/5" />
-                      </div>
-
-                      {scanResult?.vulnerabilities?.map((vuln: any) => {
-                        const guideId = VULN_TO_GUIDE[vuln.id];
-                        if (!guideId || !(FIX_GUIDES as any)[guideId]) return null;
-
-                        return (
-                          <SmartFixCard
-                            key={vuln.id + "-guide"}
-                            vulnerabilityId={guideId}
-                            scanResult={scanResult}
-                            onRescan={async () => {
-                              await handleScan(scanResult.url);
-                              toast.success('Re-scan complete! Site remediated.');
-                            }}
-                          />
-                        );
-                      })}
-                    </div>
                   </div>
 
-                  {/* RIGHT COLUMN */}
-                  <div className="right-column">
-                    {/* 1. Security Headers Analysis */}
-                    <HeadersGrid headers={scanResult.headers} />
+                  {/* RIGHT COLUMN — THE ACTION COMMAND CENTER */}
+                  <div className="right-column relative">
+                    <div className="sticky top-24 space-y-6 max-h-[calc(100vh-120px)] overflow-y-auto pr-2 no-scrollbar">
+                      
+                      {/* Contextual Smart Fix Guide */}
+                      {selectedVulnId ? (
+                        <div className="space-y-6 animate-in slide-in-from-right-4 duration-500">
+                           <div className="flex items-center justify-between px-2">
+                              <h3 className="text-[10px] font-black text-primary uppercase tracking-[0.4em] flex items-center gap-3">
+                                 <Activity className="w-4 h-4" /> Remediation Console
+                              </h3>
+                              <button 
+                                onClick={() => setSelectedVulnId(null)}
+                                className="text-[9px] text-slate-500 hover:text-white uppercase font-bold"
+                              >
+                                Clear Selection
+                              </button>
+                           </div>
+                           
+                           {(() => {
+                             const guideId = VULN_TO_GUIDE[selectedVulnId];
+                             if (guideId && (FIX_GUIDES as any)[guideId]) {
+                               return (
+                                 <SmartFixCard
+                                   vulnerabilityId={guideId}
+                                   scanResult={scanResult}
+                                   onRescan={async () => {
+                                      await handleScan(scanResult.url);
+                                      toast.success('Re-scan complete!');
+                                   }}
+                                 />
+                               );
+                             } else {
+                               return (
+                                 <div className="glass-card !bg-white/[0.02] border-white/5 p-8 text-center rounded-2xl">
+                                    <div className="text-3xl mb-4">🤖</div>
+                                    <h4 className="text-sm font-black uppercase italic text-slate-400 mb-2">AI Snippet Ready</h4>
+                                    <p className="text-[11px] text-slate-500 leading-relaxed italic">
+                                      This vulnerability can be resolved with the code snippet shown in the card on the left. Click "Copy Patch" to apply.
+                                    </p>
+                                 </div>
+                               );
+                             }
+                           })()}
+                        </div>
+                      ) : (
+                        <div className="glass-card !bg-white/[0.02] border-white/5 p-12 text-center rounded-3xl border-dashed">
+                           <Shield className="w-12 h-12 text-slate-700 mx-auto mb-6 opacity-20" />
+                           <h4 className="text-xs font-black uppercase tracking-widest text-slate-500 mb-2">Awaiting Target</h4>
+                           <p className="text-[10px] text-slate-600 max-w-[200px] mx-auto leading-relaxed">
+                              Select a security vector from the analysis list to initiate guided remediation.
+                           </p>
+                        </div>
+                      )}
 
-                    <div className="email-report-section glass-card !bg-[#0d1424] !border-[#1a2234] !p-8 shadow-none space-y-6">
-                       <div className="flex items-center gap-3">
-                          <div className="p-2.5 bg-primary/20 rounded-xl text-primary">
-                             <Mail className="w-5 h-5 text-primary" />
-                          </div>
-                          <h4 className="text-[10px] font-black uppercase tracking-widest">Share Executive Report</h4>
-                       </div>
-                       <div className="space-y-4">
-                          <Input 
-                            type="email"
-                            placeholder="vulnerability-lead@company.com" 
-                            value={emailInput}
-                            onChange={(e) => {
-                              setEmailInput(e.target.value);
-                              // Clear error when user types
-                              if (emailStatus === 'error') {
-                                setEmailStatus(null);
-                                setEmailMessage('');
-                              }
-                            }}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter') handleSendEmail();
-                            }}
-                            disabled={emailStatus === 'sending'}
-                            className={`bg-slate-900 text-xs h-12 rounded-xl border ${
-                              emailStatus === 'error' ? 'border-red-500' : 'border-white/10'
-                            }`}
-                          />
-                          <Button 
-                            onClick={handleSendEmail}
-                            disabled={emailStatus === 'sending'}
-                            className={`w-full h-12 font-black uppercase text-[10px] tracking-widest rounded-xl transition-all ${
-                              emailStatus === 'sending' 
-                                ? 'bg-slate-800 text-slate-500' 
-                                : 'bg-white text-black hover:bg-primary hover:text-black'
-                            }`}
-                          >
-                            {emailStatus === 'sending' ? <Loader2 className="w-4 h-4 animate-spin" /> : 'SEND_SECURE_EMAIL'}
-                          </Button>
-
-                          {/* Status Message — shows REAL result */}
-                          {emailMessage && (
-                            <div style={{
-                              marginTop: '10px',
-                              padding: '10px 14px',
-                              borderRadius: '8px',
-                              fontSize: '11px',
-                              background: emailStatus === 'success'
-                                ? 'rgba(0,255,136,0.1)'
-                                : emailStatus === 'error'
-                                ? 'rgba(255,51,102,0.1)'
-                                : 'rgba(0,212,255,0.1)',
-                              border: `1px solid ${
-                                emailStatus === 'success'
-                                  ? '#00ff88'
-                                  : emailStatus === 'error'
-                                  ? '#ff3366'
-                                  : '#00d4ff'
-                              }`,
-                              color: emailStatus === 'success'
-                                ? '#00ff88'
-                                : emailStatus === 'error'
-                                ? '#ff3366'
-                                : '#00d4ff',
-                              fontWeight: 'bold',
-                              textTransform: 'uppercase',
-                              letterSpacing: '0.05em'
-                            }}>
-                              {emailMessage}
-                            </div>
-                          )}
-                       </div>
-                    </div>
-
-                    {/* 3. OWASP Top 10 Card (MOVED FROM BOTTOM) */}
-                    <OWASPCard owasp={scanResult.owasp} />
-
-                    {/* 4. Severity Distribution Chart (MOVED FROM BOTTOM) */}
-                    <div className="glass-card space-y-8 !bg-[#0d1424] !border-[#1a2234] !p-6 shadow-none">
-                       <div className="flex items-center justify-between">
-                         <h4 className="text-[9px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">
-                           <PieIcon className="w-4 h-4 text-primary" /> Severity Distribution
-                         </h4>
-                         <span className="text-[8px] font-bold text-slate-600 bg-white/5 px-2 py-0.5 rounded-full uppercase">Real-time</span>
-                       </div>
-                       <div className="severity-chart-container">
-                         <ResponsiveContainer width="100%" height={160}>
-                           <PieChart>
-                             <Pie
-                                data={chartData}
-                                innerRadius={45} 
-                                outerRadius={60} 
-                                paddingAngle={5} 
-                                dataKey="value"
-                                stroke="none"
-                             >
-                               {chartData.map((e, index) => <Cell key={index} fill={e.color} />)}
-                             </Pie>
-                             <RechartsTooltip 
-                               contentStyle={{ background: '#0a0a0b', border: '1px solid #1f1f23', borderRadius: '12px', fontSize: '9px' }} 
-                               itemStyle={{ fontWeight: 'black', textTransform: 'uppercase', padding: '0px' }}
-                             />
-                           </PieChart>
-                         </ResponsiveContainer>
-                         
-                         {/* Compact Legend */}
-                         <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 mt-4">
-                           {chartData.filter(d => d.value > 0).map((d, i) => (
-                             <div key={i} className="flex items-center gap-1.5">
-                               <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: d.color }} />
-                               <span className="text-[8px] font-black uppercase text-slate-500">{d.name} ({d.value})</span>
-                             </div>
-                           ))}
-                         </div>
-                       </div>
+                      <OWASPCard owasp={scanResult.owasp} />
+                      
+                      <div className="glass-card !bg-[#0d1424] border-[#1a2234] p-6 space-y-4">
+                        <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Operator Note</h4>
+                        <div className="p-4 bg-white/5 rounded-xl border border-white/5">
+                          <p className="text-[11px] text-slate-400 leading-relaxed italic">
+                            "Infrastructure status is currently {(scanResult.score || 0) < 50 ? 'CRITICAL' : 'DEGRADED'}. Focus on RED (Critical) vectors first to restore baseline encryption security."
+                          </p>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
