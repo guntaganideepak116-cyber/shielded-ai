@@ -211,10 +211,17 @@ const Scanner = () => {
             id: issue.id || Math.random().toString(),
             issue: issue.title || issue.issue,
             severity: (issue.severity?.toLowerCase() || 'medium') as 'critical' | 'high' | 'medium' | 'low',
-            status: 'failed',
+            status: issue.status || 'failed',
             fixTime: '1m',
             description: issue.description
-        }));
+        })).sort((a: any, b: any) => {
+          if (a.status === 'failed' && b.status === 'fixed') return -1;
+          if (a.status === 'fixed' && b.status === 'failed') return 1;
+          return 0;
+        });
+
+        setScanResult(realData);
+        sessionStorage.setItem('lastScanResult', JSON.stringify(realData));
 
         const aiData = await getAiFixes(realData);
         setAiFixes(aiData);
