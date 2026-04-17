@@ -5,7 +5,7 @@ import { Lock, Shield, Users, Clock, LogOut } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { saveScan } from '@/lib/scan-history';
 import { useAuth } from '@/hooks/use-auth';
-import { saveScanToDb, incrementScanCounter, getGlobalScanCount, subscribeToCounter } from '@/lib/supabase-helpers';
+import { runScan, getGlobalScanCount, subscribeToCounter } from '@/lib/api-client';
 import { detectPlatform, PLATFORMS, type HostingPlatform } from '@/lib/platform-detection';
 import ShieldAnimation from '@/components/ShieldAnimation';
 import ScannerInput from '@/components/ScannerInput';

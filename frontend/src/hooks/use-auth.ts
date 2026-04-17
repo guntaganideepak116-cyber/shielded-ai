@@ -1,38 +1,28 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import type { User, Session } from '@supabase/supabase-js';
 
+// Transitioned from Supabase to a simple local-storage based auth for your Node/Express backend.
 export function useAuth() {
-  const [user, setUser] = useState<User | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
+  const [user, setUser] = useState<{ id: string, email?: string, is_anonymous: boolean } | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
-        setLoading(false);
-      }
-    );
-
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
-
-    return () => subscription.unsubscribe();
+    // Check for a local session
+    const storedUser = localStorage.getItem('secure_user');
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    } else {
+      // Auto-sign in as a guest for your express scanner to track locally if needed
+      const guest = { id: 'guest_' + Math.random().toString(36).substr(2, 9), is_anonymous: true };
+      setUser(guest);
+      localStorage.setItem('secure_user', JSON.stringify(guest));
+    }
+    setLoading(false);
   }, []);
 
-  const signInAnonymously = async () => {
-    const { error } = await supabase.auth.signInAnonymously();
-    if (error) throw error;
-  };
-
   const signOut = async () => {
-    await supabase.auth.signOut();
+    localStorage.removeItem('secure_user');
+    setUser(null);
   };
 
-  return { user, session, loading, signInAnonymously, signOut };
+  return { user, loading, signOut };
 }

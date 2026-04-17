@@ -4,9 +4,9 @@ import { useNavigate } from 'react-router-dom';
 import { Shield, Clock, Trash2, ArrowLeft, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { getHistory, clearHistory } from '@/lib/scan-history';
-import { fetchUserScans } from '@/lib/supabase-helpers';
+import { fetchUserScans, type ScanItem } from '@/lib/api-client';
 import { useAuth } from '@/hooks/use-auth';
-import { getGrade, getGradeColor } from '@/lib/scan-data';
+import { getGrade, getGradeColor, type Vulnerability } from '@/lib/scan-data';
 
 interface ScanItem {
   id: string;
@@ -128,10 +128,11 @@ const History = () => {
             <AnimatePresence>
               {scans.map((scan, index) => {
                 const colorClass = getGradeColor(scan.score);
-                const critCount = Array.isArray(scan.vulnerabilities) ? scan.vulnerabilities.filter((v: any) => v.severity === 'critical').length : 0;
-                const highCount = Array.isArray(scan.vulnerabilities) ? scan.vulnerabilities.filter((v: any) => v.severity === 'high').length : 0;
-                const fixedCount = Array.isArray(scan.vulnerabilities) ? scan.vulnerabilities.filter((v: any) => v.status === 'fixed').length : 0;
-                const totalCount = Array.isArray(scan.vulnerabilities) ? scan.vulnerabilities.length : 0;
+                const vulns = scan.vulnerabilities || [];
+                const critCount = vulns.filter(v => v.severity === 'critical').length;
+                const highCount = vulns.filter(v => v.severity === 'high').length;
+                const fixedCount = vulns.filter(v => v.status === 'fixed').length;
+                const totalCount = vulns.length;
 
                 return (
                   <motion.div key={scan.id} className="relative pl-14 pb-6"
