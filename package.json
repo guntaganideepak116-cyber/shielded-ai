@@ -1,0 +1,11 @@
+{
+  "name": "securesites-root",
+  "private": true,
+  "scripts": {
+    "dev": "npm run dev --prefix FRONTEND",
+    "build": "npm run build --prefix FRONTEND",
+    "lint": "npm run lint --prefix FRONTEND",
+    "test": "npm run test --prefix FRONTEND",
+    "start": "npm run dev --prefix FRONTEND"
+  }
+}
