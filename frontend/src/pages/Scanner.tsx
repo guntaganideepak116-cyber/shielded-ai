@@ -68,24 +68,34 @@ const Scanner = () => {
       if (pct >= 100) {
         clearInterval(interval);
         setTimeout(async () => {
-          const platformName = PLATFORMS[detectedPlatform].name;
-          if (isRescan) {
-            const newScore = 94;
-            const fixedVulns = MOCK_VULNERABILITIES.map(v => ({ ...v, status: 'fixed' as const }));
-            setScore(newScore);
-            setVulnerabilities(fixedVulns);
-            saveScan({ id: Date.now().toString(), url, score: newScore, grade: 'A+', hostingType: platformName, vulnerabilities: fixedVulns, timestamp: new Date() });
-            if (user) saveScanToDb(user.id, url, newScore, fixedVulns);
-            incrementScanCounter();
-            setPhase('success');
-            confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 } });
-            setTimeout(() => confetti({ particleCount: 80, spread: 120, origin: { y: 0.5 } }), 300);
-          } else {
-            const initScore = 62;
-            setScore(initScore);
-            saveScan({ id: Date.now().toString(), url, score: initScore, grade: 'D', hostingType: platformName, vulnerabilities: MOCK_VULNERABILITIES, timestamp: new Date() });
-            if (user) saveScanToDb(user.id, url, initScore, MOCK_VULNERABILITIES);
-            incrementScanCounter();
+          try {
+            // CALL YOUR REAL EXPRESS SCANNER
+            const results = await runScan(url, user?.id);
+            setScore(results.score);
+            setVulnerabilities(results.vulnerabilities || []);
+            
+            const platformName = results.platform || PLATFORMS[detectedPlatform].name;
+            
+            saveScan({ 
+              id: Date.now().toString(), 
+              url, 
+              score: results.score, 
+              grade: results.grade || 'C', 
+              hostingType: platformName, 
+              vulnerabilities: results.vulnerabilities || [], 
+              timestamp: new Date() 
+            });
+
+            if (results.score >= 80 && isRescan) {
+              setPhase('success');
+              confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 } });
+              setTimeout(() => confetti({ particleCount: 80, spread: 120, origin: { y: 0.5 } }), 300);
+            } else {
+              setPhase('results');
+            }
+          } catch (error) {
+            console.error('Scan API error:', error);
+            // Fallback to results phase so UI doesn't hang
             setPhase('results');
           }
         }, 500);
