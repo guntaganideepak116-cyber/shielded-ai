@@ -3,14 +3,11 @@
   "framework": "vite",
   "outputDirectory": "frontend/dist",
   "rewrites": [
-    {
-      "source": "/api/(.*)",
-      "destination": "/api-gateway.js"
-    },
-    {
-      "source": "/((?!api/|assets/|favicon.ico|manifest.json|sw.js|robots.txt).*)",
-      "destination": "/index.html"
-    }
+    { "source": "/api/assistant", "destination": "/api/assistant.mjs" },
+    { "source": "/api/scan", "destination": "/api/scan.mjs" },
+    { "source": "/api/stats", "destination": "/api/stats.mjs" },
+    { "source": "/api/(.*)", "destination": "/api/$1.mjs" },
+    { "source": "/((?!api/|assets/|favicon.ico|manifest.json|sw.js|robots.txt).*)", "destination": "/index.html" }
   ],
   "headers": [
     {
@@ -24,12 +21,6 @@
         { "key": "Strict-Transport-Security", "value": "max-age=31536000; includeSubDomains" },
         { "key": "Permissions-Policy", "value": "camera=(), microphone=(), geolocation=()" }
       ]
-    }
-  ],
-  "crons": [
-    {
-      "path": "/api/cron/monitor",
-      "schedule": "0 0 * * *"
     }
   ]
 }
