@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown, HelpCircle, Shield, Zap, Lock, Globe, Mail } from 'lucide-react';
-import { Navbar } from '@/components/Navbar';
 import Footer from '@/components/Footer';
 
 const faqs = [
@@ -91,8 +90,6 @@ const FAQItem = ({ faq, index }: { faq: typeof faqs[0], index: number }) => {
 export default function FAQ() {
   return (
     <div className="min-h-screen bg-background">
-      <Navbar />
-      
       <main className="pt-32 pb-20 px-4">
         <div className="max-w-3xl mx-auto">
           <div className="text-center mb-16">
