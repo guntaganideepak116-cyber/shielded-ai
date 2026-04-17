@@ -5,7 +5,7 @@ import { Lock, Shield, Users, Clock, LogOut } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { saveScan } from '@/lib/scan-history';
 import { useAuth } from '@/hooks/use-auth';
-import { saveScanToDb, incrementScanCounter, getGlobalScanCount, subscribeToCounter } from '@/lib/supabase-helpers';
+import { runScan, getGlobalScanCount, subscribeToCounter } from '@/lib/api-helpers';
 import { detectPlatform, PLATFORMS, type HostingPlatform } from '@/lib/platform-detection';
 import ShieldAnimation from '@/components/ShieldAnimation';
 import ScannerInput from '@/components/ScannerInput';
@@ -68,24 +68,31 @@ const Scanner = () => {
       if (pct >= 100) {
         clearInterval(interval);
         setTimeout(async () => {
-          const platformName = PLATFORMS[detectedPlatform].name;
-          if (isRescan) {
-            const newScore = 94;
-            const fixedVulns = MOCK_VULNERABILITIES.map(v => ({ ...v, status: 'fixed' as const }));
-            setScore(newScore);
-            setVulnerabilities(fixedVulns);
-            saveScan({ id: Date.now().toString(), url, score: newScore, grade: 'A+', hostingType: platformName, vulnerabilities: fixedVulns, timestamp: new Date() });
-            if (user) saveScanToDb(user.id, url, newScore, fixedVulns);
-            incrementScanCounter();
-            setPhase('success');
-            confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 } });
-            setTimeout(() => confetti({ particleCount: 80, spread: 120, origin: { y: 0.5 } }), 300);
-          } else {
-            const initScore = 62;
-            setScore(initScore);
-            saveScan({ id: Date.now().toString(), url, score: initScore, grade: 'D', hostingType: platformName, vulnerabilities: MOCK_VULNERABILITIES, timestamp: new Date() });
-            if (user) saveScanToDb(user.id, url, initScore, MOCK_VULNERABILITIES);
-            incrementScanCounter();
+          try {
+            const results = await runScan(url, user?.id);
+            setScore(results.score);
+            setVulnerabilities(results.vulnerabilities);
+            
+            saveScan({ 
+              id: Date.now().toString(), 
+              url, 
+              score: results.score, 
+              grade: results.grade, 
+              hostingType: results.platform, 
+              vulnerabilities: results.vulnerabilities, 
+              timestamp: new Date() 
+            });
+
+            if (results.score >= 80 && isRescan) {
+              setPhase('success');
+              confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 } });
+              setTimeout(() => confetti({ particleCount: 80, spread: 120, origin: { y: 0.5 } }), 300);
+            } else {
+              setPhase('results');
+            }
+          } catch (error) {
+            console.error('Scan API error:', error);
+            // Fallback to results if possible or show error
             setPhase('results');
           }
         }, 500);

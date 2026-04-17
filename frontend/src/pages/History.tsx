@@ -4,16 +4,16 @@ import { useNavigate } from 'react-router-dom';
 import { Shield, Clock, Trash2, ArrowLeft, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { getHistory, clearHistory } from '@/lib/scan-history';
-import { fetchUserScans } from '@/lib/supabase-helpers';
+import { fetchUserScans } from '@/lib/api-helpers';
 import { useAuth } from '@/hooks/use-auth';
-import { getGrade, getGradeColor } from '@/lib/scan-data';
+import { getGrade, getGradeColor, type Vulnerability } from '@/lib/scan-data';
 
 interface ScanItem {
   id: string;
   url: string;
   score: number;
   grade: string;
-  vulnerabilities: any[];
+  vulnerabilities: Vulnerability[];
   created_at?: string;
   timestamp?: Date | string;
 }
@@ -30,7 +30,7 @@ const History = () => {
       if (user) {
         const dbScans = await fetchUserScans();
         if (dbScans.length > 0) {
-          setScans(dbScans.map(s => ({ ...s, vulnerabilities: (s.vulnerabilities as any[] | null) || [] })));
+          setScans(dbScans.map(s => ({ ...s, vulnerabilities: (s.vulnerabilities as Vulnerability[] | null) || [] })) as ScanItem[]);
           setLoading(false);
           return;
         }
@@ -128,9 +128,9 @@ const History = () => {
             <AnimatePresence>
               {scans.map((scan, index) => {
                 const colorClass = getGradeColor(scan.score);
-                const critCount = Array.isArray(scan.vulnerabilities) ? scan.vulnerabilities.filter((v: any) => v.severity === 'critical').length : 0;
-                const highCount = Array.isArray(scan.vulnerabilities) ? scan.vulnerabilities.filter((v: any) => v.severity === 'high').length : 0;
-                const fixedCount = Array.isArray(scan.vulnerabilities) ? scan.vulnerabilities.filter((v: any) => v.status === 'fixed').length : 0;
+                const critCount = Array.isArray(scan.vulnerabilities) ? scan.vulnerabilities.filter((v: Vulnerability) => v.severity === 'critical').length : 0;
+                const highCount = Array.isArray(scan.vulnerabilities) ? scan.vulnerabilities.filter((v: Vulnerability) => v.severity === 'high').length : 0;
+                const fixedCount = Array.isArray(scan.vulnerabilities) ? scan.vulnerabilities.filter((v: Vulnerability) => v.status === 'fixed').length : 0;
                 const totalCount = Array.isArray(scan.vulnerabilities) ? scan.vulnerabilities.length : 0;
 
                 return (

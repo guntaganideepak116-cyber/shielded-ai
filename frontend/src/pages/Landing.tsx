@@ -6,7 +6,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useEffect, useState } from 'react';
-import { getGlobalScanCount, subscribeToCounter } from '@/lib/supabase-helpers';
+import { getGlobalScanCount, subscribeToCounter } from '@/lib/api-helpers';
 import heroShield from '@/assets/hero-shield.png';
 
 const fadeUp = {
