@@ -5,7 +5,7 @@ service cloud.firestore {
     
     // 🛡️ ADMIN HELPER
     function isAdmin() {
-      return request.auth != null && request.auth.token.email == 'guntaganideepak1234@gmail.com';
+      return request.auth != null && request.auth.token.email == 'guntaganideepak116@gmail.com';
     }
 
     // User profile data

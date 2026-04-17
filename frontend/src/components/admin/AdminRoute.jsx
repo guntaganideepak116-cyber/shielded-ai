@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/use-auth';
 
 // ─── HARDCODED ADMIN EMAIL ─────────────────────────
-const ADMIN_EMAILS = ['guntaganideepak1234@gmail.com'];
+const ADMIN_EMAILS = ['guntaganideepak116@gmail.com'];
 // ──────────────────────────────────────────────────
 
 export default function AdminRoute({ children }) {

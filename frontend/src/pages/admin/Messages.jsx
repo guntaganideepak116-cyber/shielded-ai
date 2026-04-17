@@ -62,7 +62,7 @@ export default function Messages() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-admin-email': 'guntaganideepak1234@gmail.com'
+          'x-admin-email': 'guntaganideepak116@gmail.com'
         },
         body: JSON.stringify({
           toEmail: toEmail.trim(),
@@ -95,7 +95,7 @@ export default function Messages() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-admin-email': 'guntaganideepak1234@gmail.com'
+          'x-admin-email': 'guntaganideepak116@gmail.com'
         },
         body: JSON.stringify({
           title: annTitle.trim(),
