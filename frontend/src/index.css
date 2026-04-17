@@ -619,6 +619,7 @@ body.is-loading {
     line-height: 1.2;
     letter-spacing: -0.02em;
     flex-shrink: 0;
+    padding-right: 12px;
   }
 
   /* Hide all nav links on mobile */

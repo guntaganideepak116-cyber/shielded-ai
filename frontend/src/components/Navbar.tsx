@@ -70,7 +70,7 @@ export const Navbar = () => {
         {/* LOGO */}
         <div className="nav-logo logo-wrapper flex items-center gap-2 cursor-pointer shrink-0" onClick={() => navigate('/')}>
           <LogoRenderer className="logo-icon w-7 h-7 sm:w-8 sm:h-8 drop-shadow-[0_0_15px_rgba(99,102,241,0.8)] filter brightness-125" />
-          <span className="logo-text font-display font-black text-sm sm:text-base md:text-xl gradient-text tracking-tighter italic uppercase whitespace-nowrap">SECUREWEB AI</span>
+          <span className="logo-text font-display font-black text-sm sm:text-base md:text-xl gradient-text tracking-tighter italic uppercase whitespace-nowrap pr-3">SECUREWEB AI</span>
         </div>
 
         {/* DESKTOP NAV */}
