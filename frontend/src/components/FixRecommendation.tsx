@@ -9,71 +9,111 @@ interface FixRecommendationProps {
   vulnerabilityId: string;
   fix: {
     vulnerabilityId: string;
+    vulnerability: string;
     riskExplanation: string;
     priority: number;
-    fixCode: {
-      nodejs: string;
-      apache: string;
-      nginx: string;
-      vercel: string;
+    platformFixes: {
+      [key: string]: { code: string; instructions: string };
     };
   };
 }
 
 const FixRecommendation: React.FC<FixRecommendationProps> = ({ fix }) => {
   const [copied, setCopied] = useState(false);
+  const [activeTab, setActiveTab] = useState('vercel');
+
+  const platforms = [
+    { id: 'vercel', name: 'Vercel', icon: Box },
+    { id: 'netlify', name: 'Netlify', icon: Globe },
+    { id: 'github', name: 'GitHub', icon: Terminal },
+    { id: 'apache', name: 'Apache', icon: Globe },
+    { id: 'nginx', name: 'Nginx', icon: Server },
+    { id: 'nodejs', name: 'Node.js', icon: Box },
+    { id: 'cloudflare', name: 'Cloudflare', icon: Globe }
+  ];
 
   const handleCopy = (code: string) => {
+    if (!code) return;
     navigator.clipboard.writeText(code);
     setCopied(true);
     toast.success("Security patch copied to clipboard");
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const priorityLabel = fix.priority === 1 ? "FIX FIRST" : fix.priority === 2 ? "FIX NEXT" : "FIX LATER";
-  const priorityColor = fix.priority === 1 ? "bg-red-500/20 text-red-500 border-red-500/30" : fix.priority === 2 ? "bg-yellow-400/20 text-yellow-400 border-yellow-400/30" : "bg-primary/20 text-primary border-primary/30";
+  const priorityLabel = fix.priority <= 3 ? "CRITICAL FIX" : fix.priority <= 6 ? "STRENGTHEN" : "OPTIMIZE";
+  const priorityColor = fix.priority <= 3 ? "bg-red-500/20 text-red-500 border-red-500/30" : fix.priority <= 6 ? "bg-yellow-400/20 text-yellow-400 border-yellow-400/30" : "bg-primary/20 text-primary border-primary/30";
 
   return (
-    <div className="space-y-6 pt-4 border-t border-white/5 mt-4">
+    <div className="space-y-6 pt-4 border-t border-white/5 mt-4 animate-in fade-in duration-500">
       <div className="flex items-center justify-between">
-        <h4 className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-primary">
-          <Terminal className="w-4 h-4" /> AI RECOMMENDED PATCH
+        <h4 className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-primary">
+          <Terminal className="w-4 h-4" /> SECURE_ENGINE_OUTPUT
         </h4>
-        <span className={`text-[10px] font-black px-2 py-0.5 rounded-full border uppercase tracking-widest ${priorityColor}`}>
+        <span className={`text-[9px] font-black px-2 py-0.5 rounded-full border uppercase tracking-widest ${priorityColor}`}>
           {priorityLabel}
         </span>
       </div>
 
       <div className="space-y-4">
-         <div className="p-4 bg-primary/5 rounded-xl border border-primary/10">
-           <p className="text-xs text-muted-foreground leading-relaxed font-body">
-             {fix.riskExplanation}
-           </p>
+         <div className="p-4 bg-primary/[0.03] rounded-xl border border-primary/10">
+            <p className="text-[11px] text-slate-400 leading-relaxed font-body">
+              <span className="text-primary font-bold mr-2">ANALYSIS:</span>
+              {fix.riskExplanation}
+            </p>
          </div>
 
-         <Tabs defaultValue="nodejs" className="w-full">
-            <TabsList className="bg-black/40 border border-white/5 p-1 rounded-xl w-full grid grid-cols-4 h-11">
-              <TabsTrigger value="nodejs" className="rounded-lg text-[10px] font-bold uppercase"><Box className="w-3.5 h-3.5 mr-1.5" /> Node</TabsTrigger>
-              <TabsTrigger value="apache" className="rounded-lg text-[10px] font-bold uppercase"><Globe className="w-3.5 h-3.5 mr-1.5" /> Apache</TabsTrigger>
-              <TabsTrigger value="nginx" className="rounded-lg text-[10px] font-bold uppercase"><Server className="w-3.5 h-3.5 mr-1.5" /> Nginx</TabsTrigger>
-              <TabsTrigger value="vercel" className="rounded-lg text-[10px] font-bold uppercase"><Box className="w-3.5 h-3.5 mr-1.5" /> Vercel</TabsTrigger>
-            </TabsList>
+         <Tabs defaultValue="vercel" value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <div className="overflow-x-auto pb-2 scrollbar-hide">
+              <TabsList className="bg-black/40 border border-white/5 p-1 rounded-xl flex gap-1 h-11 w-max">
+                {platforms.map((p) => (
+                  <TabsTrigger 
+                    key={p.id} 
+                    value={p.id} 
+                    className="rounded-lg text-[9px] font-black uppercase px-4 h-9 data-[state=active]:bg-primary/[0.08] data-[state=active]:text-primary"
+                  >
+                    <p.icon className="w-3 h-3 mr-2" /> {p.name}
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+            </div>
 
-            {(['nodejs', 'apache', 'nginx', 'vercel'] as const).map((platform) => (
-              <TabsContent key={platform} value={platform} className="mt-4 relative group">
-                <div className="p-4 bg-slate-950 rounded-xl border border-white/10 font-mono text-[11px] overflow-x-auto whitespace-pre leading-relaxed text-blue-300">
-                  {fix.fixCode[platform] || "// Patch not available for this platform"}
-                </div>
-                <Button 
-                  size="sm" 
-                  variant="ghost"
-                  onClick={() => handleCopy(fix.fixCode[platform])}
-                  className="absolute top-2 right-2 text-white/50 hover:text-white hover:bg-white/10 opacity-0 group-hover:opacity-100 transition-all h-8"
-                >
-                  {copied ? <Check className="w-3.5 h-3.5 text-success" /> : <Copy className="w-3.5 h-3.5" />}
-                </Button>
-              </TabsContent>
-            ))}
+            {platforms.map((p) => {
+              const platformData = fix.platformFixes?.[p.id];
+              const hasCode = !!platformData?.code;
+              const hasInstructions = !!platformData?.instructions;
+
+              return (
+                <TabsContent key={p.id} value={p.id} className="mt-4 space-y-3 relative group">
+                  {hasInstructions && (
+                    <div className="p-4 bg-yellow-500/5 rounded-xl border border-yellow-500/10 text-[10px] text-yellow-200/80 leading-relaxed italic">
+                      💡 {platformData.instructions}
+                    </div>
+                  )}
+                  
+                  {hasCode ? (
+                    <div className="relative group/code">
+                      <div className="p-5 bg-slate-950 rounded-2xl border border-white/10 font-mono text-[10px] overflow-x-auto whitespace-pre leading-loose text-blue-300 shadow-inner">
+                        {platformData.code}
+                      </div>
+                      <Button 
+                        size="sm" 
+                        variant="ghost"
+                        onClick={() => handleCopy(platformData.code)}
+                        className="absolute top-3 right-3 text-white/30 hover:text-white hover:bg-white/10 h-8 rounded-lg"
+                      >
+                        {copied ? <Check className="w-3 h-3 text-success" /> : <Copy className="w-3 h-3" />}
+                      </Button>
+                    </div>
+                  ) : (
+                    !hasInstructions && (
+                      <div className="p-10 text-center glass-card border-dashed border-white/5 rounded-2xl">
+                         <span className="text-[10px] font-bold text-slate-600 uppercase tracking-widest italic">Patch not required for this node</span>
+                      </div>
+                    )
+                  )}
+                </TabsContent>
+              );
+            })}
          </Tabs>
       </div>
     </div>

@@ -29,32 +29,54 @@ export default async function handler(req, res) {
   const sslInfo = `Valid: ${ssl?.valid}, Days Until Expiry: ${ssl?.daysUntilExpiry}, Issuer: ${ssl?.issuer}`;
   const vtSummary = `Malicious: ${virusTotal?.malicious}, Suspicious: ${virusTotal?.suspicious}, Harmless: ${virusTotal?.harmless}`;
 
-  const systemPrompt = `You are a cybersecurity expert specializing in web security. You provide clear, actionable fix recommendations for website vulnerabilities. Always provide specific code examples for Node.js/Express, Apache, Nginx, and Vercel/Netlify platforms. Be concise and beginner-friendly.`;
+  const systemPrompt = `You are a cybersecurity expert specializing in web security. You provide high-fidelity, production-ready fix code for website vulnerabilities. 
+
+STRICT RULES FOR SPECIFIC VULNERABILITIES:
+
+1. 🔴 HTTP → HTTPS REDIRECT:
+   - If ID is 'http-no-redirect', you MUST provide code for ALL these platforms: Vercel (vercel.json), Netlify (_redirects), GitHub Pages (JS snippet), Apache (.htaccess), NGINX (config snippet), and Cloudflare (instructions).
+   - Follow the exact JSON/snippet formats provided in the system documentation.
+
+2. 🍪 COOKIE SECURITY:
+   - If cookie issues (HttpOnly, Secure, SameSite) are detected, provide Express.js/Node.js fixes: res.cookie("session", token, { httpOnly: true, secure: true, sameSite: "Strict" });
+   - IF the platform is static (Vercel/Netlify/GitHub Pages), explicitly warn: "Cookie security cannot be configured on static hosting. Use a backend to set secure cookies."
+
+3. 🛡️ XSS PROTECTION:
+   - For XSS risk, prioritize Content Security Policy (CSP). State: "X-XSS-Protection is deprecated. Your website is protected using Content Security Policy (CSP), which is the modern standard."
+
+4. FORMAT: Always return a valid JSON object.`;
+
   const userPrompt = `The website ${url} was scanned and these vulnerabilities were found: ${vulnerabilitiesString}. SSL status: ${sslInfo}. VirusTotal result: ${vtSummary}.
-
+  
 For each vulnerability, provide:
-1. A plain English explanation of the risk
-2. Ready-to-copy fix code for: Node.js/Express, Apache, Nginx, and Vercel (vercel.json)
-3. Priority order to fix them
+1. A plain English explanation of the risk.
+2. The specific fix code or instructions.
+3. Priority level (1-10).
 
-Format your response as JSON with this structure:
+Format your response as a JSON object with this exact structure:
 {
   "fixes": [
     {
       "vulnerabilityId": "...",
+      "vulnerability": "...",
       "riskExplanation": "...",
       "priority": 1,
-      "fixCode": {
-        "nodejs": "...",
-        "apache": "...",
-        "nginx": "...",
-        "vercel": "..."
+      "platformFixes": {
+        "nodejs": { "code": "...", "instructions": "..." },
+        "vercel": { "code": "...", "instructions": "..." },
+        "netlify": { "code": "...", "instructions": "..." },
+        "github": { "code": "...", "instructions": "..." },
+        "apache": { "code": "...", "instructions": "..." },
+        "nginx": { "code": "...", "instructions": "..." },
+        "cloudflare": { "code": "...", "instructions": "..." }
       }
     }
   ],
   "overallAdvice": "...",
-  "estimatedFixTime": "30 minutes"
-}`;
+  "estimatedFixTime": "..."
+}
+
+CRITICAL: For 'http-no-redirect', populate ALL platforms. For cookie issues, populate 'nodejs' and add static warnings to others. For XSS, explain the CSP priority in 'instructions'.`;
 
   try {
     const response = await axios.post(

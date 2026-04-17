@@ -196,7 +196,7 @@ export default async function handler(req, res) {
       header: 'content-security-policy',
       title: 'Missing Content-Security-Policy',
       severity: 'high',
-      description: 'No CSP header found. XSS attacks can inject malicious scripts.',
+      description: 'No Content Security Policy (CSP) found. This is the modern standard for protecting against XSS and injection attacks.',
     },
     {
       id: 'xfo',
@@ -208,30 +208,30 @@ export default async function handler(req, res) {
     {
       id: 'hsts',
       header: 'strict-transport-security',
-      title: 'Missing Strict-Transport-Security',
+      title: 'Missing Strict-Transport-Security (HSTS)',
       severity: 'medium',
-      description: 'HTTPS not enforced. Traffic can be downgraded to HTTP.',
+      description: 'HTTPS enforcement not broadcasted to browser. Traffic can be downgraded to HTTP.',
     },
     {
       id: 'xcto',
       header: 'x-content-type-options',
       title: 'Missing X-Content-Type-Options',
       severity: 'low',
-      description: 'Browser can misinterpret file types.',
+      description: 'Browser can misinterpret file types if sniffing is not disabled.',
     },
     {
       id: 'rp',
       header: 'referrer-policy',
       title: 'Missing Referrer-Policy',
       severity: 'low',
-      description: 'Full URLs may leak to external sites.',
+      description: 'Full URLs may leak to external sites during navigation.',
     },
     {
-      id: 'pp',
-      header: 'permissions-policy',
-      title: 'Missing Permissions-Policy',
+      id: 'xss',
+      header: 'x-xss-protection',
+      title: 'X-XSS-Protection Deprecated',
       severity: 'low',
-      description: 'Browser features not restricted.',
+      description: 'X-XSS-Protection is deprecated. Your website should be protected using Content Security Policy (CSP), which is the modern standard.',
     },
   ];
 
@@ -257,11 +257,13 @@ export default async function handler(req, res) {
   if (targetUrl.startsWith('http://') && !pageResponse.url.startsWith('https://')) {
     vulnerabilities.push({
       id: 'http-no-redirect',
-      title: 'No HTTPS Redirect',
-      severity: 'high',
-      description: 'HTTP traffic not redirected to HTTPS. Data sent in plaintext.',
+      title: 'HTTP not secure',
+      severity: 'critical',
+      description: 'HTTP traffic is not redirected to HTTPS. All data including passwords and cookies is transmitted in plaintext.',
       category: 'transport'
     });
+  } else if (targetUrl.startsWith('https://')) {
+    // Verified HTTPS
   }
 
   // ── STEP 4: SSL Certificate Check ──────────────────
@@ -408,31 +410,43 @@ export default async function handler(req, res) {
   // ── STEP 8: Cookie Security ─────────────────────────
   const setCookieHeader = responseHeaders['set-cookie'];
   if (setCookieHeader) {
-    const cookieStr = Array.isArray(setCookieHeader) ? setCookieHeader.join('; ') : setCookieHeader;
-    if (!cookieStr.toLowerCase().includes('httponly')) {
+    const cookies = Array.isArray(setCookieHeader) ? setCookieHeader : [setCookieHeader];
+    
+    let missingHttpOnly = false;
+    let missingSecure = false;
+    let missingSameSite = false;
+
+    cookies.forEach(c => {
+      const lower = c.toLowerCase();
+      if (!lower.includes('httponly')) missingHttpOnly = true;
+      if (!lower.includes('secure')) missingSecure = true;
+      if (!lower.includes('samesite')) missingSameSite = true;
+    });
+
+    if (missingHttpOnly) {
       vulnerabilities.push({
         id: 'cookie-no-httponly',
-        title: 'Cookies Missing HttpOnly Flag',
-        severity: 'medium',
-        description: 'Session cookies are accessible via JavaScript.',
+        title: 'Cookie missing HttpOnly',
+        severity: 'high',
+        description: 'Session cookies are accessible via JavaScript, making them vulnerable to XSS theft.',
         category: 'cookies'
       });
     }
-    if (!cookieStr.toLowerCase().includes('secure')) {
+    if (missingSecure) {
       vulnerabilities.push({
         id: 'cookie-no-secure',
-        title: 'Cookies Missing Secure Flag',
-        severity: 'medium',
-        description: 'Cookies can be sent over HTTP.',
+        title: 'Cookie missing Secure flag',
+        severity: 'high',
+        description: 'Insecure cookies can be transmitted over unencrypted HTTP connections.',
         category: 'cookies'
       });
     }
-    if (!cookieStr.toLowerCase().includes('samesite')) {
+    if (missingSameSite) {
       vulnerabilities.push({
         id: 'cookie-no-samesite',
-        title: 'Cookies Missing SameSite Attribute',
-        severity: 'low',
-        description: 'Cookies missing SameSite attribute are vulnerable to CSRF.',
+        title: 'Cookie missing SameSite attribute',
+        severity: 'medium',
+        description: 'Missing SameSite attribute exposes users to Cross-Site Request Forgery (CSRF).',
         category: 'cookies'
       });
     }
