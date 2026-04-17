@@ -148,15 +148,26 @@ const AppContent = () => {
       <Toaster />
       <Sonner position="top-center" richColors />
       <BrowserRouter>
-        <Navbar />
-        <AppRoutes />
+        <AppRoutesWithNavbar />
         <PWAInstallBanner />
       </BrowserRouter>
-      {/* Floating chatbot with context from latest scan */}
       <FreeChatbot />
     </>
   );
 };
+
+const AppRoutesWithNavbar = () => {
+  const location = window.location.pathname;
+  const isAdminPath = location.startsWith('/admin');
+  
+  return (
+    <>
+      {!isAdminPath && <Navbar />}
+      <AppRoutes />
+    </>
+  );
+};
+
 
 const App = () => (
   <QueryClientProvider client={queryClient}>

@@ -1922,6 +1922,103 @@ body.is-loading {
   }
 }
 
+/* 🛡️ PREMIUM ADMIN DASHBOARD DESIGN SYSTEM — V2 */
+:root {
+  --admin-bg-primary:     #05070a;
+  --admin-bg-secondary:   #0d1117;
+  --admin-bg-card:        rgba(13, 17, 23, 0.7);
+  --admin-accent-cyan:    #00f5ff;
+  --admin-accent-violet:  #8b5cf6;
+  --admin-accent-green:   #10b981;
+  --admin-accent-red:     #f43f5e;
+  --admin-text-main:      #f8fafc;
+  --admin-text-dim:       #94a3b8;
+  --admin-border:         rgba(255, 255, 255, 0.08);
+  --admin-glass:          backdrop-filter: blur(12px) saturate(180%);
+}
+
+.admin-bg {
+  background-color: var(--admin-bg-primary);
+  background-image: 
+    radial-gradient(circle at 0% 0%, rgba(139, 92, 246, 0.08) 0, transparent 50%),
+    radial-gradient(circle at 100% 100%, rgba(0, 245, 255, 0.08) 0, transparent 50%);
+  min-height: 100vh;
+  color: var(--admin-text-main);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+.admin-card-glass {
+  background: var(--admin-bg-card);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--admin-border);
+  border-radius: 16px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.admin-card-glass:hover {
+  border-color: rgba(0, 245, 255, 0.3);
+  box-shadow: 0 0 30px rgba(0, 245, 255, 0.1);
+  transform: translateY(-2px);
+}
+
+.admin-sidebar-glass {
+  background: rgba(13, 17, 23, 0.85);
+  backdrop-filter: blur(20px);
+  border-right: 1px solid var(--admin-border);
+}
+
+.admin-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  margin: 4px 12px;
+  border-radius: 10px;
+  color: var(--admin-text-dim);
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.admin-nav-item:hover {
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--admin-text-main);
+}
+
+.admin-nav-item.active {
+  background: linear-gradient(90deg, rgba(0, 245, 255, 0.1) 0%, transparent 100%);
+  color: var(--admin-accent-cyan);
+  border-left: 2px solid var(--admin-accent-cyan);
+}
+
+.admin-top-bar {
+  background: rgba(5, 7, 10, 0.8);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--admin-border);
+}
+
+.admin-stat-value {
+  font-family: 'Space Mono', monospace;
+  font-weight: 700;
+  letter-spacing: -1px;
+}
+
+@keyframes adminPulse {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.2); opacity: 0.5; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.admin-dot-live {
+  width: 8px;
+  height: 8px;
+  background: var(--admin-accent-green);
+  border-radius: 50%;
+  box-shadow: 0 0 10px var(--admin-accent-green);
+  animation: adminPulse 2s infinite;
+}
+
 /* Find chatbot header/title component and add: */
 .chatbot-header,
 .chatbot-title,

@@ -3,14 +3,25 @@ import { useState, useEffect } from 'react';
 import { db } from '@/lib/firebase';
 import {
   collection, query, orderBy, limit,
-  onSnapshot, where, Timestamp
+  onSnapshot, getDocs
 } from 'firebase/firestore';
 import {
   LineChart, Line, AreaChart, Area,
   PieChart, Pie, Cell,
   XAxis, YAxis, Tooltip,
-  ResponsiveContainer
+  ResponsiveContainer,
+  CartesianGrid
 } from 'recharts';
+import { 
+  Users, 
+  Search, 
+  Database, 
+  AlertTriangle, 
+  ShieldCheck, 
+  Mail,
+  TrendingUp,
+  PieChart as PieChartIcon
+} from 'lucide-react';
 
 export default function Overview() {
   const [stats, setStats] = useState({
@@ -27,8 +38,6 @@ export default function Overview() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Real-time listener for ALL scans
-    // Note: If you have a 'globalScans' or 'scans' collection, we use that
     const scansQuery = query(
       collection(db, 'scans'),
       orderBy('createdAt', 'desc'),
@@ -43,7 +52,6 @@ export default function Overview() {
 
       setRecentScans(scans.slice(0, 10));
 
-      // Calculate stats
       const today = new Date();
       today.setHours(0,0,0,0);
       
@@ -62,27 +70,25 @@ export default function Overview() {
 
       setStats(prev => ({
         ...prev,
-        totalScans: snapshot.size, // This is just the limit, real production would use a counter or separate kpi doc
+        totalScans: snapshot.size,
         todayScans: todayScans.length,
         criticalAlerts: critical,
         avgScore
       }));
 
-      // Vulnerability distribution
       const vulnCounts = { critical: 0, high: 0, medium: 0, low: 0 };
       scans.forEach(s => {
         (s.vulnerabilities || []).forEach(v => {
-          vulnCount[v.severity] = (vulnCounts[v.severity] || 0) + 1;
+          vulnCounts[v.severity] = (vulnCounts[v.severity] || 0) + 1;
         });
       });
       setVulnDistribution([
-        { name: 'Critical', value: vulnCounts.critical || 0, color: '#ef4444' },
-        { name: 'High',     value: vulnCounts.high     || 0, color: '#ff3366' },
-        { name: 'Medium',   value: vulnCounts.medium   || 0, color: '#ffaa00' },
-        { name: 'Low',      value: vulnCounts.low      || 0, color: '#8892a4' },
-      ]);
+        { name: 'Critical', value: vulnCounts.critical || 0, color: '#f43f5e' },
+        { name: 'High',     value: vulnCounts.high     || 0, color: '#f59e0b' },
+        { name: 'Medium',   value: vulnCounts.medium   || 0, color: '#3b82f6' },
+        { name: 'Low',      value: vulnCounts.low      || 0, color: '#10b981' },
+      ].filter(d => d.value > 0));
 
-      // Scan trend (last 7 days)
       const days = [];
       for (let i = 6; i >= 0; i--) {
         const d = new Date();
@@ -103,7 +109,6 @@ export default function Overview() {
       setLoading(false);
     });
 
-    // Users count
     const usersQuery = query(collection(db, 'users'));
     const unsubUsers = onSnapshot(usersQuery, (snap) => {
       setStats(prev => ({ ...prev, totalUsers: snap.size }));
@@ -113,372 +118,189 @@ export default function Overview() {
   }, []);
 
   const STAT_CARDS = [
-    {
-      label: 'TOTAL USERS',
-      value: stats.totalUsers,
-      icon: '👥',
-      color: 'var(--admin-cyan)',
-      sub: 'Registered accounts'
-    },
-    {
-      label: 'TODAY\'S SCANS',
-      value: stats.todayScans,
-      icon: '🔍',
-      color: 'var(--admin-green)',
-      sub: 'Scans performed today'
-    },
-    {
-      label: 'TOTAL SCANS',
-      value: stats.totalScans,
-      icon: '📊',
-      color: 'var(--admin-violet)',
-      sub: 'Recent data'
-    },
-    {
-      label: 'CRITICAL ALERTS',
-      value: stats.criticalAlerts,
-      icon: '🚨',
-      color: 'var(--admin-red)',
-      sub: 'Score < 30 or malicious'
-    },
-    {
-      label: 'AVG SCORE',
-      value: `${stats.avgScore}/100`,
-      icon: '📈',
-      color: stats.avgScore >= 70 ? 'var(--admin-green)'
-        : stats.avgScore >= 50 ? 'var(--admin-yellow)' : 'var(--admin-red)',
-      sub: 'Platform average'
-    },
-    {
-      label: 'EMAILS SENT',
-      value: stats.emailsSent,
-      icon: '📧',
-      color: 'var(--admin-orange)',
-      sub: 'All time'
-    },
+    { label: 'Total Users', value: stats.totalUsers, icon: Users, color: '#3b82f6', sub: 'Nodes Active' },
+    { label: 'Today\'s Scans', value: stats.todayScans, icon: Search, color: '#10b981', sub: 'Inbound Requests' },
+    { label: 'All-Time Logs', value: stats.totalScans, icon: Database, color: '#8b5cf6', sub: 'Processed Data' },
+    { label: 'Critical Threats', value: stats.criticalAlerts, icon: AlertTriangle, color: '#f43f5e', sub: 'Breach Attempts' },
+    { label: 'Platform Score', value: `${stats.avgScore}/100`, icon: ShieldCheck, color: '#00f5ff', sub: 'Overall Integrity' },
+    { label: 'Alerts Sent', value: stats.emailsSent, icon: Mail, color: '#f59e0b', sub: 'Notification Uplink' },
   ];
 
   return (
-    <div className="admin-fade-in">
-      {/* Page header */}
-      <div style={{ marginBottom: 28 }}>
-        <h1 style={{
-          color: 'var(--admin-text-primary)',
-          fontSize: 24,
-          fontFamily: 'Space Mono, monospace',
-          margin: 0,
-          marginBottom: 6
-        }}>
-          Platform Overview
-        </h1>
-        <p style={{
-          color: 'var(--admin-text-muted)',
-          fontSize: 14,
-          margin: 0,
-          fontFamily: 'DM Sans, sans-serif'
-        }}>
-          Real-time intelligence across all users and scans
-        </p>
-      </div>
-
-      {/* KPI Cards */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-        gap: 16,
-        marginBottom: 28
-      }}>
-        {STAT_CARDS.map((card, i) => (
-          <div
-            key={i}
-            className="stat-card"
-            style={{ 
-              background: 'var(--admin-bg-card)',
-              border: '1px solid var(--admin-border)',
-              borderRadius: '12px',
-              padding: '20px 24px',
-              position: 'relative',
-              overflow: 'hidden',
-              '--accent-color': card.color 
-            }}
-          >
-             <div style={{
-              position: 'absolute',
-              top: 0, left: 0,
-              width: '3px', height: '100%',
-              background: card.color
-            }} />
-            <div style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'flex-start',
-              marginBottom: 16
-            }}>
-              <span style={{
-                color: 'var(--admin-text-muted)',
-                fontSize: 11,
-                fontFamily: 'Space Mono, monospace',
-                letterSpacing: 1
-              }}>
-                {card.label}
-              </span>
-              <span style={{ fontSize: 20 }}>{card.icon}</span>
-            </div>
-            <div style={{
-              fontSize: 32,
-              fontWeight: 700,
-              color: card.color,
-              fontFamily: 'Space Mono, monospace',
-              marginBottom: 6
-            }}>
-              {loading ? '—' : card.value}
-            </div>
-            <div style={{
-              color: 'var(--admin-text-muted)',
-              fontSize: 12,
-              fontFamily: 'DM Sans, sans-serif'
-            }}>
-              {card.sub}
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Charts Row */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: '1fr 380px',
-        gap: 20,
-        marginBottom: 28
-      }}>
-        {/* Scan Trend */}
-        <div className="admin-card">
-          <div style={{
-            color: 'var(--admin-text-muted)',
-            fontSize: 11,
-            letterSpacing: 1,
-            fontFamily: 'Space Mono, monospace',
-            marginBottom: 20
-          }}>
-            SCAN VOLUME — LAST 7 DAYS
-          </div>
-          <ResponsiveContainer width="100%" height={240}>
-            <AreaChart data={scanTrend}>
-              <defs>
-                <linearGradient id="scanGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%"  stopColor="var(--admin-cyan)" stopOpacity={0.2} />
-                  <stop offset="95%" stopColor="var(--admin-cyan)" stopOpacity={0} />
-                </linearGradient>
-              </defs>
-              <XAxis
-                dataKey="day"
-                tick={{ fill: 'var(--admin-text-muted)', fontSize: 11 }}
-                axisLine={false}
-                tickLine={false}
-              />
-              <YAxis
-                tick={{ fill: 'var(--admin-text-muted)', fontSize: 11 }}
-                axisLine={false}
-                tickLine={false}
-              />
-              <Tooltip
-                contentStyle={{
-                  background: 'var(--admin-bg-card)',
-                  border: '1px solid var(--admin-border)',
-                  borderRadius: 8,
-                  color: 'var(--admin-text-primary)',
-                  fontSize: 12
-                }}
-              />
-              <Area
-                type="monotone"
-                dataKey="scans"
-                stroke="var(--admin-cyan)"
-                strokeWidth={2}
-                fill="url(#scanGrad)"
-              />
-            </AreaChart>
-          </ResponsiveContainer>
-        </div>
-
-        {/* Vulnerability Distribution */}
-        <div className="admin-card">
-          <div style={{
-            color: 'var(--admin-text-muted)',
-            fontSize: 11,
-            letterSpacing: 1,
-            fontFamily: 'Space Mono, monospace',
-            marginBottom: 20
-          }}>
-            VULNERABILITY DISTRIBUTION
-          </div>
-          <ResponsiveContainer width="100%" height={200}>
-            <PieChart>
-              <Pie
-                data={vulnDistribution.length ? vulnDistribution : [{name: 'None', value: 1, color: '#1a2234'}]}
-                cx="50%"
-                cy="50%"
-                innerRadius={60}
-                outerRadius={85}
-                dataKey="value"
-                strokeWidth={0}
-              >
-                {vulnDistribution.map((entry, i) => (
-                  <Cell key={i} fill={entry.color} />
-                ))}
-              </Pie>
-              <Tooltip
-                contentStyle={{
-                  background: 'var(--admin-bg-card)',
-                  border: '1px solid var(--admin-border)',
-                  borderRadius: 8,
-                  fontSize: 12
-                }}
-              />
-            </PieChart>
-          </ResponsiveContainer>
-
-          {/* Legend */}
-          <div style={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            gap: '8px 16px',
-            marginTop: 16,
-            justifyContent: 'center'
-          }}>
-            {vulnDistribution.map((d, i) => (
-              <div key={i} style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 6
-              }}>
-                <div style={{
-                  width: 8, height: 8,
-                  borderRadius: '50%',
-                  background: d.color
-                }} />
-                <span style={{
-                  color: 'var(--admin-text-muted)',
-                  fontSize: 11,
-                  fontFamily: 'DM Sans, sans-serif'
-                }}>
-                  {d.name.toUpperCase()}
-                </span>
+    <div className="space-y-10 animate-in fade-in duration-700">
+      {/* 📊 KPI GRID */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+        {STAT_CARDS.map((card, i) => {
+          const Icon = card.icon;
+          return (
+            <div key={i} className="admin-card-glass p-8 relative overflow-hidden group">
+              <div className="absolute top-0 right-0 p-6 opacity-10 transition-transform group-hover:scale-110 group-hover:rotate-12">
+                <Icon className="w-16 h-16" style={{ color: card.color }} />
               </div>
-            ))}
+              <div className="flex items-center gap-4 mb-4">
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center border border-white/5" style={{ background: `${card.color}15` }}>
+                   <Icon className="w-5 h-5" style={{ color: card.color }} />
+                </div>
+                <span className="text-slate-400 text-xs font-bold uppercase tracking-wider">{card.label}</span>
+              </div>
+              <div className="flex items-end gap-3">
+                <span className="text-white text-3xl font-black admin-stat-value">
+                  {loading ? '...' : card.value}
+                </span>
+                <span className="text-[10px] text-slate-500 font-medium mb-1.5 uppercase tracking-tighter">{card.sub}</span>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+        {/* 📈 ANALYTICS CHART */}
+        <div className="xl:col-span-2 admin-card-glass p-10">
+          <div className="flex items-center justify-between mb-10">
+            <div className="flex items-center gap-3">
+              <TrendingUp className="w-5 h-5 text-[#00f5ff]" />
+              <h3 className="text-white font-bold text-sm uppercase tracking-widest">Inbound Traffic Vectors</h3>
+            </div>
+            <div className="px-3 py-1 bg-[#00f5ff]/10 border border-[#00f5ff]/20 rounded-full text-[#00f5ff] text-[10px] font-bold">
+              REAL-TIME SYNC
+            </div>
+          </div>
+          
+          <div className="h-80 w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={scanTrend}>
+                <defs>
+                  <linearGradient id="colorScans" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#00f5ff" stopOpacity={0.3}/>
+                    <stop offset="95%" stopColor="#00f5ff" stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.03)" vertical={false} />
+                <XAxis 
+                  dataKey="day" 
+                  axisLine={false} 
+                  tickLine={false} 
+                  tick={{ fill: '#64748b', fontSize: 10, fontWeight: 600 }}
+                  dy={15}
+                />
+                <YAxis 
+                  axisLine={false} 
+                  tickLine={false} 
+                  tick={{ fill: '#64748b', fontSize: 10, fontWeight: 600 }}
+                />
+                <Tooltip 
+                  contentStyle={{ background: '#0d1117', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', fontSize: '11px', fontWeight: 600 }}
+                  cursor={{ stroke: '#00f5ff', strokeWidth: 1 }}
+                />
+                <Area 
+                  type="monotone" 
+                  dataKey="scans" 
+                  stroke="#00f5ff" 
+                  strokeWidth={3}
+                  fillOpacity={1} 
+                  fill="url(#colorScans)" 
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* 🥯 PIE CHART */}
+        <div className="admin-card-glass p-10">
+          <div className="flex items-center gap-3 mb-10">
+            <PieChartIcon className="w-5 h-5 text-[#8b5cf6]" />
+            <h3 className="text-white font-bold text-sm uppercase tracking-widest">Threat Distribution</h3>
+          </div>
+          
+          <div className="h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={vulnDistribution.length ? vulnDistribution : [{ name: 'Empty', value: 1, color: '#1e293b' }]}
+                  innerRadius={70}
+                  outerRadius={90}
+                  paddingAngle={8}
+                  dataKey="value"
+                  strokeWidth={0}
+                >
+                  {vulnDistribution.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Pie>
+                <Tooltip 
+                  contentStyle={{ background: '#0d1117', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', fontSize: '11px' }}
+                />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+
+          <div className="mt-8 space-y-3">
+             {vulnDistribution.map((d, i) => (
+               <div key={i} className="flex items-center justify-between group">
+                  <div className="flex items-center gap-3">
+                    <div className="w-2.5 h-2.5 rounded-full shadow-[0_0_8px_rgba(0,0,0,0.5)]" style={{ background: d.color }} />
+                    <span className="text-slate-400 text-xs font-semibold group-hover:text-white transition-colors uppercase tracking-tight">{d.name}</span>
+                  </div>
+                  <span className="text-white font-mono text-xs font-bold">{d.value}</span>
+               </div>
+             ))}
           </div>
         </div>
       </div>
 
-      {/* Recent Scans Feed */}
-      <div className="admin-card" style={{ padding: 0, overflow: 'hidden' }}>
-        <div style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          padding: '24px 28px 20px'
-        }}>
-          <div style={{
-            color: 'var(--admin-text-muted)',
-            fontSize: 11,
-            letterSpacing: 1,
-            fontFamily: 'Space Mono, monospace',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 8
-          }}>
-            <span className="live-dot" />
-            RECENT SCAN ACTIVITY
-          </div>
-          <a href="/admin/live" style={{
-            color: 'var(--admin-cyan)',
-            fontSize: 12,
-            textDecoration: 'none',
-            fontFamily: 'DM Sans, sans-serif'
-          }}>
-            View all →
-          </a>
+      {/* 🛡️ RECENT ACTIVITY FEED */}
+      <div className="admin-card-glass overflow-hidden">
+        <div className="p-8 border-b border-white/5 flex items-center justify-between">
+           <div className="flex items-center gap-3">
+             <Activity className="w-5 h-5 text-[#10b981]" />
+             <h3 className="text-white font-bold text-sm uppercase tracking-widest">Recent Activity Log</h3>
+           </div>
+           <button onClick={() => window.location.href = '/admin/live'} className="text-[#00f5ff] text-[10px] font-black uppercase tracking-widest hover:underline px-4">DECRYPT FULL FEED →</button>
         </div>
-
-        <table className="admin-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
-          <thead>
-            <tr>
-              <th style={{ padding: '12px 28px', textAlign: 'left', background: 'var(--admin-bg-secondary)', color: 'var(--admin-text-muted)', fontSize: 11, fontFamily: 'Space Mono, monospace' }}>URL</th>
-              <th style={{ padding: '12px 28px', textAlign: 'left', background: 'var(--admin-bg-secondary)', color: 'var(--admin-text-muted)', fontSize: 11, fontFamily: 'Space Mono, monospace' }}>SCORE</th>
-              <th style={{ padding: '12px 28px', textAlign: 'left', background: 'var(--admin-bg-secondary)', color: 'var(--admin-text-muted)', fontSize: 11, fontFamily: 'Space Mono, monospace' }}>STATUS</th>
-              <th style={{ padding: '12px 28px', textAlign: 'left', background: 'var(--admin-bg-secondary)', color: 'var(--admin-text-muted)', fontSize: 11, fontFamily: 'Space Mono, monospace' }}>USER</th>
-              <th style={{ padding: '12px 28px', textAlign: 'left', background: 'var(--admin-bg-secondary)', color: 'var(--admin-text-muted)', fontSize: 11, fontFamily: 'Space Mono, monospace' }}>TIME</th>
-            </tr>
-          </thead>
-          <tbody>
-            {recentScans.map((scan, i) => (
-              <tr key={i} style={{ borderBottom: '1px solid rgba(26,34,52,0.5)' }}>
-                <td style={{ padding: '16px 28px', maxWidth: 220 }}>
-                  <div style={{
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                    color: 'var(--admin-cyan)',
-                    fontFamily: 'Space Mono, monospace',
-                    fontSize: 12
-                  }}>
-                    {scan.url?.replace('https://','').replace('http://','')}
-                  </div>
-                </td>
-                <td style={{ padding: '16px 28px' }}>
-                  <span style={{
-                    fontWeight: 700,
-                    fontFamily: 'Space Mono, monospace',
-                    color: (scan.score||0) >= 80 ? 'var(--admin-green)'
-                      : (scan.score||0) >= 50 ? 'var(--admin-yellow)' : 'var(--admin-red)'
-                  }}>
-                    {scan.score || 0}
-                  </span>
-                </td>
-                <td style={{ padding: '16px 28px' }}>
-                  <span
-                    style={{
-                      padding: '3px 10px',
-                      borderRadius: '20px',
-                      fontSize: 10,
-                      fontWeight: 700,
-                      textTransform: 'uppercase',
-                      fontFamily: 'Space Mono, monospace',
-                      background: scan.status === 'secure' ? 'rgba(0,255,136,0.1)' : 'rgba(255,51,102,0.1)',
-                      color: scan.status === 'secure' ? 'var(--admin-green)' : 'var(--admin-red)',
-                      border: `1px solid ${scan.status === 'secure' ? 'rgba(0,255,136,0.3)' : 'rgba(255,51,102,0.3)'}`
-                    }}
-                  >
-                    {scan.status || 'scanned'}
-                  </span>
-                </td>
-                <td style={{
-                  padding: '16px 28px',
-                  color: 'var(--admin-text-muted)',
-                  fontSize: 12,
-                  maxWidth: 180,
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap'
-                }}>
-                  {scan.userEmail || 'Anonymous'}
-                </td>
-                <td style={{ padding: '16px 28px', color: 'var(--admin-text-muted)', fontSize: 12 }}>
-                  {scan.createdAt?.toDate
-                     ? scan.createdAt.toDate().toLocaleTimeString()
-                     : new Date(scan.createdAt).toLocaleTimeString()}
-                </td>
+        
+        <div className="overflow-x-auto">
+          <table className="w-full text-left">
+            <thead>
+              <tr className="bg-white/5">
+                <th className="px-8 py-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest italic">Vector URL</th>
+                <th className="px-8 py-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest italic">Integrity</th>
+                <th className="px-8 py-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest italic">Protocol</th>
+                <th className="px-8 py-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest italic">Operator</th>
+                <th className="px-8 py-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest italic">Timestamp</th>
               </tr>
-            ))}
-            {recentScans.length === 0 && (
-              <tr>
-                <td colSpan={5} style={{ padding: '40px', textAlign: 'center', color: 'var(--admin-text-muted)' }}>
-                  No recent scans found.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-white/5">
+              {recentScans.map((scan, i) => (
+                <tr key={i} className="hover:bg-white/[0.02] transition-colors group">
+                  <td className="px-8 py-5">
+                    <div className="text-[#00f5ff] font-mono text-xs font-semibold truncate max-w-xs group-hover:underline cursor-pointer">
+                      {scan.url?.replace('https://','').replace('http://','')}
+                    </div>
+                  </td>
+                  <td className="px-8 py-5">
+                    <div className="flex items-center gap-2">
+                       <span className="text-white font-black text-sm tracking-tighter" style={{ color: (scan.score||0) >= 70 ? '#10b981' : (scan.score||0) >= 40 ? '#f59e0b' : '#f43f5e' }}>{scan.score || 0}</span>
+                       <div className="w-16 h-1 bg-white/5 rounded-full overflow-hidden hidden sm:block">
+                          <div className="h-full transition-all duration-1000" style={{ width: `${scan.score}%`, background: (scan.score||0) >= 70 ? '#10b981' : (scan.score||0) >= 40 ? '#f59e0b' : '#f43f5e' }} />
+                       </div>
+                    </div>
+                  </td>
+                  <td className="px-8 py-5">
+                    <span className="px-2.5 py-1 rounded-md text-[9px] font-black uppercase tracking-widest" 
+                      style={{ background: scan.status === 'secure' ? '#10b98115' : '#f43f5e15', color: scan.status === 'secure' ? '#10b981' : '#f43f5e', border: `1px solid ${scan.status === 'secure' ? '#10b98130' : '#f43f5e30'}` }}>
+                      {scan.status || 'SCANNED'}
+                    </span>
+                  </td>
+                  <td className="px-8 py-5 text-slate-500 text-xs font-medium italic">{scan.userEmail || 'GUEST_NODE'}</td>
+                  <td className="px-8 py-5 text-slate-400 font-mono text-[11px] font-bold">
+                    {scan.createdAt?.toDate ? scan.createdAt.toDate().toLocaleTimeString() : 'RECENT'}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
