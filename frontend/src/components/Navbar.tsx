@@ -186,13 +186,13 @@ export const Navbar = () => {
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="mobile-nav-menu open"
+              className="mobile-nav-menu open overflow-y-auto max-h-[100dvh] pb-24 z-[99999]"
             >
-              <div className="flex flex-col gap-2">
+              <div className="flex flex-col gap-2 min-h-full">
                  <div className="px-4 py-6 mb-2 border-b border-white/5 bg-white/5 rounded-2xl mx-2">
-                    <div className="flex items-center gap-3 mb-6">
-                       <LogoRenderer className="w-8 h-8 drop-shadow-[0_0_8px_rgba(99,102,241,0.5)]" />
-                       <span className="font-display font-black text-lg gradient-text uppercase italic tracking-tighter">SECUREWEB AI</span>
+                    <div className="flex items-center gap-3 mb-6 flex-nowrap overflow-hidden">
+                       <LogoRenderer className="w-8 h-8 shrink-0 drop-shadow-[0_0_8px_rgba(99,102,241,0.5)]" />
+                       <span className="font-display font-black text-lg gradient-text uppercase italic tracking-tighter whitespace-nowrap">SECUREWEB AI</span>
                     </div>
                     
                     {/* Lang Toggle Removed from Mobile */}
@@ -228,9 +228,20 @@ export const Navbar = () => {
                 )}
 
                 {!user || user.isAnonymous ? (
-                  <div className="mt-4 grid grid-cols-2 gap-2 px-4">
-                    <Button variant="outline" size="sm" onClick={() => { navigate('/login'); setMenuOpen(false); }}>Login</Button>
-                    <Button className="gradient-btn" size="sm" onClick={() => { navigate('/signup'); setMenuOpen(false); }}>Join</Button>
+                  <div className="mt-8 flex flex-col gap-3 px-4 pb-20">
+                    <Button 
+                      variant="outline" 
+                      className="w-full h-12 rounded-xl border-white/10 text-foreground font-bold"
+                      onClick={() => { navigate('/login'); setMenuOpen(false); }}
+                    >
+                      Sign In
+                    </Button>
+                    <Button 
+                      className="w-full h-12 rounded-xl gradient-btn font-black uppercase tracking-wider"
+                      onClick={() => { navigate('/signup'); setMenuOpen(false); }}
+                    >
+                      Join SecureWeb AI
+                    </Button>
                   </div>
                 ) : (
                   <button

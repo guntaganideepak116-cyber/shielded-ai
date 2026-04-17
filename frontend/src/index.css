@@ -1389,12 +1389,13 @@ body.is-loading {
   right: -100% !important;
   width: 72% !important;
   max-width: 280px !important;
-  height: 100vh !important;
+  height: 100dvh !important;
+  overflow-y: auto !important;
   background: #0a0f1e !important;
   border-left: 1px solid #1a2234 !important;
-  z-index: 9999 !important;
+  z-index: 99999 !important;
   transition: right 0.3s ease !important;
-  padding: 72px 20px 24px !important;
+  padding: 72px 20px 100px !important;
   display: flex !important;
   flex-direction: column !important;
   gap: 4px !important;
@@ -1430,7 +1431,7 @@ body.is-loading {
   position: fixed !important;
   inset: 0 !important;
   background: rgba(0,0,0,0.6) !important;
-  z-index: 9998 !important;
+  z-index: 99998 !important;
   display: none !important;
   backdrop-filter: blur(4px) !important;
 }
