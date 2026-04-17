@@ -13,36 +13,52 @@ import addMonitor from './_core/handlers/monitors/add.js';
 import cronMonitor from './_core/handlers/cron/monitor.js';
 
 export default async function handler(req, res) {
-  const url = new URL(req.url, 'http://localhost');
-  const path = url.pathname;
+  // CORS HEADERS (Global)
+  res.setHeader('Access-Control-Allow-Credentials', true);
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
+  res.setHeader(
+    'Access-Control-Allow-Headers',
+    'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization'
+  );
 
-  // Route mapping
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+
+  const url = new URL(req.url, 'http://localhost');
+  // Normalize path: remove trailing slashes and ensure /api prefix logic
+  let path = url.pathname.replace(/\/$/, '');
+  
+  // Create a handler map that is agnostic of the /api prefix if Vercel strips it
   const routes = {
-    '/api/chat': chat,
-    '/api/scan': scan,
-    '/api/ai-fix': aiFix,
-    '/api/history': history,
-    '/api/send-email': sendEmail,
-    '/api/send-alert': sendAlert,
-    '/api/monitor': monitor,
-    '/api/stats': stats,
-    '/api/chatbot': chatbot,
-    '/api/user/generate-api-key': generateApiKey,
-    '/api/user/update-plan': updatePlan,
-    '/api/monitors/add': addMonitor,
-    '/api/cron/monitor': cronMonitor
+    'chat': chat,
+    'scan': scan,
+    'ai-fix': aiFix,
+    'history': history,
+    'send-email': sendEmail,
+    'send-alert': sendAlert,
+    'monitor': monitor,
+    'stats': stats,
+    'chatbot': chatbot,
+    'user/generate-api-key': generateApiKey,
+    'user/update-plan': updatePlan,
+    'monitors/add': addMonitor,
+    'cron/monitor': cronMonitor
   };
 
-  const handler = routes[path];
+  // Resolve the key from the path
+  const key = path.replace(/^\/api\//, '').replace(/^\//, '');
+  const apiHandler = routes[key];
 
-  if (handler) {
+  if (apiHandler) {
     try {
-      return await handler(req, res);
+      return await apiHandler(req, res);
     } catch (error) {
       console.error(`Error in ${path}:`, error);
       return res.status(500).json({ error: 'Internal Server Error', message: error.message });
     }
   }
 
-  return res.status(404).json({ error: 'Not Found', path });
+  return res.status(404).json({ error: 'Not Found', path, key });
 }
