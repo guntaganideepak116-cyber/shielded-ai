@@ -2,10 +2,10 @@
   "name": "securesites-root",
   "private": true,
   "scripts": {
-    "install:all": "npm install --prefix FRONTEND && npm install --prefix BACKEND",
-    "dev": "npm run dev --prefix FRONTEND",
-    "build": "npm run build --prefix FRONTEND",
-    "lint": "npm run lint --prefix FRONTEND",
-    "vercel-build": "npm run build --prefix FRONTEND"
+    "install:all": "cd FRONTEND && npm install ; cd .. ; cd BACKEND && npm install",
+    "dev": "cd FRONTEND && npm run dev",
+    "build": "cd FRONTEND && npm run build",
+    "lint": "cd FRONTEND && npm run lint",
+    "vercel-build": "cd FRONTEND && npm run build"
   }
 }
