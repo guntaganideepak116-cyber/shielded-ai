@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown, HelpCircle, Shield, Zap, Lock, Globe, Mail } from 'lucide-react';
-import Navbar from '../components/Navbar';
+import { Navbar } from '../components/Navbar';
 import Footer from '../components/Footer';
 
 const faqs = [

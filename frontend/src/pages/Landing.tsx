@@ -19,6 +19,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
+import Footer from '../components/Footer';
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
@@ -330,20 +331,7 @@ const Landing = () => {
         </section>
 
         {/* FOOTER */}
-        <footer className="border-t border-white/5 bg-background relative z-20">
-          <div className="container mx-auto px-6 py-12 flex flex-col md:flex-row items-center justify-between gap-8">
-            <div className="flex items-center gap-3">
-              <LogoRenderer className="w-8 h-8 drop-shadow-[0_0_8px_rgba(168,85,247,0.5)]" />
-              <span className="font-display font-black text-xl tracking-tighter gradient-text uppercase italic pr-4">SECUREWEB AI</span>
-            </div>
-            
-            <p className="text-sm text-slate-500 font-medium tracking-tight">
-              © 2026 Secureweb AI. All rights reserved.
-            </p>
-
-            <div className="hidden md:block w-32" /> {/* Spacer for balance */}
-          </div>
-        </footer>
+        <Footer />
       </div>
     </div>
   );
