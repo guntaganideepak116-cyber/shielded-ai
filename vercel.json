@@ -1,6 +1,7 @@
 {
   "version": 2,
   "framework": "vite",
+  "outputDirectory": "frontend/dist",
   "rewrites": [
     {
       "source": "/api/(.*)",
@@ -8,7 +9,7 @@
     },
     {
       "source": "/((?!api/|assets/|favicon.ico|manifest.json|sw.js|robots.txt).*)",
-      "destination": "/frontend/dist/index.html"
+      "destination": "/index.html"
     }
   ],
   "headers": [
