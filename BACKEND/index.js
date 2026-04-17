@@ -6,7 +6,7 @@ import sendEmail from './_core/handlers/send-email.js';
 import sendAlert from './_core/handlers/send-alert.js';
 import monitor from './_core/handlers/monitor.js';
 import stats from './_core/handlers/stats.js';
-import chatbot from './_core/handlers/chatbot.js';
+import assistant from './_core/handlers/assistant.js';
 import generateApiKey from './_core/handlers/user/generate-api-key.js';
 import updatePlan from './_core/handlers/user/update-plan.js';
 import addMonitor from './_core/handlers/monitors/add.js';
@@ -40,7 +40,8 @@ export default async function handler(req, res) {
     'send-alert': sendAlert,
     'monitor': monitor,
     'stats': stats,
-    'chatbot': chatbot,
+    'chatbot': assistant,
+    'assistant': assistant,
     'user/generate-api-key': generateApiKey,
     'user/update-plan': updatePlan,
     'monitors/add': addMonitor,
