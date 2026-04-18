@@ -13,7 +13,7 @@
           content="black-translucent">
     <meta name="apple-mobile-web-app-title" 
           content="SecureWeb AI">
-    <link rel="apple-touch-icon" href="/icon-192.png">
+    <link rel="apple-touch-icon" href="/icons/icon-192.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
 
     <meta property="og:title" content="SECUREWEB AI - Website Security Scanner" />
@@ -28,7 +28,7 @@
       window._pwaShown = false;
 
       window.addEventListener('beforeinstallprompt', (e) => {
-        e.preventDefault();
+        // e.preventDefault(); // REMOVED TO ENABLE NATIVE BANNER
         window._pwaPrompt = e;
         // Dispatch after short delay so React mounts first
         setTimeout(() => {

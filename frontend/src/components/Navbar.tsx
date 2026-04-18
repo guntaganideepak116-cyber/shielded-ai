@@ -32,7 +32,7 @@ export const Navbar = () => {
       setCanInstall(true);
     }
     const handler = (e: Event) => {
-      e.preventDefault();
+      // e.preventDefault(); // REMOVED TO ENABLE NATIVE BANNER
       (window as any).deferredInstallPrompt = e;
       setCanInstall(true);
     };
