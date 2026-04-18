@@ -44,7 +44,7 @@ export default async function handler(req, res) {
         },
         ...messages
       ],
-      model: "llama3-70b-8192",
+      model: "llama-3.3-70b-versatile",
       temperature: 0.5,
       max_tokens: 512,
       top_p: 1,
