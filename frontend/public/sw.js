@@ -1,4 +1,4 @@
-const CACHE_NAME = 'secureweb-ai-v1';
+const CACHE_NAME = 'secureweb-ai-v2'; // Bumped version to clear old cache
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
@@ -6,17 +6,10 @@ const ASSETS_TO_CACHE = [
 ];
 
 self.addEventListener('install', (event) => {
+  self.skipWaiting(); // Force the new SW to take over immediately
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
       return cache.addAll(ASSETS_TO_CACHE);
-    })
-  );
-});
-
-self.addEventListener('fetch', (event) => {
-  event.respondWith(
-    caches.match(event.request).then((response) => {
-      return response || fetch(event.request);
     })
   );
 });
@@ -32,5 +25,26 @@ self.addEventListener('activate', (event) => {
         })
       );
     })
+  );
+});
+
+// NETWORK FIRST STRATEGY (Better for frequently updated apps)
+self.addEventListener('fetch', (event) => {
+  event.respondWith(
+    fetch(event.request)
+      .then((response) => {
+        // If successful, update the cache
+        if (event.request.method === 'GET' && response.status === 200) {
+          const responseToCache = response.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, responseToCache);
+          });
+        }
+        return response;
+      })
+      .catch(() => {
+        // If network fails, try the cache
+        return caches.match(event.request);
+      })
   );
 });
