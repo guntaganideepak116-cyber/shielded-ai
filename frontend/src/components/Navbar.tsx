@@ -137,23 +137,13 @@ export const Navbar = () => {
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
-              <div className="hidden lg:flex items-center gap-2">
+              <div className="hidden lg:flex items-center">
                 <Button
-                  variant="ghost"
-                  onClick={() => navigate('/login')}
-                  className="text-xs font-display px-3 h-8 hover:bg-white/5"
+                  onClick={() => navigate('/signup')}
+                  className="gradient-btn text-[11px] font-black uppercase tracking-[0.2em] px-6 h-10 rounded-xl shadow-[0_4px_15px_rgba(99,102,241,0.3)] hover:shadow-[0_4px_25px_rgba(99,102,241,0.5)] transition-all duration-300"
                 >
-                  {t('nav.signin')}
+                  Get Started
                 </Button>
-                <div className="flex flex-col items-center">
-                   <div className="text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-0.5">{t('common.beta')}</div>
-                   <Button
-                     onClick={() => navigate('/signup')}
-                     className="gradient-btn text-xs font-display px-4 h-8"
-                   >
-                     {t('hero.cta')}
-                   </Button>
-                </div>
               </div>
             )}
           </div>
@@ -230,17 +220,10 @@ export const Navbar = () => {
                 {!user || user.isAnonymous ? (
                   <div className="mt-8 flex flex-col gap-3 px-4 pb-20">
                     <Button 
-                      variant="outline" 
-                      className="w-full h-12 rounded-xl border-white/10 text-foreground font-bold"
-                      onClick={() => { navigate('/login'); setMenuOpen(false); }}
-                    >
-                      Sign In
-                    </Button>
-                    <Button 
-                      className="w-full h-12 rounded-xl gradient-btn font-black uppercase tracking-wider"
+                      className="w-full h-14 rounded-2xl gradient-btn font-black uppercase tracking-[0.2em] text-xs shadow-xl"
                       onClick={() => { navigate('/signup'); setMenuOpen(false); }}
                     >
-                      Join SecureWeb AI
+                      Get Started
                     </Button>
                   </div>
                 ) : (

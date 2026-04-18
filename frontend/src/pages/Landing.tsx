@@ -115,10 +115,10 @@ const Landing = () => {
                 className="flex flex-col sm:flex-row items-center gap-4 justify-center lg:justify-start"
               >
                 <Button 
-                   onClick={() => navigate('/scan')}
-                   className="gradient-btn h-14 px-10 rounded-2xl text-base font-display font-bold group w-full sm:w-auto"
+                   onClick={() => navigate('/signup')}
+                   className="gradient-btn h-14 px-10 rounded-2xl text-base font-display font-bold group w-full sm:w-auto shadow-[0_4px_20px_rgba(99,102,241,0.4)]"
                 >
-                  {t('hero.cta')}
+                  Get Started
                   <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </Button>
                 
@@ -315,11 +315,11 @@ const Landing = () => {
             </p>
             <div className="flex justify-center w-full">
               <Button
-                onClick={() => navigate('/scan')}
-                className="gradient-btn px-4 sm:px-10 py-4 sm:py-6 text-sm sm:text-lg font-display font-bold rounded-xl pulse-neon w-full sm:w-auto overflow-hidden text-ellipsis whitespace-normal sm:whitespace-nowrap"
+                onClick={() => navigate('/signup')}
+                className="gradient-btn px-4 sm:px-12 py-4 sm:py-6 text-sm sm:text-lg font-display font-bold rounded-2xl pulse-neon w-full sm:w-auto overflow-hidden text-ellipsis whitespace-normal sm:whitespace-nowrap"
               >
-                <Shield className="w-5 h-5 mr-1 sm:mr-2 shrink-0" />
-                <span>Scan Your Website Now</span>
+                <Sparkles className="w-5 h-5 mr-1 sm:mr-2 shrink-0" />
+                <span>Get Started Now</span>
                 <ArrowRight className="w-5 h-5 ml-1 sm:ml-2 shrink-0" />
               </Button>
             </div>
