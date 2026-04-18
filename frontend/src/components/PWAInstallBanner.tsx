@@ -18,15 +18,19 @@ export default function PWAInstallBanner() {
       return;
     }
 
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window.navigator as any).standalone;
     const show = () => setVisible(true);
 
-    // Already captured
-    if ((window as any).deferredInstallPrompt) {
-      setTimeout(show, 2500);
+    // If iOS or we already have the prompt, show after delay
+    if (isIOS || (window as any).deferredInstallPrompt) {
+      setTimeout(show, 3000);
     }
 
+    // Backup: Show after 8 seconds anyway if not dismissed, to capture "shy" browsers
+    const backupTimer = setTimeout(show, 8000);
+
     const handlePrompt = (e: Event) => {
-      e.preventDefault();
+      // e.preventDefault(); // Handled by index.html or Navbar
       (window as any).deferredInstallPrompt = e;
       setTimeout(show, 2500);
     };
@@ -36,6 +40,7 @@ export default function PWAInstallBanner() {
     window.addEventListener('pwa:installed', () => setVisible(false));
 
     return () => {
+      clearTimeout(backupTimer);
       window.removeEventListener('beforeinstallprompt', handlePrompt);
       window.removeEventListener('pwa:ready', show);
     };

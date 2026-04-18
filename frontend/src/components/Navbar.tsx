@@ -37,7 +37,7 @@ export const Navbar = () => {
       setCanInstall(true);
     };
     window.addEventListener('beforeinstallprompt', handler);
-    window.addEventListener('pwaInstallReady', () => setCanInstall(true));
+    window.addEventListener('pwa:ready', () => setCanInstall(true));
     window.addEventListener('appinstalled', () => setCanInstall(false));
     
     return () => {
