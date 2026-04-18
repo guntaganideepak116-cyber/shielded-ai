@@ -9,6 +9,7 @@ export interface Vulnerability {
   description: string;
   title?: string; // Some API returns title instead of issue
   header?: string; // Used in CompareResults
+  category?: string; // Used for Deep Scan categorical filtering
 }
 
 export interface SSLInfo {
@@ -69,6 +70,8 @@ export interface ScanResult {
   previousScore?: number;
   uptime?: string;
   owasp?: Record<string, OWASPData>;
+  scanType?: 'basic' | 'deep';
+  checksRun?: number;
 }
 
 export interface AiFix {

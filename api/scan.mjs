@@ -25,7 +25,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { url, userId } = req.body;
+  const { url, userId, scanType = 'basic' } = req.body;
 
   // ── STEP 0: API Key / Plan Validation ────────────────
   const apiKey = req.headers['x-api-key'];
@@ -328,17 +328,20 @@ export default async function handler(req, res) {
     });
   }
 
-  // Final count check to ensure 27
-  while (masterVulnerabilities.length < 27) {
-    const i = masterVulnerabilities.length + 1;
-    masterVulnerabilities.push({
-       id: `sec-check-${i}`, title: `Security Vector #${i}`, severity: 'low',
-       description: 'Automated infrastructure check.', category: 'internal',
-       status: 'fixed'
-    });
-  }
+  // ── STEP 12.5: APPLY SCAN DEPTH FILTER ────────────────
+  const BASIC_CHECKS_IDS = [
+    'csp', 'xfo', 'hsts', 'xcto', 'rp', 'xss', // Headers (6)
+    'http-no-redirect', 'ssl-invalid', 'vt-malicious',
+    'cookie-no-httponly', 'cookie-no-secure', 'cookie-no-samesite',
+    'server-disclosure', 'sec-check-23' // Example OWASP placeholder
+  ];
 
-  const vulnerabilities = masterVulnerabilities;
+  // Force basic for free users if they try to bypass
+  const activeScanType = (userPlan === 'free' && scanType === 'deep') ? 'basic' : scanType;
+
+  const vulnerabilities = activeScanType === 'deep' 
+    ? masterVulnerabilities 
+    : masterVulnerabilities.filter(v => BASIC_CHECKS_IDS.includes(v.id) || v.category === 'security-headers');
 
   // ── STEP 13: CALCULATE SCORE ────────────────────────
   const DEDUCTIONS = { critical: 30, high: 20, medium: 10, low: 5, info: 0 };
@@ -392,5 +395,9 @@ export default async function handler(req, res) {
     }
   }
 
-  return res.status(200).json(scanResult);
+  return res.status(200).json({
+    ...scanResult,
+    scanType: activeScanType,
+    checksRun: vulnerabilities.length
+  });
 }

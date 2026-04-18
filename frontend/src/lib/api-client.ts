@@ -2,12 +2,12 @@ import { type ScanResult, type AiFixResponse } from './scan-data';
 
 const API_BASE_URL = '/api';
 
-export async function callSecurityScan(url: string): Promise<ScanResult | null> {
+export async function callSecurityScan(url: string, scanType: string = 'basic'): Promise<ScanResult | null> {
   try {
     const response = await fetch(`${API_BASE_URL}/scan`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ url }),
+      body: JSON.stringify({ url, scanType }),
       cache: 'no-store'
     });
 

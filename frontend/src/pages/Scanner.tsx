@@ -21,8 +21,11 @@ import ScannerInput from '@/components/ScannerInput';
 import ScoreDisplay from '@/components/ScoreDisplay';
 import VulnerabilityCard from '@/components/VulnerabilityCard';
 import SmartFixCard from '@/components/SmartFixCard';
+import ScanTypeSelector from '@/components/ScanTypeSelector';
 import { FIX_GUIDES } from '@/lib/fixGuides';
 import FortressModal from '@/components/FortressModal';
+import { db } from '@/lib/firebase';
+import { getDoc, doc } from 'firebase/firestore';
 import SuccessScreen from '@/components/SuccessScreen';
 import AuthModal from '@/components/AuthModal';
 import HeadersGrid from '@/components/HeadersGrid';
@@ -35,6 +38,7 @@ import { type Vulnerability, type ScanResult, type AiFixResponse } from '@/lib/s
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip } from 'recharts';
 import { toast } from 'react-hot-toast';
 import { generatePDFReport } from '@/lib/report-generator';
+import ScanProgress from '@/components/ScanProgress';
 
 const Scanner = () => {
   const navigate = useNavigate();
@@ -87,6 +91,29 @@ const Scanner = () => {
   const [isRescanning, setIsRescanning] = useState(false);
   const [previousScore, setPreviousScore] = useState<number | null>(null);
   const [selectedVulnId, setSelectedVulnId] = useState<string | null>(null);
+  const [scanType, setScanType] = useState<'basic' | 'deep'>('basic');
+  const [userPlan, setUserPlan] = useState<'free' | 'pro'>('free');
+
+  // Load user plan
+  useEffect(() => {
+    if (!user?.uid) return;
+    getDoc(doc(db, 'users', user.uid)).then(d => {
+      if (d.exists()) {
+        setUserPlan(d.data().plan || 'free');
+      }
+    });
+  }, [user]);
+
+  // Listen for upgrade nudge switch
+  useEffect(() => {
+    const handleSwitch = () => {
+      setScanType('deep');
+      setPhase('landing');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+    window.addEventListener('switchToDeepScan', handleSwitch);
+    return () => window.removeEventListener('switchToDeepScan', handleSwitch);
+  }, []);
 
   // Problem 6 — Restore scan result if it exists
   useEffect(() => {
@@ -137,7 +164,10 @@ const Scanner = () => {
     return () => document.body.classList.remove('is-loading');
   }, [phase]);
 
-  const handleScan = async (targetUrl: string) => {
+  const handleScan = async (targetUrl: string, selectedType: 'basic' | 'deep' = 'basic') => {
+    // Override with state if not explicitly passed
+    const activeType = selectedType || scanType;
+    
     // 1. URL Sanitization: Prepend https:// if no protocol exists
     let cleanUrl = targetUrl.trim();
     if (!cleanUrl.startsWith('http://') && !cleanUrl.startsWith('https://')) {
@@ -150,7 +180,7 @@ const Scanner = () => {
     setErrorMessage('');
     setScanError(null);
     
-    trackEvent('scan_started', { url: cleanUrl });
+    trackEvent('scan_started', { url: cleanUrl, type: activeType });
 
     const platform = detectPlatform(cleanUrl);
     setDetectedPlatform(platform);
@@ -159,7 +189,7 @@ const Scanner = () => {
     let isComplete = false;
 
     // Start API call immediately
-    const apiPromise = finishScan(cleanUrl).then(() => {
+    const apiPromise = finishScan(cleanUrl, activeType).then(() => {
       isComplete = true;
     });
 
@@ -189,9 +219,9 @@ const Scanner = () => {
     }, 100);
   };
 
-  const finishScan = async (cleanUrl: string) => {
+  const finishScan = async (cleanUrl: string, activeType: 'basic' | 'deep' = 'basic') => {
     try {
-        const realData = await callSecurityScan(cleanUrl);
+        const realData = await callSecurityScan(cleanUrl, activeType);
         
         if (!realData || ['error', 'not_found', 'unreachable', 'invalid', 'timeout', 'blocked'].includes(realData.status)) {
             setScanError({
@@ -213,7 +243,8 @@ const Scanner = () => {
             severity: (issue.severity?.toLowerCase() || 'medium') as 'critical' | 'high' | 'medium' | 'low',
             status: issue.status || 'failed',
             fixTime: '1m',
-            description: issue.description
+            description: issue.description,
+            category: issue.category
         })).sort((a: any, b: any) => {
           if (a.status === 'failed' && b.status === 'fixed') return -1;
           if (a.status === 'fixed' && b.status === 'failed') return 1;
@@ -424,8 +455,14 @@ const Scanner = () => {
                   </p>
                 </div>
 
-                <div className="relative">
-                   <ScannerInput onScan={handleScan} isScanning={false} />
+                <div className="relative space-y-8">
+                   <ScannerInput onScan={(target) => handleScan(target, scanType)} isScanning={false} />
+                   
+                   <ScanTypeSelector 
+                    selected={scanType} 
+                    onSelect={setScanType} 
+                    userPlan={userPlan} 
+                   />
                    
                    {scanError && (
                     <div style={{
@@ -525,39 +562,12 @@ const Scanner = () => {
             )}
 
             {phase === 'scanning' && (
-              <motion.div 
-                key="scanning" 
-                initial={{ opacity: 0 }} 
-                animate={{ opacity: 1 }} 
-                exit={{ opacity: 0 }} 
-                className="fixed inset-0 z-[1000] flex flex-col items-center justify-center bg-[#020409] overflow-hidden w-screen h-screen"
-                style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}
-              >
-                <div className="space-y-16 text-center">
-                  <div className="relative inline-block">
-                    <ShieldAnimation progress={progress} />
-                    <div className="absolute inset-0 flex items-center justify-center">
-                       <span className="text-5xl font-display font-black text-white">{Math.round(progress)}%</span>
-                    </div>
-                  </div>
-                  <div className="space-y-6">
-                    <h2 className="text-4xl font-display font-black uppercase tracking-tighter italic">SECURE_DOMAIN_AUDIT</h2>
-                    <div className="flex flex-col items-center gap-4">
-                      <p className="text-primary text-sm font-mono tracking-widest uppercase font-black animate-pulse">{statusMessage}</p>
-                      <div className="flex gap-1">
-                        {[...Array(6)].map((_, i) => (
-                          <div key={i} className={`h-1 w-8 rounded-full transition-all duration-500 ${progress > (i * 16.6) ? 'bg-primary shadow-[0_0_10px_#6366f1]' : 'bg-white/10'}`} />
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
+              <ScanProgress scanType={scanType} />
             )}
 
             {phase === 'results' && scanResult && (
               <motion.div key="results" ref={resultsRef} initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} className="space-y-12 max-w-6xl mx-auto pb-40">
-                {/* Results Header (PROBLEM 1 FIX) */}
+                {/* Results Header */}
                 <div style={{
                   background: '#0d1424',
                   border: '1px solid #1a2234',
@@ -625,7 +635,7 @@ const Scanner = () => {
                       alignItems: 'center',
                       gap: '6px'
                     }}>
-                      ⚡ ENGINE V5.0 DEEPSCAN
+                      ⚡ ENGINE V5.0 {scanResult.scanType === 'deep' ? 'DEEP SCAN' : 'BASIC SCAN'}
                     </span>
                     <span style={{
                       color: '#8892a4',
@@ -644,7 +654,7 @@ const Scanner = () => {
                       alignItems: 'center',
                       gap: '6px'
                     }}>
-                      ● {scanResult.status?.toUpperCase()}
+                      ● {(scanResult.scanType?.toUpperCase() || 'BASIC')} {scanResult.status?.toUpperCase()}
                     </span>
                   </div>
 
@@ -814,37 +824,114 @@ const Scanner = () => {
                     <div id="vuln-section" className="space-y-6 scroll-mt-32">
                         <div className="flex items-center justify-between px-2">
                            <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em] flex items-center gap-3">
-                              <ShieldAlert className="w-5 h-5 text-destructive" /> Active Security Vector Analysis
+                              <ShieldAlert className="w-5 h-5 text-destructive" /> 
+                              {scanResult.scanType === 'deep' ? 'Project Zero: Enterprise Audit' : 'Standard Security Vector Analysis'}
                            </h3>
                         </div>
-                        <div className="space-y-3">
-                         {vulnerabilities && vulnerabilities.length > 0 ? (
-                           vulnerabilities.map((vuln, i) => {
-                             const currentFix = aiFixes?.fixes?.find((f) => f.vulnerabilityId === vuln.id);
-                             const isSelected = selectedVulnId === vuln.id;
-                             return (
-                               <div 
-                                 key={vuln.id} 
-                                 onClick={() => setSelectedVulnId(vuln.id)}
-                                 className={`cursor-pointer transition-all duration-300 ${isSelected ? 'scale-[1.02] z-10' : 'opacity-80 hover:opacity-100'}`}
-                               >
-                                 <VulnerabilityCard 
-                                   vuln={vuln} 
-                                   index={i} 
-                                   fix={currentFix} 
-                                   isForcedExpanded={isSelected}
-                                 />
-                               </div>
-                             );
-                           })
-                         ) : (
-                           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-20 text-center glass-card border-success/20 bg-success/5 rounded-3xl !bg-[#0d1424]">
-                              <ShieldCheck className="w-16 h-16 mx-auto mb-6 text-success animate-bounce" />
-                              <h3 className="text-2xl font-display font-black uppercase italic tracking-tighter mb-2">Perimeter Secured</h3>
-                              <p className="text-sm text-slate-500 font-medium italic">No vulnerabilities detected. Your infrastructure passes all baseline compliance checks.</p>
-                           </motion.div>
-                         )}
-                        </div>
+
+                        {/* MODE: DEEP SCAN -> Categorical Split */}
+                        {scanResult.scanType === 'deep' ? (
+                          <div className="space-y-12">
+                            {/* CATEGORY 1: CODE FIXES */}
+                            <div className="space-y-4">
+                              <div className="flex items-center gap-3 text-primary font-mono text-[11px] font-black tracking-widest pl-2">
+                                <span className="text-xl">{'</>'}</span> CODE SNIPPET FIXES
+                                <div className="h-px flex-1 bg-white/5" />
+                              </div>
+                              <div className="grid grid-cols-1 gap-3">
+                                {vulnerabilities?.filter(v => [
+                                  'security-headers', 'ssl', 'transport', 'cookies', 'internal', 'info'
+                                ].includes(v.category || '')).map((vuln, i) => {
+                                  const currentFix = aiFixes?.fixes?.find((f) => f.vulnerabilityId === vuln.id);
+                                  return (
+                                    <VulnerabilityCard 
+                                      key={vuln.id} 
+                                      vuln={vuln} 
+                                      index={i} 
+                                      fix={currentFix}
+                                    />
+                                  );
+                                })}
+                              </div>
+                            </div>
+
+                            {/* CATEGORY 2: MANUAL GUIDES */}
+                            <div className="space-y-4">
+                              <div className="flex items-center gap-3 text-purple-400 font-mono text-[11px] font-black tracking-widest pl-2">
+                                <span className="text-xl">📋</span> MANUAL INFRASTRUCTURE GUIDES
+                                <div className="h-px flex-1 bg-white/5" />
+                              </div>
+                              <div className="grid grid-cols-1 gap-4">
+                                {vulnerabilities?.filter(v => ![
+                                  'security-headers', 'ssl', 'transport', 'cookies', 'internal', 'info'
+                                ].includes(v.category || '')).map((vuln) => {
+                                  const guideId = VULN_TO_GUIDE[vuln.id];
+                                  if (guideId) {
+                                    return (
+                                      <SmartFixCard
+                                        key={vuln.id}
+                                        vulnerabilityId={guideId}
+                                        scanResult={scanResult}
+                                        onRescan={() => handleScan(scanResult.url, 'deep')}
+                                      />
+                                    );
+                                  }
+                                  return null;
+                                })}
+                              </div>
+                            </div>
+                          </div>
+                        ) : (
+                          /* MODE: BASIC SCAN -> Streamlined List + Upgrade Nudge */
+                          <div className="space-y-3">
+                            {vulnerabilities && vulnerabilities.length > 0 ? (
+                              vulnerabilities.map((vuln, i) => {
+                                const currentFix = aiFixes?.fixes?.find((f) => f.vulnerabilityId === vuln.id);
+                                return (
+                                  <VulnerabilityCard 
+                                    key={vuln.id} 
+                                    vuln={vuln} 
+                                    index={i} 
+                                    fix={currentFix} 
+                                  />
+                                );
+                              })
+                            ) : (
+                              <div className="p-20 text-center glass-card border-success/20 bg-success/5 rounded-3xl !bg-[#0d1424]">
+                                <ShieldCheck className="w-16 h-16 mx-auto mb-6 text-success animate-bounce" />
+                                <h3 className="text-2xl font-display font-black uppercase italic tracking-tighter mb-2">Perimeter Secured</h3>
+                                <p className="text-sm text-slate-500 font-medium italic">No vulnerabilities detected in basic audit.</p>
+                              </div>
+                            )}
+
+                            {/* UPGRADE NUDGE */}
+                            <motion.div 
+                              initial={{ opacity: 0, y: 10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              className="mt-8 p-6 rounded-2xl bg-gradient-to-br from-purple-500/10 to-indigo-500/5 border border-purple-500/20 flex flex-col md:flex-row items-center justify-between gap-6"
+                            >
+                              <div className="space-y-1 text-center md:text-left">
+                                <h4 className="font-bold text-slate-100 flex items-center gap-2 justify-center md:justify-start">
+                                  🛡️ Ready for a Comprehensive Audit?
+                                </h4>
+                                <p className="text-xs text-slate-400 leading-relaxed max-w-lg">
+                                  Deep Scan unlocks 19 additional checkpoints including Secret Leakage, 
+                                  Infrastructure Ports, and DNS hardening protocols (SPF/DMARC).
+                                </p>
+                              </div>
+                              <Button 
+                                onClick={() => {
+                                  setScanType('deep');
+                                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                                  toast.success("Mode switched to Deep Scan", { icon: '🛡️' });
+                                }}
+                                className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-black uppercase text-[10px] tracking-[0.2em] px-8 h-12 rounded-xl"
+                              >
+                                Run Deep Scan →
+                              </Button>
+                            </motion.div>
+                          </div>
+                        )}
                      </div>
 
                     {/* 3. SSL Certificate Card */}
@@ -932,7 +1019,7 @@ const Scanner = () => {
         isOpen={showModal} 
         onClose={() => setShowModal(false)} 
         platform={detectedPlatform} 
-        onFixed={() => handleScan(url)} 
+        onFixed={() => handleScan(url, scanType)} 
         vulnerabilities={vulnerabilities || []} 
         aiFixes={aiFixes}
         scanResult={scanResult}
