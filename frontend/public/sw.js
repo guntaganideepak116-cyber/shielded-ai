@@ -1,4 +1,4 @@
-const CACHE_NAME = 'secureweb-ai-v2'; // Bumped version to clear old cache
+const CACHE_NAME = 'secureweb-ai-v3'; // Bumped version to force cache refresh
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',

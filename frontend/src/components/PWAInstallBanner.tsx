@@ -8,10 +8,8 @@ export default function PWAInstallBanner() {
   const [installing, setInstalling] = useState(false);
 
   useEffect(() => {
-    // Never show if already installed or dismissed
+    // Never show if already in standalone mode
     if (
-      localStorage.getItem(INSTALL_KEY) === '1' ||
-      localStorage.getItem(DISMISS_KEY) === '1' ||
       window.matchMedia('(display-mode: standalone)').matches ||
       (window.navigator as any).standalone === true
     ) {
@@ -53,7 +51,7 @@ export default function PWAInstallBanner() {
       e.stopPropagation();
     }
     setVisible(false);
-    localStorage.setItem(DISMISS_KEY, '1');
+    // localStorage.setItem(DISMISS_KEY, '1'); // DISABLING PERMANENT DISMISS FOR DIAGNOSTICS
   }, []);
 
   const install = useCallback(async (e?: React.MouseEvent) => {

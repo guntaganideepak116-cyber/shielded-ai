@@ -30,10 +30,8 @@
       window.addEventListener('beforeinstallprompt', (e) => {
         // e.preventDefault(); // REMOVED TO ENABLE NATIVE BANNER
         window._pwaPrompt = e;
-        // Dispatch after short delay so React mounts first
-        setTimeout(() => {
-          window.dispatchEvent(new CustomEvent('pwa:ready'));
-        }, 2500);
+        // Notify immediately
+        window.dispatchEvent(new Event('pwa:ready'));
       });
 
       window.addEventListener('appinstalled', () => {
