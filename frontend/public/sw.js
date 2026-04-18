@@ -28,13 +28,16 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// NETWORK FIRST STRATEGY (Better for frequently updated apps)
+// NETWORK FIRST STRATEGY with Safety Fallbacks
 self.addEventListener('fetch', (event) => {
+  // Only handle GET requests
+  if (event.request.method !== 'GET') return;
+
   event.respondWith(
     fetch(event.request)
       .then((response) => {
-        // If successful, update the cache
-        if (event.request.method === 'GET' && response.status === 200) {
+        // If successful and same-origin, update the cache
+        if (response.status === 200 && event.request.url.startsWith(self.location.origin)) {
           const responseToCache = response.clone();
           caches.open(CACHE_NAME).then((cache) => {
             cache.put(event.request, responseToCache);
@@ -42,9 +45,17 @@ self.addEventListener('fetch', (event) => {
         }
         return response;
       })
-      .catch(() => {
+      .catch(async () => {
         // If network fails, try the cache
-        return caches.match(event.request);
+        const cachedResponse = await caches.match(event.request);
+        if (cachedResponse) return cachedResponse;
+        
+        // If not in cache, return a clean error response instead of undefined
+        return new Response('Network error occurred', {
+          status: 408,
+          statusText: 'Request Timeout',
+          headers: new Headers({ 'Content-Type': 'text/plain' })
+        });
       })
   );
 });
